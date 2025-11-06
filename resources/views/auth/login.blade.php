@@ -26,11 +26,11 @@
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 30px;
+            border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 700px;
-            padding: 60px;
+            max-width: 600px;
+            padding: 40px;
             animation: slideUp 0.5s ease-out;
         }
 
@@ -47,18 +47,18 @@
 
         .logo-container {
             text-align: center;
-            margin-bottom: 45px;
+            margin-bottom: 40px;
         }
 
         .logo {
-            width: 150px;
-            height: 150px;
+            width: 130px;
+            height: 130px;
             background: linear-gradient(135deg, #660708 0%, #a4161a 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 22px;
+            margin: 0 auto 20px;
             box-shadow: 0 10px 25px rgba(102, 7, 8, 0.4);
             overflow: hidden;
         }
@@ -70,32 +70,32 @@
         }
 
         .logo svg {
-            width: 75px;
-            height: 75px;
+            width: 65px;
+            height: 65px;
             fill: white;
         }
 
         h1 {
             color: #333;
-            font-size: 42px;
-            margin-bottom: 12px;
+            font-size: 36px;
+            margin-bottom: 10px;
         }
 
         .subtitle {
             color: #666;
-            font-size: 20px;
+            font-size: 17px;
         }
 
         .form-group {
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #333;
             font-weight: 500;
-            font-size: 20px;
+            font-size: 16px;
         }
 
         .input-wrapper {
@@ -104,24 +104,19 @@
 
         .input-icon {
             position: absolute;
-            left: 22px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: #660708;
         }
 
-        .input-icon svg {
-            width: 28px;
-            height: 28px;
-        }
-
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 22px 22px 22px 65px;
+            padding: 18px 18px 18px 55px;
             border: 2px solid #e1e8ed;
-            border-radius: 15px;
-            font-size: 22px;
+            border-radius: 12px;
+            font-size: 17px;
             transition: all 0.3s ease;
             background: #f8f9fa;
         }
@@ -136,17 +131,12 @@
 
         .password-toggle {
             position: absolute;
-            right: 22px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #999;
             transition: color 0.3s;
-        }
-
-        .password-toggle svg {
-            width: 28px;
-            height: 28px;
         }
 
         .password-toggle:hover {
@@ -157,8 +147,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 35px;
-            font-size: 18px;
+            margin-bottom: 25px;
+            font-size: 14px;
         }
 
         .remember-me {
@@ -168,9 +158,8 @@
         }
 
         .remember-me input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 12px;
+            width: auto;
+            margin-right: 8px;
             cursor: pointer;
             padding: 0;
         }
@@ -187,12 +176,12 @@
 
         .btn-login {
             width: 100%;
-            padding: 22px;
+            padding: 18px;
             background: linear-gradient(135deg, #660708 0%, #a4161a 100%);
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 24px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -209,10 +198,10 @@
         }
 
         .alert {
-            padding: 18px 22px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            font-size: 18px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
             animation: slideDown 0.3s ease-out;
         }
 
@@ -240,38 +229,38 @@
         }
 
         .role-info {
-            margin-top: 35px;
-            padding: 30px;
+            margin-top: 25px;
+            padding: 20px;
             background: #f8f9fa;
-            border-radius: 15px;
+            border-radius: 10px;
             border: 2px solid #e1e8ed;
         }
 
         .role-info-title {
-            font-size: 19px;
+            font-size: 13px;
             font-weight: 600;
             color: #660708;
-            margin-bottom: 18px;
+            margin-bottom: 12px;
             text-align: center;
         }
 
         .role-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 10px;
         }
 
         .role-item {
             display: flex;
             align-items: center;
-            font-size: 18px;
+            font-size: 12px;
             color: #666;
         }
 
         .role-item svg {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
             flex-shrink: 0;
         }
 
