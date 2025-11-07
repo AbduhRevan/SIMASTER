@@ -23,6 +23,23 @@ Route::middleware(['auth'])->group(function () {
         })->name('superadmin.dashboard');
     });
 
+    Route::get('/kelola-server', function () {
+        return view('superadmin.kelola-server');
+    })->name('superadmin.kelolaServer');
+    
+    Route::get('/kelola-website', function () {
+        return view('superadmin.kelola-website');
+    })->name('superadmin.kelolaWebsite');
+    
+    Route::get('/kelola-laporan', function () {
+        return view('superadmin.kelola-laporan');
+    })->name('superadmin.kelolaLaporan');
+    
+    Route::get('/kelola-pengguna', function () {
+        return view('superadmin.kelola-pengguna');
+    })->name('superadmin.kelolaPengguna');
+});
+
     // Banglola
     Route::middleware(['role:banglola'])->prefix('banglola')->group(function () {
         Route::get('/dashboard', function () {
@@ -57,4 +74,3 @@ Route::middleware(['auth'])->group(function () {
             return view('pimpinan.dashboard');
         })->name('pimpinan.dashboard');
     });
-});
