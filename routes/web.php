@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BidangController;
 use App\Http\Controllers\SatkerController;
+use App\Http\Controllers\RakController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -32,10 +33,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
         Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('satker.store');
 
-        Route::get('/rakserver', function () {
-            return view('superadmin.rakserver');
-        })->name('superadmin.rakserver');
-
+        Route::get('/superadmin/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
+        Route::post('/rakserver/store', [RakController::class, 'store'])->name('rak.store');
+       
     //Manajemen Aset
     Route::get('/server', function () {
         return view('superadmin.server');
