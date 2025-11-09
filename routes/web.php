@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BidangController;
+use App\Http\Controllers\SatkerController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -23,21 +25,43 @@ Route::middleware(['auth'])->group(function () {
         })->name('superadmin.dashboard');
     });
 
-    Route::get('/kelola-server', function () {
-        return view('superadmin.kelola-server');
-    })->name('superadmin.kelolaServer');
+ // Data Master
+        Route::get('/superadmin/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
+        Route::post('/bidang/store', [BidangController::class, 'store'])->name('bidang.store');
+
+        Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
+        Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('satker.store');
+
+        Route::get('/rakserver', function () {
+            return view('superadmin.rakserver');
+        })->name('superadmin.rakserver');
+
+    //Manajemen Aset
+    Route::get('/server', function () {
+        return view('superadmin.server');
+    })->name('superadmin.server');
     
-    Route::get('/kelola-website', function () {
-        return view('superadmin.kelola-website');
-    })->name('superadmin.kelolaWebsite');
+    Route::get('/website', function () {
+        return view('superadmin.website');
+    })->name('superadmin.website');
     
-    Route::get('/kelola-laporan', function () {
-        return view('superadmin.kelola-laporan');
-    })->name('superadmin.kelolaLaporan');
+    Route::get('/pemeliharaan', function () {
+        return view('superadmin.pemeliharaan');
+    })->name('superadmin.pemeliharaan');
     
+    //Sistem
     Route::get('/kelola-pengguna', function () {
         return view('superadmin.kelola-pengguna');
-    })->name('superadmin.kelolaPengguna');
+    })->name('superadmin.kelola-pengguna');
+
+    Route::get('/logAktivitas', function () {
+        return view('superadmin.logAktivitas');
+    })->name('superadmin.logAktivitas');
+
+    //Pengaturan
+    Route::get('/pengaturan', function () {
+        return view('pengaturan');
+    })->name('pengaturan');
 });
 
     // Banglola
