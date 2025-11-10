@@ -11,6 +11,8 @@ class Satker extends Model
 
     protected $table = 'satuan_kerja'; // nama tabel
     protected $primaryKey = 'satker_id';
+    public $timestamps = false;
+    
     protected $fillable = [
         'nama_satker',
         'singkatan_satker',

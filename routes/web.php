@@ -37,9 +37,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/rakserver/store', [RakController::class, 'store'])->name('rak.store');
        
     //Manajemen Aset
-    Route::get('/server', function () {
-        return view('superadmin.server');
-    })->name('superadmin.server');
+    Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
+
+        // Server
+        Route::get('/superadmin/server', [\App\Http\Controllers\Superadmin\ServerController::class, 'index'])
+        ->name('superadmin.server.index');
+
+         Route::get('/superadmin/server/{id}', [\App\Http\Controllers\Superadmin\ServerController::class, 'show'])
+        ->name('superadmin.server.detail');
+
+         Route::post('/superadmin/server/store', [\App\Http\Controllers\Superadmin\ServerController::class, 'store'])
+        ->name('superadmin.server.store');
+        });
     
     Route::get('/website', function () {
         return view('superadmin.website');

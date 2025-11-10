@@ -18,8 +18,8 @@ class SatkerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_satker' => 'required|string|max:100',
-            'singkatan_satker' => 'required|string|max:20',
+            'nama_satker' => 'required|string|max:255',
+            'singkatan_satker' => 'required|string|max:100',
         ]);
 
         Satker::create([
@@ -28,6 +28,6 @@ class SatkerController extends Controller
         ]);
 
         return redirect()->route('superadmin.satuankerja')
-                         ->with('success', 'Satker baru berhasil ditambahkan!');
+                         ->with('success', 'Satuan Kerja baru berhasil ditambahkan!');
     }
 }

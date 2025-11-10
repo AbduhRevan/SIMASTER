@@ -6,173 +6,327 @@
     <title>@yield('title') - SIMASTER</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f4f5f7;
-            margin: 0;
         }
+        
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
-            width: 240px;
-            background-color: #7b0000;
+            width: 260px;
+            background: linear-gradient(180deg, #8B0000 0%, #6B0000 100%);
             color: #fff;
-            padding: 20px 15px;
+            padding: 0;
             display: flex;
             flex-direction: column;
-        }
-        .sidebar .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .sidebar .logo img {
-            width: 70px;
-        }
-        .sidebar .logo h5 {
-            font-weight: 600;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-        .menu-link {
-            display: block;
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            transition: 0.3s;
-            font-size: 14px;
-        }
-
-        .menu-link i {
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-
-        .menu-link:hover,
-        .menu-link.active {
-            background-color: #ffffffff;
-            color: #7b0000;
-            transform: translateX(5px);
+            overflow-y: auto;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
         
-        .menu-link:hover i,
-        .menu-link.active i {
-             color: #7b0000;
-             transform: scale(1.2); /* icon sedikit membesar */
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
         }
-        .menu-section p {
-            font-size: 12px;
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Logo Section */
+        .sidebar .logo {
+            text-align: center;
+            padding: 25px 20px;
+            background: rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar .logo img {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+        
+        .sidebar .logo h5 {
+            font-weight: 700;
+            font-size: 18px;
+            margin: 0;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        
+        .sidebar .logo small {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            line-height: 1.4;
+            color: rgba(255,255,255,0.8);
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Menu Container */
+        .menu-container {
+            padding: 15px 12px;
+            flex: 1;
+        }
+        
+        /* Menu Section */
+        .menu-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        
+        .menu-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .menu-section-title {
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
-            color: #d1d1d1;
-            margin: 20px 0 5px 10px;
+            color: rgba(255,255,255,0.5);
+            margin: 0 0 10px 12px;
+            letter-spacing: 1px;
         }
+        
+        /* Menu Link */
+        .menu-link {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            position: relative;
+        }
+        
+        .menu-link i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(3px);
+        }
+        
+        .menu-link.active {
+            background-color: #fff;
+            color: #8B0000;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .menu-link.active i {
+            color: #8B0000;
+        }
+        
+        /* Logout Button */
+        .logout-section {
+            padding: 15px 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+        }
+        
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .logout-btn i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(3px);
+        }
+        
+        /* Content Area */
         .content {
             margin-left: 260px;
             padding: 25px 30px;
+            min-height: 100vh;
         }
+        
+        /* Cards */
         .card-summary {
             background: #fff;
             border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             padding: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        
+        .card-summary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
         .table-card {
             background: #fff;
             border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             padding: 20px;
         }
+        
         .table th {
             background-color: #f9f9f9;
+            font-weight: 600;
+            color: #333;
         }
-        .sidebar hr {
-            border-color: rgba(255,255,255,0.2);
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .logo small,
+            .sidebar .logo h5,
+            .menu-section-title,
+            .menu-link span {
+                display: none;
+            }
+            
+            .menu-link {
+                justify-content: center;
+                padding: 12px;
+            }
+            
+            .menu-link i {
+                margin-right: 0;
+            }
+            
+            .content {
+                margin-left: 70px;
+            }
         }
-
-        .topbar {
-             border-radius: 20px;
-             margin: 15px;
-             background-color: #fff;
-        }
-
-        .logout-btn {
-             background: none;
-             border: none;
-             cursor: pointer;
-             text-align: left;
-             width: 100%;
-             color: #fff;
-             font-size: 14px;
-             border-radius: 10px;
-             transition: all 0.2s ease-in-out;
-        }
-
-        .logout-btn:hover {
-             background-color: #ffffff;
-             color: #7b0000;
-             transform: translateX(5px);
-}
-
     </style>
 </head>
 
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
+        <!-- Logo Section -->
         <div class="logo">
-            <img src="{{ asset('img/logo.png') }}" alt="Logo">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo Kemhan">
             <h5>SIMASTER</h5>
-            <small>SISTEM INFORMASI<br> MANAJEMEN ASET TERPADU</small>
+            <small>SISTEM INFORMASI<br>MANAJEMEN ASET TERPADU</small>
         </div>
 
-        <a href="{{ route('superadmin.dashboard') }}" class="menu-link {{ request()->is('superadmin/dashboard') ? 'active' : '' }}">
-            <i class="fa-solid fa-house me-2"></i> Dashboard
-        </a>
+        <!-- Menu Container -->
+        <div class="menu-container">
+            <!-- Dashboard -->
+            <a href="{{ route('superadmin.dashboard') }}" class="menu-link {{ request()->is('superadmin/dashboard') ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
 
-        <div class="menu-section">
-            <p>Data Master</p>
-            <a href="{{ route('superadmin.bidang') }}" class="menu-link {{ request()->is('superadmin/bidang') ? 'active' : '' }}">
-                <i class="fa-solid fa-briefcase me-2"></i> Bidang
-            </a>
-            <a href="{{ route('superadmin.satuankerja') }}" class="menu-link {{ request()->is('superadmin/satuankerja') ? 'active' : '' }}">
-                <i class="fa-solid fa-building me-2"></i> Satuan Kerja
-            </a>
-            <a href="{{ route('superadmin.rakserver') }}" class="menu-link {{ request()->is('superadmin/rakserver') ? 'active' : '' }}">
-                <i class="fa-solid fa-server me-2"></i> Rak Server
-            </a>
+            <!-- Data Master Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">Data Master</div>
+                <a href="{{ route('superadmin.bidang') }}" class="menu-link {{ request()->is('superadmin/bidang') ? 'active' : '' }}">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Bidang</span>
+                </a>
+                <a href="{{ route('superadmin.satuankerja') }}" class="menu-link {{ request()->is('superadmin/satuankerja') ? 'active' : '' }}">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Satuan Kerja</span>
+                </a>
+                <a href="{{ route('superadmin.rakserver') }}" class="menu-link {{ request()->is('superadmin/rakserver') ? 'active' : '' }}">
+                    <i class="fa-solid fa-server"></i>
+                    <span>Rak Server</span>
+                </a>
+            </div>
+
+            <!-- Manajemen Aset Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">Manajemen Aset</div>
+                <a href="{{ route('superadmin.server.index') }}" class="menu-link {{ request()->routeIs('superadmin.server.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Server</span>
+                </a>
+                <a href="#" class="menu-link">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Website</span>
+                </a>
+                <a href="#" class="menu-link">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <span>Pemeliharaan</span>
+                </a>
+            </div>
+
+            <!-- Sistem Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">Sistem</div>
+                <a href="#" class="menu-link">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Pengguna</span>
+                </a>
+                <a href="#" class="menu-link">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Log Aktivitas</span>
+                </a>
+                <a href="{{ route('pengaturan') }}" class="menu-link {{ request()->is('pengaturan') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </div>
         </div>
 
-        <div class="menu-section">
-            <p>Manajemen Aset</p>
-            <a href="#" class="menu-link">
-                <i class="fa-solid fa-computer me-2"></i> Server
-            </a>
-            <a href="#" class="menu-link">
-                <i class="fa-solid fa-globe me-2"></i> Website
-            </a>
-            <a href="#" class="menu-link">
-                <i class="fa-solid fa-screwdriver-wrench me-2"></i> Pemeliharaan
-            </a>
-        </div>
-
-        <div class="menu-section">
-            <p>Sistem</p>
-            <a href="#" class="menu-link">
-                <i class="fa-solid fa-user-gear me-2"></i> Pengguna
-            </a>
-            <a href="#" class="menu-link">
-                <i class="fa-solid fa-list-check me-2"></i> Log Aktivitas
-            </a>
-             <a href="{{ route('pengaturan') }}" class="menu-link {{ request()->is('pengaturan') ? 'active' : '' }}">
-                <i class="fa-solid fa-gear"></i> Pengaturan
-            </a>
+        <!-- Logout Section -->
+        <div class="logout-section">
             <form action="{{ route('logout') }}" method="POST">
-             @csrf
-            <button type="submit" class="menu-link logout-btn">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
             </form>
         </div>
     </div>
@@ -181,5 +335,11 @@
     <div class="content">
         @yield('content')
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.js"></script>
+    @stack('scripts')
 </body>
 </html>
