@@ -59,9 +59,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('superadmin.pemeliharaan');
     
     //Sistem
-    Route::get('/kelola-pengguna', function () {
-        return view('superadmin.kelola-pengguna');
-    })->name('superadmin.kelola-pengguna');
+    Route::get('/pengguna', function () {
+        return view('superadmin.pengguna');
+    })->name('superadmin.pengguna');
 
     Route::get('/logAktivitas', function () {
         return view('superadmin.logAktivitas');
