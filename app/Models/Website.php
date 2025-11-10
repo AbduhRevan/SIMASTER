@@ -32,4 +32,9 @@ class Website extends Model
     public function satker() {
         return $this->belongsTo(Satker::class, 'satker_id', 'satker_id');
     }
+
+    // Relasi ke Server
+    public function server() {
+        return $this->belongsTo(Server::class, 'website_id', 'website_id');
+    }
 }

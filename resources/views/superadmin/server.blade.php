@@ -41,6 +41,21 @@
 #saveBtn:hover {
     background-color: #0b5ed7;
 }
+
+/* Card Summary Style */
+.card-summary {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-card {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 </style>
 
 <div class="container-fluid">
@@ -199,7 +214,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Keterangan</label>
-                            <textarea name="keterangan" id="summernote" class="form-control"></textarea>
+                            <textarea name="keterangan" class="form-control summernote-editor"></textarea>
                         </div>
                     </div>
 
@@ -230,27 +245,13 @@
     </div>
 </div>
 
-<!-- JS Summernote & Stepper -->
+<!-- JS Stepper dan Logic Halaman -->
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+<!-- jQuery sudah dimuat di layouts/app.blade.php -->
 
 <script>
 $(document).ready(function() {
-    // Inisialisasi Summernote
-    $('#summernote').summernote({
-        height: 150,
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'underline', 'clear']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table']],
-            ['insert', ['link']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ]
-    });
+    // Summernote sudah diinisialisasi secara global di layouts/app.blade.php
 
     let currentStep = 0;
     const steps = $('.step');
@@ -266,17 +267,17 @@ $(document).ready(function() {
         saveBtn.toggle(index === steps.length - 1);
     }
 
-    // Reset form ketika modal ditutup
+    // Reset form ketika modal ditutup (Hanya logic Stepper & Bidang, Summernote dihandle di layout)
     $('#tambahModal').on('hidden.bs.modal', function () {
         $('#serverForm')[0].reset();
-        $('#summernote').summernote('reset');
+        // $('#summernote').summernote('reset'); // Dihapus, sudah dihandle di layout
         $('#bidangWrapper').hide();
         $('#bidangSelect').val('');
         currentStep = 0;
         showStep(currentStep);
     });
 
-    // Jalankan setelah modal muncul
+    // Jalankan setelah modal muncul (Summernote re-init dihandle di layout)
     $('#tambahModal').on('shown.bs.modal', function () {
         showStep(currentStep);
     });
@@ -299,8 +300,8 @@ $(document).ready(function() {
         $('#confirmSlot').text($('input[name="u_slot"]').val() || '-');
         $('#confirmWebsite').text($('input[name="website_name"]').val() || '-');
         
-        // Ambil konten dari Summernote
-        const keteranganContent = $('#summernote').summernote('code');
+        // Ambil konten dari Summernote (gunakan class)
+        const keteranganContent = $('.summernote').summernote('code');
         $('#confirmKeterangan').html(keteranganContent || '-');
 
         currentStep++;

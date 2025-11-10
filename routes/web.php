@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BidangController;
 use App\Http\Controllers\SatkerController;
 use App\Http\Controllers\RakController;
+use App\Http\Controllers\SuperAdmin\WebsiteController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -50,6 +51,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('superadmin.server.store');
         });
     
+        // Website
+        // Routes untuk Website
+    Route::prefix('superadmin')->name('superadmin.')->middleware(['auth'])->group(function () {
+    Route::get('/website', [WebsiteController::class, 'index'])->name('website.index');
+    Route::post('/website/store', [WebsiteController::class, 'store'])->name('website.store');
+    Route::put('/website/update/{id}', [WebsiteController::class, 'update'])->name('website.update');
+    Route::delete('/website/delete/{id}', [WebsiteController::class, 'destroy'])->name('website.destroy');
+    Route::get('/website/{id}/detail', [WebsiteController::class, 'detail'])->name('website.detail');
+});
     Route::get('/website', function () {
         return view('superadmin.website');
     })->name('superadmin.website');

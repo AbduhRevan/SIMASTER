@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Summernote CSS is already loaded here -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -220,6 +222,31 @@
             color: #333;
         }
         
+         /* --- CUSTOM STYLE FOR SUMMERNOTE --- */
+        /* Membuat container Summernote lebih rapi dan terintegrasi dengan desain card/form */
+        .note-editor.note-frame {
+            border: 1px solid #dee2e6; /* Border seperti form-control */
+            border-radius: 8px; /* Sudut membulat */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Bayangan halus */
+        }
+
+        /* Styling untuk Toolbar */
+        .note-editor .note-toolbar {
+            background-color: #f8f9fa; /* Latar belakang abu-abu muda */
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: 7px;
+            border-top-right-radius: 7px;
+            padding: 10px;
+        }
+
+        /* Styling untuk Area Edit */
+        .note-editor .note-editing-area .note-editable {
+            background-color: #fff;
+            color: #333;
+            min-height: 250px; /* Jaga tinggi default */
+            padding: 15px; /* Padding di dalam area teks */
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -291,7 +318,7 @@
                     <i class="fa-solid fa-database"></i>
                     <span>Server</span>
                 </a>
-                <a href="#" class="menu-link">
+                <a href="{{ route('superadmin.website.index') }}" class="menu-link {{ request()->routeIs('superadmin.website.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-globe"></i>
                     <span>Website</span>
                 </a>
@@ -338,8 +365,34 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
+    
+    <!-- Summernote Libraries are already linked in the original file -->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.js"></script>
+
+    <!-- Global Summernote Initialization Script -->
+    <script>
+        // Gunakan fungsi ready jQuery untuk memastikan DOM telah dimuat sepenuhnya sebelum inisialisasi
+        $(document).ready(function() {
+            // Secara otomatis inisialisasi Summernote pada setiap textarea yang memiliki kelas 'summernote-editor'
+            $('.summernote-editor').summernote({
+                placeholder: 'Tulis konten di sini...',
+                tabsize: 2,
+                height: 150,
+                dialogsInBody: true, // Opsional: Membantu memastikan modal Summernote tampil di atas elemen lain
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'hr']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+        });
+    </script>
+    
     @stack('scripts')
 </body>
 </html>
