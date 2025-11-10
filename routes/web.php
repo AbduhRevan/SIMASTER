@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\BidangController;
 use App\Http\Controllers\SatkerController;
 use App\Http\Controllers\RakController;
@@ -29,7 +30,10 @@ Route::middleware(['auth'])->group(function () {
 
  // Data Master
         Route::get('/superadmin/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
-        Route::post('/bidang/store', [BidangController::class, 'store'])->name('bidang.store');
+        Route::post('/superadmin/bidang/store', [BidangController::class, 'store'])->name('superadmin.bidang.store');
+        Route::put('/superadmin/bidang/update/{id}', [BidangController::class, 'update'])->name('superadmin.bidang.update');
+        Route::delete('/superadmin/bidang/delete/{id}', [BidangController::class, 'destroy'])->name('superadmin.bidang.destroy');
+
 
         Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
         Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('satker.store');
@@ -69,9 +73,16 @@ Route::middleware(['auth'])->group(function () {
     })->name('superadmin.pemeliharaan');
     
     //Sistem
-    Route::get('/pengguna', function () {
-        return view('superadmin.pengguna');
-    })->name('superadmin.pengguna');
+    Route::prefix('superadmin')->name('superadmin.')->middleware(['auth'])->group(function () {
+    Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+    Route::post('/pengguna/store', [PenggunaController::class, 'store'])->name('pengguna.store');
+    Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('pengguna.bidang');
+    Route::put('/pengguna/update/{id}', [PenggunaController::class, 'update'])->name('pengguna.update');
+    Route::delete('/pengguna/delete/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+    Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
+    Route::post('/pengguna/{id}/toggle-status', [PenggunaController::class, 'toggleStatus'])->name('pengguna.toggleStatus');
+});
+
 
     Route::get('/logAktivitas', function () {
         return view('superadmin.logAktivitas');

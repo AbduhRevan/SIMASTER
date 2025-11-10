@@ -331,7 +331,7 @@
             <!-- Sistem Section -->
             <div class="menu-section">
                 <div class="menu-section-title">Sistem</div>
-                 <a href="{{ route('superadmin.pengguna') }}" class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
+                 <a href="{{ route('superadmin.pengguna.index') }}" class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-users"></i>
                     <span>Pengguna</span>
                 </a>

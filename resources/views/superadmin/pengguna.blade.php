@@ -2,6 +2,11 @@
 
 @section('content')
     <style>
+        .content-wrapper {
+            width: 100%;
+            max-width: 100%;
+        }
+
         .filter-section {
             background: white;
             padding: 25px;
@@ -14,11 +19,12 @@
             display: flex;
             gap: 15px;
             align-items: flex-end;
-            max-width: 900px;
+            flex-wrap: wrap;
         }
 
         .filter-group {
             flex: 1;
+            min-width: 200px;
         }
 
         .filter-label {
@@ -26,6 +32,7 @@
             font-weight: 600;
             margin-bottom: 8px;
             color: #333;
+            display: block;
         }
 
         .filter-select {
@@ -49,6 +56,7 @@
             cursor: pointer;
             transition: all 0.3s;
             height: 46px;
+            white-space: nowrap;
         }
 
         .btn-generate:hover {
@@ -64,12 +72,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .search-box {
             position: relative;
             max-width: 400px;
             flex: 1;
+            min-width: 250px;
         }
 
         .search-box i {
@@ -102,6 +113,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            white-space: nowrap;
         }
 
         .btn-add:hover {
@@ -113,11 +125,13 @@
             border-radius: 0 0 8px 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
             overflow: hidden;
+            overflow-x: auto;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
 
         .data-table thead {
@@ -131,6 +145,7 @@
             font-weight: 600;
             color: #333;
             border-bottom: 2px solid #e9ecef;
+            white-space: nowrap;
         }
 
         .data-table td {
@@ -150,6 +165,7 @@
             font-size: 12px;
             font-weight: 600;
             display: inline-block;
+            white-space: nowrap;
         }
 
         .status-aktif {
@@ -207,40 +223,71 @@
             background: #dc3545;
             color: white;
         }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .btn-generate {
+                width: 100%;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .btn-add {
+                width: 100%;
+            }
+        }
     </style>
 
     <div class="content-wrapper">
         <!-- Filter Section -->
         <div class="filter-section">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <div class="filter-label">Role</div>
-                    <select class="filter-select">
-                        <option>Semua</option>
-                        <option>User</option>
-                        <option>Admin Bidang</option>
-                        <option>Teknisi</option>
-                    </select>
+            <form id="filterForm">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <div class="filter-label">Role</div>
+                        <select name="role" class="filter-select">
+                            <option>Semua</option>
+                            <option>User</option>
+                            <option>Admin Bidang</option>
+                            <option>Teknisi</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Status</div>
+                        <select name="status" class="filter-select">
+                            <option>Semua</option>
+                            <option>Aktif</option>
+                            <option>NonAktif</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-generate">Generate</button>
                 </div>
-                <div class="filter-group">
-                    <div class="filter-label">Status</div>
-                    <select class="filter-select">
-                        <option>Semua</option>
-                        <option>Aktif</option>
-                        <option>NonAktif</option>
-                    </select>
-                </div>
-                <button class="btn-generate">Generate</button>
-            </div>
+            </form>
         </div>
 
         <!-- Action Bar -->
         <div class="action-bar">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" class="search-input" placeholder="Cari nama/username/email">
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama/username/email">
             </div>
-            <button class="btn-add">Tambah Pengguna</button>
+            <button class="btn-add" data-toggle="modal" data-target="#penggunaModal" onclick="openModal('add')">Tambah Pengguna</button>
         </div>
 
         <!-- Data Table -->
@@ -257,84 +304,247 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="penggunaTableBody">
+                    @foreach($pengguna as $index => $user)
                     <tr>
-                        <td>1</td>
-                        <td>Andi Saputra</td>
-                        <td>andi01@gmail.com</td>
-                        <td>User</td>
-                        <td><span class="status-badge status-aktif">Aktif</span></td>
-                        <td>Bangloa</td>
+                        <td>{{ $pengguna->firstItem() + $index }}</td>
+                        <td>{{ $user->nama_lengkap }}</td>
+                        <td>{{ $user->username_email }}</td>
+                        <td>{{ ucfirst($user->role) }}</td>
+                        <td><span class="status-badge {{ $user->status == 'active' ? 'status-aktif' : 'status-nonaktif' }}">{{ $user->status == 'active' ? 'Aktif' : 'NonAktif' }}</span></td>
+                        <td>{{ $user->bidang ? $user->bidang->nama_bidang : '-' }}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
+                                <button class="btn-action btn-edit" onclick="editPengguna({{ $user->user_id }})"><i class="fas fa-pencil-alt"></i></button>
+                                <button class="btn-action btn-disable" onclick="toggleStatus({{ $user->user_id }})"><i class="fas fa-ban"></i></button>
+                                <button class="btn-action btn-delete" onclick="deletePengguna({{ $user->user_id }})"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Budi Pratama</td>
-                        <td>budipra@gmail.com</td>
-                        <td>Admin Bidang</td>
-                        <td><span class="status-badge status-nonaktif">NonAktif</span></td>
-                        <td>Bangloa</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Abduh Revan</td>
-                        <td>vann4@gmail.com</td>
-                        <td>Admin Bidang</td>
-                        <td><span class="status-badge status-aktif">Aktif</span></td>
-                        <td>Pamsis</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>Nayla Zharif</td>
-                        <td>naynay@gmail.com</td>
-                        <td>User</td>
-                        <td><span class="status-badge status-nonaktif">NonAktif</span></td>
-                        <td>Pamsis</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>Bela Adelia</td>
-                        <td>adeliabel@gmail.com</td>
-                        <td>Teknisi</td>
-                        <td><span class="status-badge status-aktif">Aktif</span></td>
-                        <td>Infratik</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
+            <div style="padding: 20px;">
+                {{ $pengguna->links() }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Tambah/Edit -->
+    <div class="modal fade" id="penggunaModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Pengguna</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="penggunaForm">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" id="userId" name="user_id">
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" name="nama_lengkap" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Username/Email</label>
+                            <input type="text" name="username_email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" class="form-control" id="passwordField" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select name="role" class="form-control" required>
+                                <option value="superadmin">Superadmin</option>
+                                <option value="banglola">Banglola</option>
+                                <option value="pamsis">Pamsis</option>
+                                <option value="infratik">Infratik</option>
+                                <option value="tatausaha">Tatausaha</option>
+                                <option value="pimpinan">Pimpinan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Bidang</label>
+                            <select name="bidang_id" class="form-control">
+                                <option value="">Pilih Bidang</option>
+                                <!-- Options akan diisi via JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status" class="form-control" required>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">NonAktif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Filter dan Search
+    $('#filterForm').on('submit', function(e) {
+        e.preventDefault();
+        loadPengguna();
+    });
+
+    $('#searchInput').on('keyup', function() {
+        loadPengguna();
+    });
+
+    function loadPengguna() {
+        $.ajax({
+            url: '{{ route("superadmin.pengguna.index") }}',
+            data: {
+                role: $('select[name=role]').val(),
+                status: $('select[name=status]').val(),
+                search: $('#searchInput').val()
+            },
+            success: function(response) {
+                $('#penggunaTableBody').html(response.data.map((user, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.nama_lengkap}</td>
+                        <td>${user.username_email}</td>
+                        <td>${user.role}</td>
+                        <td><span class="status-badge ${user.status == 'active' ? 'status-aktif' : 'status-nonaktif'}">
+                            ${user.status == 'active' ? 'Aktif' : 'NonAktif'}
+                        </span></td>
+                        <td>${user.bidang ? user.bidang.nama_bidang : '-'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editPengguna(${user.user_id})">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="btn-action btn-disable" onclick="toggleStatus(${user.user_id})">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deletePengguna(${user.user_id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join(''));
+            }
+        });
+    }
+
+    // Modal Functions
+    window.openModal = function(type, id = null) {
+        $('#modalTitle').text(type === 'add' ? 'Tambah Pengguna' : 'Edit Pengguna');
+        $('#userId').val('');
+        $('#penggunaForm')[0].reset();
+        $('#passwordField').attr('required', type === 'add');
+        
+        if (type === 'edit' && id) {
+            editPengguna(id);
+        } else {
+            $.get('{{ route("superadmin.pengguna.bidang") }}', function(data) {
+                populateBidang(data.bidang);
+            });
+            $('#penggunaModal').modal('show');
+        }
+    };
+
+    window.editPengguna = function(id) {
+        let editUrl = `{{ url('superadmin/pengguna') }}/${id}/edit`;
+        $.get(editUrl, function(data) {
+            $('#userId').val(data.pengguna.user_id);
+            $('input[name=nama_lengkap]').val(data.pengguna.nama_lengkap);
+            $('input[name=username_email]').val(data.pengguna.username_email);
+            $('select[name=role]').val(data.pengguna.role);
+            $('select[name=status]').val(data.pengguna.status);
+            populateBidang(data.bidang, data.pengguna.bidang_id);
+            $('#passwordField').removeAttr('required');
+            $('#penggunaModal').modal('show');
+        });
+    };
+
+    function populateBidang(bidang, selected = '') {
+        let options = '<option value="">Pilih Bidang</option>';
+        bidang.forEach(b => {
+            options += `<option value="${b.bidang_id}" ${b.bidang_id == selected ? 'selected' : ''}>${b.nama_bidang}</option>`;
+        });
+        $('select[name=bidang_id]').html(options);
+    }
+
+    // Submit Form Add/Edit
+    $('#penggunaForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let userId = $('#userId').val();
+        let url = userId 
+            ? `{{ url('superadmin/pengguna/update') }}/${userId}`
+            : '{{ route("superadmin.pengguna.store") }}';
+        let method = userId ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            method: method,
+            data: $(this).serialize(),
+            success: function() {
+                $('#penggunaModal').modal('hide');
+                loadPengguna();
+                alert('Berhasil disimpan!');
+            },
+            error: function(xhr) {
+                if(xhr.responseJSON && xhr.responseJSON.errors){
+                    let messages = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    alert(messages);
+                } else {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Terjadi kesalahan'));
+                }
+            }
+        });
+    });
+
+    window.toggleStatus = function(id) {
+        if(confirm('Yakin ingin mengubah status pengguna ini?')) {
+            $.ajax({
+                url: `{{ url('superadmin/pengguna/toggle-status') }}/${id}`,
+                method: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function() {
+                    loadPengguna();
+                    alert('Status berhasil diubah!');
+                },
+                error: function() {
+                    alert('Gagal mengubah status!');
+                }
+            });
+        }
+    };
+
+    window.deletePengguna = function(id) {
+        if(confirm('Yakin ingin menghapus pengguna ini?')) {
+            $.ajax({
+                url: `{{ url('superadmin/pengguna') }}/${id}`,
+                method: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function() {
+                    loadPengguna();
+                    alert('Pengguna berhasil dihapus!');
+                },
+                error: function() {
+                    alert('Gagal menghapus pengguna!');
+                }
+            });
+        }
+    };
+});
+</script>
+@endpush
