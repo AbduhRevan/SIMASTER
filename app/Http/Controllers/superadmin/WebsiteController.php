@@ -88,6 +88,27 @@ class WebsiteController extends Controller
     public function detail($id)
     {
         $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
-        return view('superadmin.website', compact('website'));
+        
+        // Kirim semua variabel yang dibutuhkan view
+        $websites = Website::with(['bidang', 'satker'])->get();
+        $total = $websites->count();
+        $aktif = $websites->where('status', 'active')->count();
+        $maintenance = $websites->where('status', 'maintenance')->count();
+        $tidakAktif = $websites->where('status', 'inactive')->count();
+        $bidangs = Bidang::all();
+        $satkers = Satker::all();
+        $servers = Server::all();
+        
+        return view('superadmin.website', compact(
+            'website',
+            'websites',
+            'total',
+            'aktif',
+            'maintenance',
+            'tidakAktif',
+            'bidangs',
+            'satkers',
+            'servers'
+        ));
     }
 }
