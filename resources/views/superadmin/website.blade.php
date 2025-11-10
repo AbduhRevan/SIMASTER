@@ -5,55 +5,156 @@
 @section('content')
 <div class="container-fluid px-4 py-4">
 
-  @if(isset($website))
-    {{-- TAMPILAN DETAIL WEBSITE --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3 class="fw-bold">Detail Website</h3>
-      <a href="{{ route('superadmin.website.index') }}" class="btn btn-secondary">
-        <i class="fa-solid fa-arrow-left me-2"></i>Kembali
-      </a>
-    </div>
+  <h3 class="fw-bold mb-4">Kelola Website</h3>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-      <div class="card-header bg-maroon text-white py-3" style="border-radius: 15px 15px 0 0;">
-        <h5 class="mb-0 fw-bold">{{ $website->nama_website }}</h5>
+  {{-- Alert Success --}}
+  @if(session('success'))
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  @endif
+
+  {{-- Statistik --}}
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 bg-white py-3">
+        <h5 class="fw-bold mb-1">Total</h5>
+        <h4>{{ $total }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 bg-white py-3">
+        <h5 class="fw-bold mb-1">Aktif</h5>
+        <h4>{{ $aktif }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 bg-white py-3">
+        <h5 class="fw-bold mb-1">Maintenance</h5>
+        <h4>{{ $maintenance }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 bg-white py-3">
+        <h5 class="fw-bold mb-1">Tidak Aktif</h5>
+        <h4>{{ $tidakAktif }}</h4>
+      </div>
+    </div>
+  </div>
+
+  {{-- Pencarian dan Tambah --}}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="col-md-4">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama website atau URL...">
+      </div>
+    </div>
+    <button class="btn btn-maroon text-white px-4" data-bs-toggle="modal" data-bs-target="#tambahModal">
+      <i class="fa-solid fa-plus me-2"></i>Tambah Website
+    </button>
+  </div>
+
+  {{-- Daftar Website --}}
+  <div class="row g-4 mt-2" id="websiteContainer">
+    @forelse($websites as $website)
+    <div class="col-md-4 website-card">
+      <div class="card shadow-sm border-0 p-3 h-100" style="border-radius: 15px;">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h5 class="fw-bold mb-0">{{ $website->nama_website }}</h5>
+          @if($website->status === 'active')
+            <span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>
+          @elseif($website->status === 'maintenance')
+            <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>
+          @else
+            <span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>
+          @endif
+        </div>
+
+        <p class="mb-1">
+          <a href="{{ $website->url }}" target="_blank" class="text-decoration-none fw-medium">
+            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ Str::limit($website->url, 40) }}
+          </a>
+        </p>
+
+        <p class="mb-1 text-muted small">
+          <i class="fa-solid fa-briefcase me-1"></i> 
+          {{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
+        </p>
+        
+        <p class="mb-2 text-muted small">
+          <i class="fa-solid fa-building me-1"></i> 
+          {{ $website->satker ? $website->satker->nama_satker : '-' }}
+        </p>
+
+        <div class="d-flex justify-content-end gap-2 mt-auto">
+          <button class="btn btn-light btn-sm border btn-detail" data-id="{{ $website->website_id }}">
+            <i class="fa-solid fa-eye"></i> Detail
+          </button>
+          <button class="btn btn-light btn-sm border btn-edit" 
+            data-id="{{ $website->website_id }}"
+            data-nama="{{ $website->nama_website }}"
+            data-url="{{ $website->url }}"
+            data-bidang="{{ $website->bidang_id }}"
+            data-satker="{{ $website->satker_id }}"
+            data-status="{{ $website->status }}"
+            data-tahun="{{ $website->tahun_pengadaan }}"
+            data-keterangan="{{ $website->keterangan }}">
+            <i class="fa-solid fa-pen-to-square"></i> Edit
+          </button>
+          <button class="btn btn-danger btn-sm btn-hapus" 
+            data-id="{{ $website->website_id }}"
+            data-nama="{{ $website->nama_website }}">
+            <i class="fa-solid fa-trash"></i> Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+    @empty
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        <i class="fa-solid fa-circle-info me-2"></i>Belum ada data website
+      </div>
+    </div>
+    @endforelse
+  </div>
+</div>
+
+{{-- Modal Detail Website --}}
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header bg-maroon text-white border-0 rounded-top-4">
+        <h5 class="modal-title fw-bold" id="detailNamaWebsite">Detail Website</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="card-body p-4">
+      <div class="modal-body p-4">
         <div class="row">
           <div class="col-md-6 mb-4">
             <h6 class="text-muted mb-3 fw-semibold">INFORMASI DASAR</h6>
             
             <div class="mb-3">
               <label class="text-muted small mb-1">Nama Website</label>
-              <p class="fw-semibold mb-0">{{ $website->nama_website }}</p>
+              <p class="fw-semibold mb-0" id="detailNama">-</p>
             </div>
 
             <div class="mb-3">
               <label class="text-muted small mb-1">URL</label>
-              <p class="mb-0">
-                <a href="{{ $website->url }}" target="_blank" class="text-decoration-none">
-                  <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ $website->url }}
-                </a>
-              </p>
+              <p class="mb-0" id="detailUrlContainer">-</p>
             </div>
 
             <div class="mb-3">
               <label class="text-muted small mb-1">Status</label>
-              <div>
-                @if($website->status === 'active')
-                  <span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>
-                @elseif($website->status === 'maintenance')
-                  <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>
-                @else
-                  <span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>
-                @endif
-              </div>
+              <div id="detailStatus">-</div>
             </div>
 
             <div class="mb-3">
               <label class="text-muted small mb-1">Tahun Pengadaan</label>
-              <p class="fw-semibold mb-0">{{ $website->tahun_pengadaan ?? '-' }}</p>
+              <p class="fw-semibold mb-0" id="detailTahun">-</p>
             </div>
           </div>
 
@@ -62,181 +163,40 @@
             
             <div class="mb-3">
               <label class="text-muted small mb-1">Satuan Kerja</label>
-              <p class="fw-semibold mb-0">
-                <i class="fa-solid fa-building me-1"></i>
-                {{ $website->satker->nama_satker ?? '-' }}
+              <p class="fw-semibold mb-0" id="detailSatker">
+                <i class="fa-solid fa-building me-1"></i> -
               </p>
             </div>
 
             <div class="mb-3">
               <label class="text-muted small mb-1">Bidang</label>
-              <p class="fw-semibold mb-0">
-                <i class="fa-solid fa-briefcase me-1"></i>
-                {{ $website->bidang->nama_bidang ?? '-' }}
+              <p class="fw-semibold mb-0" id="detailBidang">
+                <i class="fa-solid fa-briefcase me-1"></i> -
               </p>
             </div>
 
             <div class="mb-3">
               <label class="text-muted small mb-1">Server</label>
-              <p class="fw-semibold mb-0">
-                <i class="fa-solid fa-server me-1"></i>
-                {{ $website->server->nama_server ?? '-' }}
+              <p class="fw-semibold mb-0" id="detailServer">
+                <i class="fa-solid fa-server me-1"></i> -
               </p>
             </div>
           </div>
 
           <div class="col-12">
             <h6 class="text-muted mb-3 fw-semibold">KETERANGAN</h6>
-            <div class="p-3 bg-light rounded">
-              @if($website->keterangan)
-                {!! nl2br(e($website->keterangan)) !!}
-              @else
-                <p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>
-              @endif
+            <div class="p-3 bg-light rounded" id="detailKeterangan">
+              <p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2" style="border-radius: 0 0 15px 15px;">
-        <button class="btn btn-warning text-white btn-edit" 
-          data-id="{{ $website->website_id }}"
-          data-nama="{{ $website->nama_website }}"
-          data-url="{{ $website->url }}"
-          data-bidang="{{ $website->bidang_id }}"
-          data-satker="{{ $website->satker_id }}"
-          data-status="{{ $website->status }}"
-          data-tahun="{{ $website->tahun_pengadaan }}"
-          data-keterangan="{{ $website->keterangan }}">
-          <i class="fa-solid fa-pen-to-square me-2"></i>Edit
-        </button>
-        <button class="btn btn-danger btn-hapus" 
-          data-id="{{ $website->website_id }}"
-          data-nama="{{ $website->nama_website }}">
-          <i class="fa-solid fa-trash me-2"></i>Hapus
-        </button>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
-
-  @else
-    {{-- TAMPILAN LIST WEBSITE --}}
-    <h3 class="fw-bold mb-4">Kelola Website</h3>
-
-    {{-- Alert Success --}}
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    {{-- Statistik --}}
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-white py-3">
-          <h5 class="fw-bold mb-1">Total</h5>
-          <h4>{{ $total }}</h4>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-white py-3">
-          <h5 class="fw-bold mb-1">Aktif</h5>
-          <h4>{{ $aktif }}</h4>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-white py-3">
-          <h5 class="fw-bold mb-1">Maintenance</h5>
-          <h4>{{ $maintenance }}</h4>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center shadow-sm border-0 bg-white py-3">
-          <h5 class="fw-bold mb-1">Tidak Aktif</h5>
-          <h4>{{ $tidakAktif }}</h4>
-        </div>
-      </div>
-    </div>
-
-    {{-- Pencarian dan Tambah --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text bg-white border-end-0">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </span>
-          <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama website atau URL...">
-        </div>
-      </div>
-      <button class="btn btn-maroon text-white px-4" data-bs-toggle="modal" data-bs-target="#tambahModal">
-        <i class="fa-solid fa-plus me-2"></i>Tambah Website
-      </button>
-    </div>
-
-    {{-- Daftar Website --}}
-    <div class="row g-4 mt-2" id="websiteContainer">
-      @forelse($websites as $web)
-      <div class="col-md-4 website-card">
-        <div class="card shadow-sm border-0 p-3 h-100" style="border-radius: 15px;">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="fw-bold mb-0">{{ $web->nama_website }}</h5>
-            @if($web->status === 'active')
-              <span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>
-            @elseif($web->status === 'maintenance')
-              <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>
-            @else
-              <span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>
-            @endif
-          </div>
-
-          <p class="mb-1">
-            <a href="{{ $web->url }}" target="_blank" class="text-decoration-none fw-medium">
-              <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ Str::limit($web->url, 40) }}
-            </a>
-          </p>
-
-          <p class="mb-1 text-muted small">
-            <i class="fa-solid fa-briefcase me-1"></i> 
-            {{ $web->bidang ? $web->bidang->nama_bidang : '-' }}
-          </p>
-          
-          <p class="mb-2 text-muted small">
-            <i class="fa-solid fa-building me-1"></i> 
-            {{ $web->satker ? $web->satker->nama_satker : '-' }}
-          </p>
-
-          <div class="d-flex justify-content-end gap-2 mt-auto">
-            <a href="{{ route('superadmin.website.detail', $web->website_id) }}" class="btn btn-light btn-sm border">
-              <i class="fa-solid fa-eye"></i> Detail
-            </a>
-            <button class="btn btn-light btn-sm border btn-edit" 
-              data-id="{{ $web->website_id }}"
-              data-nama="{{ $web->nama_website }}"
-              data-url="{{ $web->url }}"
-              data-bidang="{{ $web->bidang_id }}"
-              data-satker="{{ $web->satker_id }}"
-              data-status="{{ $web->status }}"
-              data-tahun="{{ $web->tahun_pengadaan }}"
-              data-keterangan="{{ $web->keterangan }}">
-              <i class="fa-solid fa-pen-to-square"></i> Edit
-            </button>
-            <button class="btn btn-danger btn-sm btn-hapus" 
-              data-id="{{ $web->website_id }}"
-              data-nama="{{ $web->nama_website }}">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
-          </div>
-        </div>
-      </div>
-      @empty
-      <div class="col-12">
-        <div class="alert alert-info text-center">
-          <i class="fa-solid fa-circle-info me-2"></i>Belum ada data website
-        </div>
-      </div>
-      @endforelse
-    </div>
-  @endif
+  </div>
 </div>
 
 {{-- Modal Tambah Website --}}
@@ -456,6 +416,73 @@ $(document).ready(function() {
     const value = $(this).val().toLowerCase();
     $('.website-card').filter(function() {
       $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+    });
+  });
+
+  // Detail button handler dengan AJAX
+  $('.btn-detail').click(function() {
+    const id = $(this).data('id');
+    
+    $.ajax({
+      url: `/superadmin/website/${id}/detail`,
+      type: 'GET',
+      success: function(data) {
+        // Set nama website di header
+        $('#detailNamaWebsite').text(data.nama_website);
+        $('#detailNama').text(data.nama_website);
+        
+        // Set URL
+        $('#detailUrlContainer').html(
+          `<a href="${data.url}" target="_blank" class="text-decoration-none">
+            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> ${data.url}
+          </a>`
+        );
+        
+        // Set Status dengan badge
+        let statusBadge = '';
+        if(data.status === 'active') {
+          statusBadge = '<span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>';
+        } else if(data.status === 'maintenance') {
+          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>';
+        } else {
+          statusBadge = '<span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>';
+        }
+        $('#detailStatus').html(statusBadge);
+        
+        // Set Tahun Pengadaan
+        $('#detailTahun').text(data.tahun_pengadaan || '-');
+        
+        // Set Satker
+        $('#detailSatker').html(
+          '<i class="fa-solid fa-building me-1"></i> ' + 
+          (data.satker ? data.satker.nama_satker : '-')
+        );
+        
+        // Set Bidang
+        $('#detailBidang').html(
+          '<i class="fa-solid fa-briefcase me-1"></i> ' + 
+          (data.bidang ? data.bidang.nama_bidang : '-')
+        );
+        
+        // Set Server
+        $('#detailServer').html(
+          '<i class="fa-solid fa-server me-1"></i> ' + 
+          (data.server ? data.server.nama_server : '-')
+        );
+        
+        // Set Keterangan
+        if(data.keterangan) {
+          $('#detailKeterangan').html(data.keterangan.replace(/\n/g, '<br>'));
+        } else {
+          $('#detailKeterangan').html('<p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>');
+        }
+        
+        // Show modal
+        $('#detailModal').modal('show');
+      },
+      error: function() {
+        alert('Gagal memuat detail website');
+      }
     });
   });
 

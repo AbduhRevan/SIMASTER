@@ -85,30 +85,16 @@ class WebsiteController extends Controller
             ->with('success', 'Website berhasil dihapus!');
     }
 
-    public function detail($id)
+    public function detail(Request $request, $id)
     {
         $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
         
-        // Kirim semua variabel yang dibutuhkan view
-        $websites = Website::with(['bidang', 'satker'])->get();
-        $total = $websites->count();
-        $aktif = $websites->where('status', 'active')->count();
-        $maintenance = $websites->where('status', 'maintenance')->count();
-        $tidakAktif = $websites->where('status', 'inactive')->count();
-        $bidangs = Bidang::all();
-        $satkers = Satker::all();
-        $servers = Server::all();
+        // Jika request dari AJAX, return JSON
+        if ($request->ajax()) {
+            return response()->json($website);
+        }
         
-        return view('superadmin.website', compact(
-            'website',
-            'websites',
-            'total',
-            'aktif',
-            'maintenance',
-            'tidakAktif',
-            'bidangs',
-            'satkers',
-            'servers'
-        ));
+        // Jika diakses langsung via URL, redirect ke index
+        return redirect()->route('superadmin.website.index');
     }
 }
