@@ -36,8 +36,6 @@ class BidangSeeder extends Seeder
             DB::table('bidang')->insert([
                 'nama_bidang' => $bidang['nama_bidang'],
                 'singkatan_bidang' => $bidang['singkatan_bidang'],
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
             ]);
         }
     }

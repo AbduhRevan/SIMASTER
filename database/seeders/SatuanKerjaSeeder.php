@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class SatuanKerjaSeeder extends Seeder
 {
@@ -16,19 +15,15 @@ class SatuanKerjaSeeder extends Seeder
         $satuanKerja = [
             [
                 'nama_satker' => 'Badan Pendidikan dan Pelatihan Kementerian Pertahanan',
-                'singkatan_satker' => 'Badiklit Kemhan',
+                'singkatan_satker' => 'Badiklat Kemhan',
             ],
             [
-                'nama_satker' => 'Balai Penelitian Industri Strategis Pertahanan',
-                'singkatan_satker' => 'Balinstrahan Kemhan',
+                'nama_satker' => 'Badan Instalasi Strategis Pertahanan Kementerian Pertahanan',
+                'singkatan_satker' => 'Bainstrahan Kemhan',
             ],
             [
                 'nama_satker' => 'Badan Penelitian dan Pengembangan Kementerian Pertahanan',
                 'singkatan_satker' => 'Balitbang Kemhan',
-            ],
-            [
-                'nama_satker' => 'Badan Penelitian dan Pengembangan Industri Strategis Pertahanan',
-                'singkatan_satker' => 'Barahanan Kemhan',
             ],
             [
                 'nama_satker' => 'Biro Hukum Sekretariat Jenderal Kementerian Pertahanan',
@@ -48,7 +43,7 @@ class SatuanKerjaSeeder extends Seeder
             ],
             [
                 'nama_satker' => 'Biro Peraturan Perundang-undangan Sekretariat Jenderal Kementerian Pertahanan',
-                'singkatan_satker' => 'Biro Peraturan dan Perundang-undangan Setjen Kemhan',
+                'singkatan_satker' => 'Biro Peraturan Perundang-undangan Setjen Kemhan',
             ],
             [
                 'nama_satker' => 'Biro Perencanaan dan Keuangan Sekretariat Jenderal Kementerian Pertahanan',
@@ -105,11 +100,15 @@ class SatuanKerjaSeeder extends Seeder
         ];
 
         foreach ($satuanKerja as $satker) {
+            // Pastikan singkatan tidak lebih dari 50 karakter
+            $singkatan = $satker['singkatan_satker'];
+            if (strlen($singkatan) > 50) {
+                $singkatan = substr($singkatan, 0, 50);
+            }
+
             DB::table('satuan_kerja')->insert([
                 'nama_satker' => $satker['nama_satker'],
-                'singkatan_satker' => $satker['singkatan_satker'],
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'singkatan_satker' => $singkatan,
             ]);
         }
     }
