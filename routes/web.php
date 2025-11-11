@@ -36,7 +36,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/bidang/soft-delete/{id}', [BidangController::class, 'softDelete'])->name('superadmin.bidang.softdelete');
  // Satuan Kerja 
         Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
-        Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('satker.store');
+        Route::post('/superadmin/satuankerja/store', [SatkerController::class, 'store'])->name('superadmin.satker.store');
+        Route::put('/superadmin/satker/update/{id}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
+        Route::delete('/satker/soft-delete/{id}', [SatkerController::class, 'softDelete'])->name('superadmin.satker.softdelete');
+
+
  // Rak Server
         Route::get('/superadmin/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
         Route::post('/rakserver/store', [RakController::class, 'store'])->name('rak.store');
@@ -77,14 +81,15 @@ Route::middleware(['auth'])->group(function () {
     })->name('superadmin.pemeliharaan');
     
     //Sistem
-    Route::prefix('superadmin')->name('superadmin.')->middleware(['auth'])->group(function () {
+    // pengguna
+Route::prefix('superadmin')->name('superadmin.')->group(function() {
     Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
-    Route::post('/pengguna/store', [PenggunaController::class, 'store'])->name('pengguna.store');
-    Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('pengguna.bidang');
-    Route::put('/pengguna/update/{id}', [PenggunaController::class, 'update'])->name('pengguna.update');
-    Route::delete('/pengguna/delete/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+    Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
     Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
-    Route::post('/pengguna/{id}/toggle-status', [PenggunaController::class, 'toggleStatus'])->name('pengguna.toggleStatus');
+    Route::put('/pengguna/{id}', [PenggunaController::class, 'update'])->name('pengguna.update');
+    Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+    Route::post('/pengguna/toggle-status/{id}', [PenggunaController::class, 'toggleStatus'])->name('pengguna.toggle-status');
+    Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('pengguna.bidang');
 });
 
 

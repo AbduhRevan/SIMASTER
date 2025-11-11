@@ -24,10 +24,10 @@
                 <select name="role" class="form-select">
                     <option value="">Semua</option>
                     <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                    <option value="banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Banglola</option>
-                    <option value="pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Pamsis</option>
-                    <option value="infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Infratik</option>
-                    <option value="tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Tatausaha</option>
+                    <option value="admin banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Admin Banglola</option>
+                    <option value="admin pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Admin Pamsis</option>
+                    <option value="admin infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Admin Infratik</option>
+                    <option value="admin tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Admin Tatausaha</option>
                     <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                 </select>
             </div>
@@ -225,10 +225,10 @@
                             <select name="role" class="form-select" required>
                                 <option value="">Pilih Role</option>
                                 <option value="superadmin">Superadmin</option>
-                                <option value="banglola">Banglola</option>
-                                <option value="pamsis">Pamsis</option>
-                                <option value="infratik">Infratik</option>
-                                <option value="tatausaha">Tatausaha</option>
+                                <option value="banglola">Admin Banglola</option>
+                                <option value="pamsis">Admin Pamsis</option>
+                                <option value="infratik">Admin Infratik</option>
+                                <option value="tatausaha">Admin Tatausaha</option>
                                 <option value="pimpinan">Pimpinan</option>
                             </select>
                         </div>
