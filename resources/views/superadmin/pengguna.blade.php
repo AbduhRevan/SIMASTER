@@ -1,364 +1,229 @@
 @extends('layouts.app')
 
 @section('content')
-    <style>
-        .content-wrapper {
-            width: 100%;
-            max-width: 100%;
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-        .filter-section {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-        }
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 
-        .filter-row {
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
+<!-- 🟥 HEADER -->
+<div class="mb-4">
+    <h4 class="fw-bold text-dark">Kelola Pengguna</h4>
+</div>
 
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-            display: block;
-        }
-
-        .filter-select {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-        }
-
-        .btn-generate {
-            background: #6B1515;
-            color: white;
-            border: none;
-            padding: 10px 40px;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            height: 46px;
-            white-space: nowrap;
-        }
-
-        .btn-generate:hover {
-            background: #4A0E0E;
-        }
-
-        .action-bar {
-            background: white;
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            position: relative;
-            max-width: 400px;
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 50px;
-            font-size: 14px;
-        }
-
-        .search-input::placeholder {
-            color: #999;
-        }
-
-        .btn-add {
-            background: #6B1515;
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .btn-add:hover {
-            background: #4A0E0E;
-        }
-
-        .table-container {
-            background: white;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            overflow-x: auto;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-
-        .data-table thead {
-            background: #f8f9fa;
-        }
-
-        .data-table th {
-            padding: 15px;
-            text-align: left;
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e9ecef;
-            white-space: nowrap;
-        }
-
-        .data-table td {
-            padding: 15px;
-            font-size: 14px;
-            color: #333;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-            white-space: nowrap;
-        }
-
-        .status-aktif {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-nonaktif {
-            background: #e2e3e5;
-            color: #6c757d;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-action {
-            width: 32px;
-            height: 32px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .btn-edit {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .btn-edit:hover {
-            background: #ffc107;
-        }
-
-        .btn-disable {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn-disable:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-delete {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn-delete:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .filter-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .filter-group {
-                width: 100%;
-            }
-            
-            .btn-generate {
-                width: 100%;
-            }
-            
-            .action-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .search-box {
-                max-width: 100%;
-            }
-            
-            .btn-add {
-                width: 100%;
-            }
-        }
-    </style>
-
-    <div class="content-wrapper">
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <form id="filterForm">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <div class="filter-label">Role</div>
-                        <select name="role" class="filter-select">
-                            <option>Semua</option>
-                            <option>User</option>
-                            <option>Admin Bidang</option>
-                            <option>Teknisi</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <div class="filter-label">Status</div>
-                        <select name="status" class="filter-select">
-                            <option>Semua</option>
-                            <option>Aktif</option>
-                            <option>NonAktif</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-generate">Generate</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Action Bar -->
-        <div class="action-bar">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama/username/email">
+<!-- Filter Section -->
+<div class="card table-card mb-3">
+    <form id="filterForm" action="{{ route('superadmin.pengguna.index') }}" method="GET">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small">Role</label>
+                <select name="role" class="form-select">
+                    <option value="">Semua</option>
+                    <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                    <option value="banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Banglola</option>
+                    <option value="pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Pamsis</option>
+                    <option value="infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Infratik</option>
+                    <option value="tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Tatausaha</option>
+                    <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
+                </select>
             </div>
-            <button class="btn-add" data-toggle="modal" data-target="#penggunaModal" onclick="openModal('add')">Tambah Pengguna</button>
-        </div>
-
-        <!-- Data Table -->
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Lengkap</th>
-                        <th>Username/email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Bidang</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="penggunaTableBody">
-                    @foreach($pengguna as $index => $user)
-                    <tr>
-                        <td>{{ $pengguna->firstItem() + $index }}</td>
-                        <td>{{ $user->nama_lengkap }}</td>
-                        <td>{{ $user->username_email }}</td>
-                        <td>{{ ucfirst($user->role) }}</td>
-                        <td><span class="status-badge {{ $user->status == 'active' ? 'status-aktif' : 'status-nonaktif' }}">{{ $user->status == 'active' ? 'Aktif' : 'NonAktif' }}</span></td>
-                        <td>{{ $user->bidang ? $user->bidang->nama_bidang : '-' }}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit" onclick="editPengguna({{ $user->user_id }})"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="btn-action btn-disable" onclick="toggleStatus({{ $user->user_id }})"><i class="fas fa-ban"></i></button>
-                                <button class="btn-action btn-delete" onclick="deletePengguna({{ $user->user_id }})"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <div style="padding: 20px;">
-                {{ $pengguna->links() }}
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Semua</option>
+                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>NonAktif</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-maroon text-white w-100">
+                    <i class="fa-solid fa-filter me-2"></i>Generate
+                </button>
             </div>
         </div>
+    </form>
+</div>
+
+<!-- Search & Add Button -->
+<div class="card table-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Search -->
+        <form action="{{ route('superadmin.pengguna.index') }}" method="GET" class="d-flex w-50">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+                <input type="text" name="search" class="form-control border-start-0" placeholder="Cari nama/username/email..." value="{{ request('search') }}">
+            </div>
+        </form>
+
+        <!-- Tombol Tambah -->
+        <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahPenggunaModal">
+            <i class="fa-solid fa-plus me-2"></i> Tambah Pengguna
+        </button>
     </div>
 
-    <!-- Modal untuk Tambah/Edit -->
-    <div class="modal fade" id="penggunaModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Tambah Pengguna</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+    <!-- TABLE -->
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>No</th>
+                <th>Nama Lengkap</th>
+                <th>Username/Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Bidang</th>
+                <th class="text-center" style="width: 150px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($pengguna as $index => $user)
+                <tr>
+                    <td>{{ $pengguna->firstItem() + $index }}</td>
+                    <td>{{ $user->nama_lengkap }}</td>
+                    <td>{{ $user->username_email }}</td>
+                    <td><span class="badge bg-secondary">{{ ucfirst($user->role) }}</span></td>
+                    <td>
+                        @if($user->status == 'active')
+                            <span class="badge bg-success">Aktif</span>
+                        @else
+                            <span class="badge bg-secondary">NonAktif</span>
+                        @endif
+                    </td>
+                    <td>{{ $user->bidang ? $user->bidang->nama_bidang : '-' }}</td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <!-- Edit -->
+                            <button class="btn btn-warning btn-sm text-white" data-bs-toggle="modal"
+                                data-bs-target="#editPenggunaModal{{ $user->user_id }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- Toggle Status -->
+                            <button class="btn btn-info btn-sm text-white btn-toggle-status"
+                                data-id="{{ $user->user_id }}"
+                                data-status="{{ $user->status }}">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+
+                            <!-- Hapus -->
+                            <button class="btn btn-danger btn-sm btn-hapus"
+                                data-id="{{ $user->user_id }}"
+                                data-nama="{{ $user->nama_lengkap }}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- MODAL EDIT -->
+                <div class="modal fade" id="editPenggunaModal{{ $user->user_id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content border-0 rounded-3 overflow-hidden">
+                            <div class="modal-header bg-maroon text-white">
+                                <h5 class="modal-title">Edit Pengguna</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="{{ route('superadmin.pengguna.update', $user->user_id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Nama Lengkap<span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="nama_lengkap" value="{{ $user->nama_lengkap }}" placeholder="Contoh: Andi Saputra" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Username/Email<span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="username_email" value="{{ $user->username_email }}" placeholder="Contoh: andisaputra@gmail.com" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Password</label>
+                                        <input type="password" class="form-control" name="password" placeholder="Kosongkan jika tidak ingin mengubah">
+                                        <small class="form-text text-muted">Kosongkan jika tidak ingin mengubah password</small>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Role<span class="text-danger">*</span></label>
+                                            <select name="role" class="form-select" required>
+                                                <option value="">Pilih Role</option>
+                                                <option value="superadmin" {{ $user->role == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                                                <option value="banglola" {{ $user->role == 'banglola' ? 'selected' : '' }}>Banglola</option>
+                                                <option value="pamsis" {{ $user->role == 'pamsis' ? 'selected' : '' }}>Pamsis</option>
+                                                <option value="infratik" {{ $user->role == 'infratik' ? 'selected' : '' }}>Infratik</option>
+                                                <option value="tatausaha" {{ $user->role == 'tatausaha' ? 'selected' : '' }}>Tatausaha</option>
+                                                <option value="pimpinan" {{ $user->role == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Bidang<span class="text-danger">*</span></label>
+                                            <select name="bidang_id" class="form-select" required>
+                                                <option value="">Pilih Bidang</option>
+                                                @php
+                                                    $allBidang = \App\Models\Bidang::all();
+                                                @endphp
+                                                @foreach($allBidang as $b)
+                                                    <option value="{{ $b->bidang_id }}" {{ $user->bidang_id == $b->bidang_id ? 'selected' : '' }}>{{ $b->nama_bidang }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <form id="penggunaForm">
-                    @csrf
-                    <div class="modal-body">
-                        <input type="hidden" id="userId" name="user_id">
-                        <div class="form-group">
-                            <label>Nama Lengkap</label>
-                            <input type="text" name="nama_lengkap" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Username/Email</label>
-                            <input type="text" name="username_email" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" name="password" class="form-control" id="passwordField" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select name="role" class="form-control" required>
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center text-muted">Belum ada data pengguna</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="mt-3">
+        {{ $pengguna->links() }}
+    </div>
+</div>
+
+<!-- MODAL TAMBAH -->
+<div class="modal fade" id="tambahPenggunaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 rounded-3 overflow-hidden">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title">Tambah Pengguna</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('superadmin.pengguna.store') }}" method="POST" id="formTambahPengguna">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Lengkap<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="nama_lengkap" placeholder="Contoh: Andi Saputra" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Username/Email<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="username_email" placeholder="Contoh: andisaputra@gmail.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Password<span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Konfirmasi Password<span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" name="password_confirmation" id="password_confirmation" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Role<span class="text-danger">*</span></label>
+                            <select name="role" class="form-select" required>
+                                <option value="">Pilih Role</option>
                                 <option value="superadmin">Superadmin</option>
                                 <option value="banglola">Banglola</option>
                                 <option value="pamsis">Pamsis</option>
@@ -367,184 +232,167 @@
                                 <option value="pimpinan">Pimpinan</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Bidang</label>
-                            <select name="bidang_id" class="form-control">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Bidang<span class="text-danger">*</span></label>
+                            <select name="bidang_id" class="form-select" required>
                                 <option value="">Pilih Bidang</option>
-                                <!-- Options akan diisi via JS -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select name="status" class="form-control" required>
-                                <option value="active">Aktif</option>
-                                <option value="inactive">NonAktif</option>
+                                @php
+                                    $allBidang = \App\Models\Bidang::all();
+                                @endphp
+                                @foreach($allBidang as $b)
+                                    <option value="{{ $b->bidang_id }}">{{ $b->nama_bidang }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Status<span class="text-danger">*</span></label>
+                        <select name="status" class="form-select" required>
+                            <option value="active" selected>Aktif</option>
+                            <option value="inactive">NonAktif</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-maroon text-white">Tambah</button>
+                </div>
+            </form>
         </div>
     </div>
-@endsection
+</div>
 
-@push('scripts')
+<!-- MODAL HAPUS -->
+<div class="modal fade" id="hapusPenggunaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3 overflow-hidden">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formHapusPengguna" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-body text-center">
+                    <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
+                    <p>Apakah Anda yakin ingin menghapus user <strong id="namaPenggunaHapus"></strong>?</p>
+                    <div class="alert alert-warning small mb-0">
+                        Data akan dipindahkan ke Arsip Sementara dan dapat dipulihkan dalam waktu 30 hari sebelum dihapus permanen.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TOGGLE STATUS -->
+<div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3 overflow-hidden">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title">Konfirmasi Ubah Status</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formToggleStatus" method="POST">
+                @csrf
+                <div class="modal-body text-center">
+                    <i class="fa-solid fa-circle-info fa-3x text-info mb-3"></i>
+                    <p id="statusMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-maroon text-white">Ya, Ubah</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.table-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    padding: 25px;
+}
+.bg-maroon, .btn-maroon {
+    background-color: #7b0000 !important;
+    border: none;
+}
+.btn-maroon:hover {
+    background-color: #5a0000 !important;
+}
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+}
+.btn-warning:hover {
+    background-color: #ffcd39;
+}
+.btn-info {
+    background-color: #0dcaf0;
+    border: none;
+}
+.btn-info:hover {
+    background-color: #31d2f2;
+}
+</style>
+
 <script>
-$(document).ready(function() {
-    // Filter dan Search
-    $('#filterForm').on('submit', function(e) {
-        e.preventDefault();
-        loadPengguna();
-    });
-
-    $('#searchInput').on('keyup', function() {
-        loadPengguna();
-    });
-
-    function loadPengguna() {
-        $.ajax({
-            url: '{{ route("superadmin.pengguna.index") }}',
-            data: {
-                role: $('select[name=role]').val(),
-                status: $('select[name=status]').val(),
-                search: $('#searchInput').val()
-            },
-            success: function(response) {
-                $('#penggunaTableBody').html(response.data.map((user, index) => `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${user.nama_lengkap}</td>
-                        <td>${user.username_email}</td>
-                        <td>${user.role}</td>
-                        <td><span class="status-badge ${user.status == 'active' ? 'status-aktif' : 'status-nonaktif'}">
-                            ${user.status == 'active' ? 'Aktif' : 'NonAktif'}
-                        </span></td>
-                        <td>${user.bidang ? user.bidang.nama_bidang : '-'}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-action btn-edit" onclick="editPengguna(${user.user_id})">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                <button class="btn-action btn-disable" onclick="toggleStatus(${user.user_id})">
-                                    <i class="fas fa-ban"></i>
-                                </button>
-                                <button class="btn-action btn-delete" onclick="deletePengguna(${user.user_id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join(''));
+document.addEventListener('DOMContentLoaded', function () {
+    // Validasi Password Confirmation
+    const formTambah = document.getElementById('formTambahPengguna');
+    if(formTambah) {
+        formTambah.addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password_confirmation').value;
+            
+            if(password !== passwordConfirm) {
+                e.preventDefault();
+                alert('Password dan Konfirmasi Password tidak cocok!');
+                return false;
             }
         });
     }
 
-    // Modal Functions
-    window.openModal = function(type, id = null) {
-        $('#modalTitle').text(type === 'add' ? 'Tambah Pengguna' : 'Edit Pengguna');
-        $('#userId').val('');
-        $('#penggunaForm')[0].reset();
-        $('#passwordField').attr('required', type === 'add');
-        
-        if (type === 'edit' && id) {
-            editPengguna(id);
-        } else {
-            $.get('{{ route("superadmin.pengguna.bidang") }}', function(data) {
-                populateBidang(data.bidang);
-            });
-            $('#penggunaModal').modal('show');
-        }
-    };
+    // Handle Hapus Button
+    const hapusButtons = document.querySelectorAll('.btn-hapus');
+    const modalElement = document.getElementById('hapusPenggunaModal');
+    const modal = new bootstrap.Modal(modalElement);
+    const formHapus = document.getElementById('formHapusPengguna');
+    const namaPenggunaHapus = document.getElementById('namaPenggunaHapus');
 
-    window.editPengguna = function(id) {
-        let editUrl = `{{ url('superadmin/pengguna') }}/${id}/edit`;
-        $.get(editUrl, function(data) {
-            $('#userId').val(data.pengguna.user_id);
-            $('input[name=nama_lengkap]').val(data.pengguna.nama_lengkap);
-            $('input[name=username_email]').val(data.pengguna.username_email);
-            $('select[name=role]').val(data.pengguna.role);
-            $('select[name=status]').val(data.pengguna.status);
-            populateBidang(data.bidang, data.pengguna.bidang_id);
-            $('#passwordField').removeAttr('required');
-            $('#penggunaModal').modal('show');
-        });
-    };
-
-    function populateBidang(bidang, selected = '') {
-        let options = '<option value="">Pilih Bidang</option>';
-        bidang.forEach(b => {
-            options += `<option value="${b.bidang_id}" ${b.bidang_id == selected ? 'selected' : ''}>${b.nama_bidang}</option>`;
-        });
-        $('select[name=bidang_id]').html(options);
-    }
-
-    // Submit Form Add/Edit
-    $('#penggunaForm').on('submit', function(e) {
-        e.preventDefault();
-
-        let userId = $('#userId').val();
-        let url = userId 
-            ? `{{ url('superadmin/pengguna/update') }}/${userId}`
-            : '{{ route("superadmin.pengguna.store") }}';
-        let method = userId ? 'PUT' : 'POST';
-
-        $.ajax({
-            url: url,
-            method: method,
-            data: $(this).serialize(),
-            success: function() {
-                $('#penggunaModal').modal('hide');
-                loadPengguna();
-                alert('Berhasil disimpan!');
-            },
-            error: function(xhr) {
-                if(xhr.responseJSON && xhr.responseJSON.errors){
-                    let messages = Object.values(xhr.responseJSON.errors).flat().join('\n');
-                    alert(messages);
-                } else {
-                    alert('Error: ' + (xhr.responseJSON?.message || 'Terjadi kesalahan'));
-                }
-            }
+    hapusButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const nama = btn.dataset.nama;
+            namaPenggunaHapus.textContent = nama;
+            formHapus.action = `/superadmin/pengguna/${id}`;
+            modal.show();
         });
     });
 
-    window.toggleStatus = function(id) {
-        if(confirm('Yakin ingin mengubah status pengguna ini?')) {
-            $.ajax({
-                url: `{{ url('superadmin/pengguna/toggle-status') }}/${id}`,
-                method: 'POST',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function() {
-                    loadPengguna();
-                    alert('Status berhasil diubah!');
-                },
-                error: function() {
-                    alert('Gagal mengubah status!');
-                }
-            });
-        }
-    };
+    // Handle Toggle Status Button
+    const toggleButtons = document.querySelectorAll('.btn-toggle-status');
+    const toggleModal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
+    const formToggle = document.getElementById('formToggleStatus');
+    const statusMessage = document.getElementById('statusMessage');
 
-    window.deletePengguna = function(id) {
-        if(confirm('Yakin ingin menghapus pengguna ini?')) {
-            $.ajax({
-                url: `{{ url('superadmin/pengguna') }}/${id}`,
-                method: 'DELETE',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function() {
-                    loadPengguna();
-                    alert('Pengguna berhasil dihapus!');
-                },
-                error: function() {
-                    alert('Gagal menghapus pengguna!');
-                }
-            });
-        }
-    };
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const currentStatus = btn.dataset.status;
+            const newStatus = currentStatus === 'active' ? 'nonaktif' : 'aktif';
+            
+            statusMessage.textContent = `Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?`;
+            formToggle.action = `/superadmin/pengguna/toggle-status/${id}`;
+            toggleModal.show();
+        });
+    });
 });
 </script>
-@endpush
+@endsection

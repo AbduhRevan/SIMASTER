@@ -20,7 +20,7 @@
     <table class="table table-bordered align-middle">
         <thead class="table-light">
             <tr>
-                <th>ID Satker</th>
+                <th>No</th>
                 <th>Nama Satker</th>
                 <th>Singkatan</th>
             </tr>
@@ -28,7 +28,7 @@
         <tbody>
             @forelse ($satker as $item)
                 <tr>
-                    <td>{{ $item->satker_id }}</td>
+                    <td>{{ $loop->iteration }}</td> <!-- nomor urut -->
                     <td>{{ $item->nama_satker }}</td>
                     <td>{{ $item->singkatan_satker }}</td>
                 </tr>
@@ -49,7 +49,7 @@
         <h5 class="modal-title" id="tambahSatkerLabel">Tambah Satker</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <form action="{{ route('satker.store') }}" method="POST">
+      <form action="{{ route('superadmin.satker.store') }}" method="POST">
         @csrf
         <div class="modal-body">
           <div class="mb-3">
@@ -101,6 +101,5 @@
 }
 </style>
 
-<!-- Tambahkan JS Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection

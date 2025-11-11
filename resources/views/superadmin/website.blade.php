@@ -488,19 +488,20 @@ $(document).ready(function() {
 
   // Bidang visibility untuk Modal Tambah
   $('#satkerSelect').change(function() {
-    const selectedName = $('#satkerSelect option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kemhan') {
-      $('#bidangWrapper').show();
-    } else {
-      $('#bidangWrapper').hide();
-      $('#bidangSelect').val('');
-    }
-  });
+  const selectedName = $('#satkerSelect option:selected').data('name')?.toLowerCase() || '';
+  if (selectedName.includes('Pusdatin Kemhan')) {
+    $('#bidangWrapper').show();
+  } else {
+    $('#bidangWrapper').hide();
+    $('#bidangSelect').val('');
+  }
+});
+
 
   // Bidang visibility untuk Modal Edit
   $('#editSatker').change(function() {
     const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kemhan') {
+    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
       $('#editBidangWrapper').show();
     } else {
       $('#editBidangWrapper').hide();
@@ -529,7 +530,7 @@ $(document).ready(function() {
 
     // Check if bidang should be shown
     const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kemhan') {
+    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
       $('#editBidangWrapper').show();
     }
 

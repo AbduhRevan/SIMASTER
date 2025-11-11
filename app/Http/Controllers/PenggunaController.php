@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengguna;
-use App\Models\Bidang; // Jika perlu untuk dropdown bidang
+use App\Models\Bidang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -16,18 +16,17 @@ class PenggunaController extends Controller
         $query = Pengguna::with('bidang'); // Load relasi bidang
 
         // Filter berdasarkan role
-        if ($request->has('role') && $request->role != 'Semua') {
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
         // Filter berdasarkan status
-        if ($request->has('status') && $request->status != 'Semua') {
-            $status = $request->status == 'Aktif' ? 'active' : 'inactive';
-            $query->where('status', $status);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Search berdasarkan nama, username/email
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -35,7 +34,7 @@ class PenggunaController extends Controller
             });
         }
 
-        $pengguna = $query->paginate(10); // Pagination, sesuaikan jika perlu
+        $pengguna = $query->paginate(10);
 
         // Jika request AJAX (untuk filter/search tanpa reload)
         if ($request->ajax()) {
@@ -51,7 +50,7 @@ class PenggunaController extends Controller
     // Menampilkan form tambah (untuk modal)
     public function create()
     {
-        $bidang = Bidang::all(); // Untuk dropdown bidang
+        $bidang = Bidang::all();
         return response()->json(['bidang' => $bidang]);
     }
 
@@ -61,19 +60,30 @@ class PenggunaController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()
+                           ->withErrors($validator)
+                           ->withInput();
         }
 
-        Pengguna::create($request->all());
+        // Create user dengan password yang di-hash
+        Pengguna::create([
+            'nama_lengkap' => $request->nama_lengkap,
+            'username_email' => $request->username_email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'bidang_id' => $request->bidang_id,
+            'status' => $request->status,
+        ]);
 
-        return response()->json(['message' => 'Pengguna berhasil ditambahkan']);
+        return redirect()->route('superadmin.pengguna.index')
+                       ->with('success', 'Pengguna berhasil ditambahkan');
     }
 
     // Menampilkan data untuk edit (untuk modal)
@@ -92,24 +102,36 @@ class PenggunaController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email,' . $id . ',user_id',
-            'password' => 'nullable|string|min:8', // Password opsional saat update
+            'password' => 'nullable|string|min:8',
             'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()
+                           ->withErrors($validator)
+                           ->withInput();
         }
 
-        $data = $request->except('password');
+        // Siapkan data untuk update
+        $data = [
+            'nama_lengkap' => $request->nama_lengkap,
+            'username_email' => $request->username_email,
+            'role' => $request->role,
+            'bidang_id' => $request->bidang_id,
+            'status' => $request->status,
+        ];
+
+        // Update password hanya jika diisi
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         $pengguna->update($data);
 
-        return response()->json(['message' => 'Pengguna berhasil diupdate']);
+        return redirect()->route('superadmin.pengguna.index')
+                       ->with('success', 'Pengguna berhasil diperbarui');
     }
 
     // Toggle status (aktif/nonaktif)
@@ -119,7 +141,8 @@ class PenggunaController extends Controller
         $pengguna->status = $pengguna->status == 'active' ? 'inactive' : 'active';
         $pengguna->save();
 
-        return response()->json(['message' => 'Status berhasil diubah']);
+        return redirect()->route('superadmin.pengguna.index')
+                       ->with('success', 'Status pengguna berhasil diubah');
     }
 
     // Hapus pengguna
@@ -128,6 +151,14 @@ class PenggunaController extends Controller
         $pengguna = Pengguna::findOrFail($id);
         $pengguna->delete();
 
-        return response()->json(['message' => 'Pengguna berhasil dihapus']);
+        return redirect()->route('superadmin.pengguna.index')
+                       ->with('success', 'Pengguna berhasil dihapus');
+    }
+
+    // Method helper untuk get bidang (jika diperlukan)
+    public function getBidang()
+    {
+        $bidang = Bidang::all();
+        return response()->json(['bidang' => $bidang]);
     }
 }
