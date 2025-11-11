@@ -343,6 +343,11 @@
                     <i class="fa-solid fa-gear"></i>
                     <span>Pengaturan</span>
                 </a>
+                <a href="{{ route('superadmin.arsip') }}" 
+                    class="menu-link {{ request()->routeIs('superadmin.arsip') ? 'active' : '' }}">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span>Arsip Sementara</span>
+                </a>
             </div>
         </div>
 

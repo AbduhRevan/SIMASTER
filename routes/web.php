@@ -29,18 +29,22 @@ Route::middleware(['auth'])->group(function () {
     });
 
  // Data Master
+ // Bidang
         Route::get('/superadmin/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
         Route::post('/superadmin/bidang/store', [BidangController::class, 'store'])->name('superadmin.bidang.store');
         Route::put('/superadmin/bidang/update/{id}', [BidangController::class, 'update'])->name('superadmin.bidang.update');
-        Route::delete('/superadmin/bidang/delete/{id}', [BidangController::class, 'destroy'])->name('superadmin.bidang.destroy');
-
-
+        Route::delete('/bidang/soft-delete/{id}', [BidangController::class, 'softDelete'])->name('superadmin.bidang.softdelete');
+ // Satuan Kerja 
         Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
         Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('satker.store');
-
+ // Rak Server
         Route::get('/superadmin/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
         Route::post('/rakserver/store', [RakController::class, 'store'])->name('rak.store');
-       
+// Arsip Sementara
+        Route::get('/arsip', [BidangController::class, 'arsip'])->name('superadmin.arsip');
+        Route::post('/bidang/restore/{id}', [BidangController::class, 'restore'])->name('superadmin.bidang.restore');
+        Route::delete('/bidang/force-delete/{id}', [BidangController::class, 'forceDelete'])->name('superadmin.bidang.forceDelete');
+
     //Manajemen Aset
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
 

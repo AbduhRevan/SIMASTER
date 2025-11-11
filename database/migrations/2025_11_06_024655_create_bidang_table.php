@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('bidang_id');
             $table->string('nama_bidang', 100);
             $table->string('singkatan_bidang', 20)->nullable();
-            
+            $table->softDeletes();
             $table->unique('nama_bidang', 'uk_nama_bidang');
             
             $table->engine = 'InnoDB';

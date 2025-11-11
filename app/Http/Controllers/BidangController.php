@@ -49,12 +49,36 @@ class BidangController extends Controller
         return redirect()->route('superadmin.bidang')->with('success', 'Data bidang berhasil diperbarui!');
     }
 
-    // Menghapus data bidang
-    public function destroy($id)
+    // Menghapus data bidang (soft delete)
+    public function softDelete($id)
     {
         $bidang = Bidang::findOrFail($id);
         $bidang->delete();
 
-        return redirect()->route('superadmin.bidang')->with('success', 'Data bidang berhasil dihapus!');
+        return redirect()->route('superadmin.bidang')->with('success', 'Data bidang berhasil dipindahkan ke arsip sementara.');
+    }
+
+    // Halaman Arsip
+    // Tampilkan halaman arsip
+    public function arsip()
+    {
+        $bidangTerhapus = Bidang::onlyTrashed()->get(); // ambil semua data pakai model
+        return view('superadmin.arsip', compact('bidangTerhapus'));
+    }
+
+    // Mengembalikan data bidang yang sudah dihapus
+    public function restore($id)
+    {
+        $bidang = Bidang::withTrashed()->findOrFail($id);
+        $bidang->restore();
+        return redirect()->route('superadmin.arsip')->with('success', 'Data bidang berhasil dipulihkan.');
+    }
+
+    // Hapus Permanen
+    public function forceDelete($id)
+    {
+        $bidang = Bidang::withTrashed()->findOrFail($id);
+        $bidang->forceDelete();
+        return redirect()->route('superadmin.arsip')->with('success', 'Data bidang berhasil dihapus permanen.');
     }
 }
