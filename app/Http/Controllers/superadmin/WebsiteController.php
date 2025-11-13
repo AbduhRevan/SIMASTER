@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Website;
-use App\Models\Bidang;
-use App\Models\Satker;
-use App\Models\Server;
+use App\Models\superadmin\Website;
+use App\Models\superadmin\Bidang;
+use App\Models\superadmin\Satker;
+use App\Models\superadmin\Server;
 use Illuminate\Http\Request;
 
 class WebsiteController extends Controller

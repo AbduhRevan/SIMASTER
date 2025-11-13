@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\superadmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Website;
-use App\Models\Server;
+use App\Models\superadmin\Website;
+use App\Models\superadmin\Server;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller

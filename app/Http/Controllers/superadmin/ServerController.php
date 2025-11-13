@@ -3,11 +3,11 @@ namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Server;
-use App\Models\RakServer;
-use App\Models\Bidang;
-use App\Models\Satker;
-use App\Models\Website;
+use App\Models\superadmin\Server;
+use App\Models\superadmin\RakServer;
+use App\Models\superadmin\Bidang;
+use App\Models\superadmin\Satker;
+use App\Models\superadmin\Website;
 
 class ServerController extends Controller
 {

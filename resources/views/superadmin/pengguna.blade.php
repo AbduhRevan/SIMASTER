@@ -161,7 +161,7 @@
                                             <select name="bidang_id" class="form-select" required>
                                                 <option value="">Pilih Bidang</option>
                                                 @php
-                                                    $allBidang = \App\Models\Bidang::all();
+                                                    $allBidang = \App\Models\superadmin\Bidang::all();
                                                 @endphp
                                                 @foreach($allBidang as $b)
                                                     <option value="{{ $b->bidang_id }}" {{ $user->bidang_id == $b->bidang_id ? 'selected' : '' }}>{{ $b->nama_bidang }}</option>
@@ -237,7 +237,7 @@
                             <select name="bidang_id" class="form-select" required>
                                 <option value="">Pilih Bidang</option>
                                 @php
-                                    $allBidang = \App\Models\Bidang::all();
+                                    $allBidang = \App\Models\superadmin\Bidang::all();
                                 @endphp
                                 @foreach($allBidang as $b)
                                     <option value="{{ $b->bidang_id }}">{{ $b->nama_bidang }}</option>

@@ -3,12 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PenggunaController;
-use App\Http\Controllers\BidangController;
-use App\Http\Controllers\SatkerController;
-use App\Http\Controllers\RakController;
-use App\Http\Controllers\SuperAdmin\WebsiteController;
+use App\Http\Controllers\superadmin\BidangController;
+use App\Http\Controllers\superadmin\SatkerController;
+use App\Http\Controllers\superadmin\RakController;
+use App\Http\Controllers\superadmin\WebsiteController;
 use App\Http\Controllers\superadmin\DashboardController;
-use App\Http\Controllers\SuperAdmin\ServerController;
+use App\Http\Controllers\superadmin\ServerController;
 
 // Redirect root ke login
 Route::get('/', function () {
