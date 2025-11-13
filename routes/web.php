@@ -7,6 +7,8 @@ use App\Http\Controllers\BidangController;
 use App\Http\Controllers\SatkerController;
 use App\Http\Controllers\RakController;
 use App\Http\Controllers\SuperAdmin\WebsiteController;
+use App\Http\Controllers\superadmin\DashboardController;
+use App\Http\Controllers\SuperAdmin\ServerController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -28,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
         })->name('superadmin.dashboard');
     });
 
+    // Dashboard
+    Route::get('/superadmin/dashboard', [DashboardController::class, 'index'])->name('superadmin.dashboard');
  // Data Master
  // Bidang
         Route::get('/superadmin/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');

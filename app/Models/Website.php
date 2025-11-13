@@ -11,7 +11,7 @@ class Website extends Model
 
     protected $table = 'website';
     protected $primaryKey = 'website_id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'nama_website',

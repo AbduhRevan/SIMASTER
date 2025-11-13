@@ -11,14 +11,14 @@ class Server extends Model
 
     protected $table = 'server';
     protected $primaryKey = 'server_id';
-    public $timestamps = false; // kalau tabelmu nggak ada created_at / updated_at
+    public $timestamps = true; 
 
     protected $fillable = [
         'nama_server', 'brand', 'spesifikasi', 'power_status',
         'rak_id', 'u_slot', 'bidang_id', 'satker_id', 'website_id', 'keterangan'
     ];
 
-    // Relasi jika ingin join tabel lain
+    // Relasi join tabel lain
     public function rak() {
         return $this->belongsTo(RakServer::class, 'rak_id', 'rak_id');
     }

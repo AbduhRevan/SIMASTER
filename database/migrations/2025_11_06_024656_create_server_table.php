@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('satker_id')->nullable();
             $table->unsignedBigInteger('website_id')->nullable();
             $table->text('keterangan')->nullable();
+            $table->timestamps();
             
             $table->foreign('rak_id')
                   ->references('rak_id')

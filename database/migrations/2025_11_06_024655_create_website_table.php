@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active');
             $table->year('tahun_pengadaan')->nullable();
             $table->text('keterangan')->nullable();
+            $table->timestamps();
             
             $table->foreign('bidang_id')
                   ->references('bidang_id')
