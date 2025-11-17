@@ -9,6 +9,7 @@ use App\Http\Controllers\superadmin\RakController;
 use App\Http\Controllers\superadmin\WebsiteController;
 use App\Http\Controllers\superadmin\DashboardController;
 use App\Http\Controllers\superadmin\ServerController;
+use App\Http\Controllers\superadmin\LogAktivitasController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -97,9 +98,7 @@ Route::prefix('superadmin')->name('superadmin.')->group(function() {
 });
 
 
-    Route::get('/logAktivitas', function () {
-        return view('superadmin.logAktivitas');
-    })->name('superadmin.logAktivitas');
+    Route::get('/logAktivitas', [LogAktivitasController::class, 'index'])->name('superadmin.logAktivitas');
 
     //Pengaturan
     Route::get('/pengaturan', function () {

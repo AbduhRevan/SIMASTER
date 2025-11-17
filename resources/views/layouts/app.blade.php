@@ -335,7 +335,7 @@
                     <i class="fa-solid fa-users"></i>
                     <span>Pengguna</span>
                 </a>
-                <a href="#" class="menu-link">
+                <a href="{{ route('superadmin.logAktivitas') }}" class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Log Aktivitas</span>
                 </a>
