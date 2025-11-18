@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Pengguna;
-use App\Models\Bidang;
+use App\Models\superadmin\Bidang;
 
 class PenggunaSeeder extends Seeder
 {

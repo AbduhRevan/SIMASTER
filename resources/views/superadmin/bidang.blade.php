@@ -10,6 +10,18 @@
     </div>
 @endif
 
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error!</strong>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <!-- 🟥 HEADER -->
 <div class="mb-4">
     <h4 class="fw-bold text-dark">Data Master Bidang</h4>
@@ -18,12 +30,14 @@
 <div class="card table-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Search -->
-        <form action="{{ route('superadmin.bidang') }}" method="GET" class="d-flex w-50">
+        <div class="col-md-4">
             <div class="input-group">
-                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
-                <input type="text" name="search" class="form-control border-start-0" placeholder="Cari ID/Nama/Singkatan Bidang..." value="{{ request('search') }}">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari Nama/Singkatan Bidang...">
             </div>
-        </form>
+        </div>
 
         <!-- Tombol Tambah -->
         <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahBidangModal">
@@ -41,12 +55,12 @@
                 <th class="text-center" style="width: 100px;">Aksi</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="bidangTableBody">
             @forelse ($bidang as $index => $item)
-                <tr>
+                <tr class="bidang-row">
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->nama_bidang }}</td>
-                    <td>{{ $item->singkatan_bidang }}</td>
+                    <td class="bidang-nama">{{ $item->nama_bidang }}</td>
+                    <td class="bidang-singkatan">{{ $item->singkatan_bidang }}</td>
                     <td class="text-center">
                         <div class="d-flex justify-content-center gap-2">
                             <!-- Edit -->
@@ -67,7 +81,7 @@
 
                 <!-- MODAL EDIT -->
                 <div class="modal fade" id="editBidangModal{{ $item->bidang_id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content border-0 rounded-3 overflow-hidden">
                             <div class="modal-header bg-maroon text-white">
                                 <h5 class="modal-title">Edit Bidang</h5>
@@ -78,11 +92,11 @@
                                 @method('PUT')
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">Nama Bidang</label>
+                                        <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" name="nama_bidang" value="{{ $item->nama_bidang }}" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">Singkatan</label>
+                                        <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" name="singkatan_bidang" value="{{ $item->singkatan_bidang }}" required>
                                     </div>
                                 </div>
@@ -95,7 +109,7 @@
                     </div>
                 </div>
             @empty
-                <tr>
+                <tr id="emptyRow">
                     <td colspan="4" class="text-center text-muted">Belum ada data bidang</td>
                 </tr>
             @endforelse
@@ -105,7 +119,7 @@
 
 <!-- MODAL TAMBAH -->
 <div class="modal fade" id="tambahBidangModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-3 overflow-hidden">
             <div class="modal-header bg-maroon text-white">
                 <h5 class="modal-title">Tambah Bidang</h5>
@@ -115,12 +129,26 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Bidang</label>
-                        <input type="text" class="form-control" name="nama_bidang" required>
+                        <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('nama_bidang') is-invalid @enderror" 
+                               name="nama_bidang" 
+                               placeholder="Contoh: Bidang Infrastruktur" 
+                               value="{{ old('nama_bidang') }}"
+                               required>
+                        @error('nama_bidang')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Singkatan</label>
-                        <input type="text" class="form-control" name="singkatan_bidang" required>
+                        <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('singkatan_bidang') is-invalid @enderror" 
+                               name="singkatan_bidang" 
+                               placeholder="Contoh: BI" 
+                               value="{{ old('singkatan_bidang') }}"
+                               required>
+                        @error('singkatan_bidang')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -182,23 +210,56 @@
 }
 </style>
 
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const hapusButtons = document.querySelectorAll('.btn-hapus');
-    const modalElement = document.getElementById('hapusBidangModal');
-    const modal = new bootstrap.Modal(modalElement);
-    const formHapus = document.getElementById('formHapusBidang');
-    const namaBidangHapus = document.getElementById('namaBidangHapus');
+$(document).ready(function() {
+    // ✅ SEARCH FUNCTIONALITY
+    $('#searchInput').on('keyup', function() {
+        const searchValue = $(this).val().toLowerCase();
+        let visibleRows = 0;
 
-    hapusButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const nama = btn.dataset.nama;
-            namaBidangHapus.textContent = nama;
-            formHapus.action = `/bidang/soft-delete/${id}`; // ✅ arahkan ke route soft delete
-            modal.show();
+        $('.bidang-row').each(function() {
+            const nama = $(this).find('.bidang-nama').text().toLowerCase();
+            const singkatan = $(this).find('.bidang-singkatan').text().toLowerCase();
+            
+            if (nama.includes(searchValue) || singkatan.includes(searchValue)) {
+                $(this).show();
+                visibleRows++;
+            } else {
+                $(this).hide();
+            }
         });
+
+        // Tampilkan pesan jika tidak ada hasil
+        if (visibleRows === 0 && $('.bidang-row').length > 0) {
+            if ($('#noResultRow').length === 0) {
+                $('#bidangTableBody').append(
+                    '<tr id="noResultRow"><td colspan="4" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                );
+            }
+        } else {
+            $('#noResultRow').remove();
+        }
     });
+
+    // ✅ MODAL HAPUS HANDLER
+    $('.btn-hapus').on('click', function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+        
+        $('#namaBidangHapus').text(nama);
+        $('#formHapusBidang').attr('action', `/bidang/soft-delete/${id}`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('hapusBidangModal'));
+        modal.show();
+    });
+
+    // ✅ AUTO SHOW MODAL JIKA ADA ERROR VALIDASI
+    @if($errors->any())
+        var tambahModal = new bootstrap.Modal(document.getElementById('tambahBidangModal'));
+        tambahModal.show();
+    @endif
 });
 </script>
+@endpush
 @endsection

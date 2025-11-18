@@ -47,7 +47,10 @@ Route::middleware(['auth'])->group(function () {
 
  // Rak Server
         Route::get('/superadmin/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
-        Route::post('/rakserver/store', [RakController::class, 'store'])->name('rak.store');
+        Route::post('/superadmin/rakserver/store', [RakController::class, 'store'])->name('superadmin.rakserver.store');
+        Route::put('/rakserver/update/{id}', [RakController::class, 'update'])->name('superadmin.rakserver.update');
+        Route::delete('/rakserver/{id}', [RakController::class, 'destroy'])->name('rakserver.destroy');
+
 // Arsip Sementara
         Route::get('/arsip', [BidangController::class, 'arsip'])->name('superadmin.arsip');
         Route::post('/bidang/restore/{id}', [BidangController::class, 'restore'])->name('superadmin.bidang.restore');

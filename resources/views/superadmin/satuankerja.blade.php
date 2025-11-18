@@ -10,26 +10,37 @@
     </div>
 @endif
 
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error!</strong>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <!-- 🟥 HEADER -->
 <div class="mb-4">
     <h4 class="fw-bold text-dark">Data Master Satuan Kerja</h4>
 </div>
 
 <div class="card table-card">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Search -->
-        <form action="{{ route('superadmin.satuankerja') }}" method="GET" class="d-flex w-50 min-w-300">
+        <div class="col-md-4">
             <div class="input-group">
-                <span class="input-group-text bg-light border-end-0">
-                    <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" name="search" class="form-control border-start-0"
-                       placeholder="Cari ID/Nama/Singkatan Satker..." value="{{ request('search') }}">
+                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari Nama/Singkatan Satker...">
             </div>
-        </form>
+        </div>
 
         <!-- Tombol Tambah -->
-        <button class="btn btn-maroon px-4 text-white mt-2 mt-sm-0" data-bs-toggle="modal" data-bs-target="#tambahSatkerModal">
+        <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahSatkerModal">
             <i class="fa-solid fa-plus me-2"></i> Tambah Satuan Kerja
         </button>
     </div>
@@ -39,18 +50,18 @@
         <table class="table table-bordered align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th style="white-space: nowrap;">No</th>
-                    <th style="white-space: nowrap;">Nama Satuan Kerja</th>
-                    <th style="white-space: nowrap;">Singkatan</th>
-                    <th class="text-center" style="white-space: nowrap;">Aksi</th>
+                    <th>No</th>
+                    <th>Nama Satuan Kerja</th>
+                    <th>Singkatan</th>
+                    <th class="text-center" style="width: 100px;">Aksi</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="satkerTableBody">
                 @forelse ($satker as $index => $item)
-                    <tr>
+                    <tr class="satker-row">
                         <td>{{ $satker->firstItem() + $index }}</td>
-                        <td>{{ $item->nama_satker }}</td>
-                        <td>{{ $item->singkatan_satker }}</td>
+                        <td class="satker-nama">{{ $item->nama_satker }}</td>
+                        <td class="satker-singkatan">{{ $item->singkatan_satker }}</td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
                                 <!-- Edit -->
@@ -71,7 +82,7 @@
 
                     <!-- MODAL EDIT -->
                     <div class="modal fade" id="editSatkerModal{{ $item->satker_id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content border-0 rounded-3 overflow-hidden">
                                 <div class="modal-header bg-maroon text-white">
                                     <h5 class="modal-title">Edit Satuan Kerja</h5>
@@ -82,12 +93,12 @@
                                     @method('PUT')
                                     <div class="modal-body">
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nama Satuan Kerja</label>
+                                            <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="nama_satker"
                                                    value="{{ $item->nama_satker }}" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">Singkatan</label>
+                                            <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="singkatan_satker"
                                                    value="{{ $item->singkatan_satker }}" required>
                                         </div>
@@ -101,7 +112,7 @@
                         </div>
                     </div>
                 @empty
-                    <tr>
+                    <tr id="emptyRow">
                         <td colspan="4" class="text-center text-muted">Belum ada data satuan kerja</td>
                     </tr>
                 @endforelse
@@ -124,7 +135,7 @@
 
 <!-- MODAL TAMBAH -->
 <div class="modal fade" id="tambahSatkerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-3 overflow-hidden">
             <div class="modal-header bg-maroon text-white">
                 <h5 class="modal-title">Tambah Satuan Kerja</h5>
@@ -134,12 +145,26 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Satuan Kerja</label>
-                        <input type="text" class="form-control" name="nama_satker" required>
+                        <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('nama_satker') is-invalid @enderror" 
+                               name="nama_satker" 
+                               placeholder="Contoh: Pusat Data dan Informasi"
+                               value="{{ old('nama_satker') }}"
+                               required>
+                        @error('nama_satker')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Singkatan</label>
-                        <input type="text" class="form-control" name="singkatan_satker" required>
+                        <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('singkatan_satker') is-invalid @enderror" 
+                               name="singkatan_satker" 
+                               placeholder="Contoh: PUSDATIN"
+                               value="{{ old('singkatan_satker') }}"
+                               required>
+                        @error('singkatan_satker')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -203,9 +228,6 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
-.table th, .table td {
-    white-space: nowrap;
-}
 .pagination-custom nav {
     display: flex;
     gap: 6px;
@@ -222,28 +244,58 @@
     background-color: #7b0000;
     color: white;
 }
-.min-w-300 {
-    min-width: 300px;
-}
 </style>
 
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const hapusButtons = document.querySelectorAll('.btn-hapus');
-    const modalElement = document.getElementById('hapusSatkerModal');
-    const modal = new bootstrap.Modal(modalElement);
-    const formHapus = document.getElementById('formHapusSatker');
-    const namaSatkerHapus = document.getElementById('namaSatkerHapus');
+$(document).ready(function() {
+    // ✅ SEARCH FUNCTIONALITY
+    $('#searchInput').on('keyup', function() {
+        const searchValue = $(this).val().toLowerCase();
+        let visibleRows = 0;
 
-    hapusButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const nama = btn.dataset.nama;
-            namaSatkerHapus.textContent = nama;
-            formHapus.action = `/satker/soft-delete/${id}`;
-            modal.show();
+        $('.satker-row').each(function() {
+            const nama = $(this).find('.satker-nama').text().toLowerCase();
+            const singkatan = $(this).find('.satker-singkatan').text().toLowerCase();
+            
+            if (nama.includes(searchValue) || singkatan.includes(searchValue)) {
+                $(this).show();
+                visibleRows++;
+            } else {
+                $(this).hide();
+            }
         });
+
+        // Tampilkan pesan jika tidak ada hasil
+        if (visibleRows === 0 && $('.satker-row').length > 0) {
+            if ($('#noResultRow').length === 0) {
+                $('#satkerTableBody').append(
+                    '<tr id="noResultRow"><td colspan="4" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                );
+            }
+        } else {
+            $('#noResultRow').remove();
+        }
     });
+
+    // ✅ MODAL HAPUS HANDLER
+    $('.btn-hapus').on('click', function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+        
+        $('#namaSatkerHapus').text(nama);
+        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
+        modal.show();
+    });
+
+    // ✅ AUTO SHOW MODAL JIKA ADA ERROR VALIDASI
+    @if($errors->any())
+        var tambahModal = new bootstrap.Modal(document.getElementById('tambahSatkerModal'));
+        tambahModal.show();
+    @endif
 });
 </script>
+@endpush
 @endsection

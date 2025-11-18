@@ -21,7 +21,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label fw-semibold small">Role</label>
-                <select name="role" class="form-select">
+                <select name="role" id="filterRole" class="form-select">
                     <option value="">Semua</option>
                     <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                     <option value="admin banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Admin Banglola</option>
@@ -33,15 +33,15 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold small">Status</label>
-                <select name="status" class="form-select">
+                <select name="status" id="filterStatus" class="form-select">
                     <option value="">Semua</option>
                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>NonAktif</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-maroon text-white w-100">
-                    <i class="fa-solid fa-filter me-2"></i>Generate
+                <button type="button" id="btnResetFilter" class="btn btn-maroon text-white w-100">
+                    <i class="fa-solid fa-filter me-2"></i>Reset Filter
                 </button>
             </div>
         </div>
@@ -52,12 +52,14 @@
 <div class="card table-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Search -->
-        <form action="{{ route('superadmin.pengguna.index') }}" method="GET" class="d-flex w-50">
+        <div class="col-md-6">
             <div class="input-group">
-                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
-                <input type="text" name="search" class="form-control border-start-0" placeholder="Cari nama/username/email..." value="{{ request('search') }}">
+                <span class="input-group-text bg-light border-end-0">
+                    <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama/username/email...">
             </div>
-        </form>
+        </div>
 
         <!-- Tombol Tambah -->
         <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahPenggunaModal">
@@ -78,12 +80,16 @@
                 <th class="text-center" style="width: 150px;">Aksi</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="penggunaTableBody">
             @forelse($pengguna as $index => $user)
-                <tr>
-                    <td>{{ $pengguna->firstItem() + $index }}</td>
-                    <td>{{ $user->nama_lengkap }}</td>
-                    <td>{{ $user->username_email }}</td>
+                <tr class="pengguna-row" 
+                    data-nama="{{ strtolower($user->nama_lengkap) }}"
+                    data-username="{{ strtolower($user->username_email) }}"
+                    data-role="{{ strtolower($user->role) }}"
+                    data-status="{{ strtolower($user->status) }}">
+                    <td class="row-number">{{ $pengguna->firstItem() + $index }}</td>
+                    <td class="pengguna-nama">{{ $user->nama_lengkap }}</td>
+                    <td class="pengguna-username">{{ $user->username_email }}</td>
                     <td><span class="badge bg-secondary">{{ ucfirst($user->role) }}</span></td>
                     <td>
                         @if($user->status == 'active')
@@ -102,7 +108,7 @@
                             </button>
 
                             <!-- Toggle Status -->
-                            <button class="btn btn-info btn-sm text-white btn-toggle-status"
+                            <button class="btn btn-secondary btn-sm text-white btn-toggle-status"
                                 data-id="{{ $user->user_id }}"
                                 data-status="{{ $user->status }}">
                                 <i class="fa-solid fa-ban"></i>
@@ -179,7 +185,7 @@
                     </div>
                 </div>
             @empty
-                <tr>
+                <tr id="emptyRow">
                     <td colspan="7" class="text-center text-muted">Belum ada data pengguna</td>
                 </tr>
             @endforelse
@@ -300,7 +306,7 @@
             <form id="formToggleStatus" method="POST">
                 @csrf
                 <div class="modal-body text-center">
-                    <i class="fa-solid fa-circle-info fa-3x text-info mb-3"></i>
+                    <i class="fa-solid fa-circle-info fa-3x text-secondary mb-3"></i>
                     <p id="statusMessage"></p>
                 </div>
                 <div class="modal-footer">
@@ -342,9 +348,82 @@
 }
 </style>
 
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Validasi Password Confirmation
+$(document).ready(function() {
+    // ✅ LIVE SEARCH FUNCTIONALITY
+    $('#searchInput').on('keyup', function() {
+        const searchValue = $(this).val().toLowerCase();
+        filterTable();
+    });
+
+    // ✅ FILTER FUNCTIONALITY
+    $('#filterRole, #filterStatus').on('change', function() {
+        filterTable();
+    });
+
+    // ✅ RESET FILTER
+    $('#btnResetFilter').on('click', function() {
+        $('#filterRole').val('');
+        $('#filterStatus').val('');
+        $('#searchInput').val('');
+        filterTable();
+    });
+
+    // ✅ FUNCTION FILTER TABLE
+    function filterTable() {
+        const searchValue = $('#searchInput').val().toLowerCase();
+        const roleFilter = $('#filterRole').val().toLowerCase();
+        const statusFilter = $('#filterStatus').val().toLowerCase();
+        let visibleRows = 0;
+
+        $('.pengguna-row').each(function() {
+            const nama = $(this).data('nama');
+            const username = $(this).data('username');
+            const role = $(this).data('role');
+            const status = $(this).data('status');
+
+            // Check search
+            const matchSearch = searchValue === '' || 
+                               nama.includes(searchValue) || 
+                               username.includes(searchValue);
+
+            // Check role filter
+            const matchRole = roleFilter === '' || role === roleFilter;
+
+            // Check status filter
+            const matchStatus = statusFilter === '' || status === statusFilter;
+
+            // Show/hide row
+            if (matchSearch && matchRole && matchStatus) {
+                $(this).show();
+                visibleRows++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // Update row numbers
+        let number = 1;
+        $('.pengguna-row:visible').each(function() {
+            $(this).find('.row-number').text(number);
+            number++;
+        });
+
+        // Show no result message
+        if (visibleRows === 0 && $('.pengguna-row').length > 0) {
+            if ($('#noResultRow').length === 0) {
+                $('#penggunaTableBody').append(
+                    '<tr id="noResultRow"><td colspan="7" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian atau filter</td></tr>'
+                );
+            }
+            $('#emptyRow').hide();
+        } else {
+            $('#noResultRow').remove();
+        }
+    }
+
+    // ✅ VALIDASI PASSWORD CONFIRMATION
     const formTambah = document.getElementById('formTambahPengguna');
     if(formTambah) {
         formTambah.addEventListener('submit', function(e) {
@@ -359,40 +438,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Handle Hapus Button
-    const hapusButtons = document.querySelectorAll('.btn-hapus');
-    const modalElement = document.getElementById('hapusPenggunaModal');
-    const modal = new bootstrap.Modal(modalElement);
-    const formHapus = document.getElementById('formHapusPengguna');
-    const namaPenggunaHapus = document.getElementById('namaPenggunaHapus');
-
-    hapusButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const nama = btn.dataset.nama;
-            namaPenggunaHapus.textContent = nama;
-            formHapus.action = `/superadmin/pengguna/${id}`;
-            modal.show();
-        });
+    // ✅ HANDLE HAPUS BUTTON
+    $('.btn-hapus').on('click', function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+        
+        $('#namaPenggunaHapus').text(nama);
+        $('#formHapusPengguna').attr('action', `/superadmin/pengguna/${id}`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('hapusPenggunaModal'));
+        modal.show();
     });
 
-    // Handle Toggle Status Button
-    const toggleButtons = document.querySelectorAll('.btn-toggle-status');
-    const toggleModal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
-    const formToggle = document.getElementById('formToggleStatus');
-    const statusMessage = document.getElementById('statusMessage');
-
-    toggleButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const currentStatus = btn.dataset.status;
-            const newStatus = currentStatus === 'active' ? 'nonaktif' : 'aktif';
-            
-            statusMessage.textContent = `Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?`;
-            formToggle.action = `/superadmin/pengguna/toggle-status/${id}`;
-            toggleModal.show();
-        });
+    // ✅ HANDLE TOGGLE STATUS BUTTON
+    $('.btn-toggle-status').on('click', function() {
+        const id = $(this).data('id');
+        const currentStatus = $(this).data('status');
+        const newStatus = currentStatus === 'active' ? 'nonaktif' : 'aktif';
+        
+        $('#statusMessage').text(`Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?`);
+        $('#formToggleStatus').attr('action', `/superadmin/pengguna/toggle-status/${id}`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
+        modal.show();
     });
 });
 </script>
+@endpush
 @endsection

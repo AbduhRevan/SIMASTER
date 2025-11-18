@@ -11,7 +11,9 @@ return new class extends Migration
         Schema::create('satuan_kerja', function (Blueprint $table) {
             $table->id('satker_id');
             $table->string('nama_satker', 150);
-            $table->string('singkatan_satker', 50)->nullable();
+            $table->string('singkatan_satker', 100)->nullable();
+            
+            $table->softDeletes();
             
             $table->unique('nama_satker', 'uk_nama_satker');
             
