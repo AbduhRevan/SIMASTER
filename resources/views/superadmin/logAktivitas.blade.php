@@ -203,7 +203,7 @@
                             </div>
                             <small class="text-muted" style="white-space: nowrap;">
                                 <i class="fa fa-clock me-1"></i>
-                                {{ \Carbon\Carbon::parse($log->waktu_aksi)->diffForHumans() }}
+                                {{ \Carbon\Carbon::parse($log->waktu_aksi)->timezone('Asia/Jakarta')->diffForHumans() }}
                             </small>
                         </div>
                         <p class="mb-3" style="font-size: 14px; color: #495057; line-height: 1.6;">{{ $log->deskripsi }}</p>
@@ -214,7 +214,7 @@
                             </span>
                             <span>
                                 <i class="fa fa-calendar me-1"></i>
-                                {{ \Carbon\Carbon::parse($log->waktu_aksi)->format('d M Y, H:i') }}
+                                {{ \Carbon\Carbon::parse($log->waktu_aksi)->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
                             </span>
                         </div>
                     </div>
