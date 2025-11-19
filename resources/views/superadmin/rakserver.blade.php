@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
+@section('title', 'Rak Server')
+
 @section('content')
+<div class="container-fluid py-3">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 @if(session('success'))

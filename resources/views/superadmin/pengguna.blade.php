@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Kelola Pengguna')
+
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
@@ -444,7 +446,7 @@ $(document).ready(function() {
         const nama = $(this).data('nama');
         
         $('#namaPenggunaHapus').text(nama);
-        $('#formHapusPengguna').attr('action', `/superadmin/pengguna/${id}`);
+        $('#formHapusPengguna').attr('action', /superadmin/pengguna/${id});
         
         const modal = new bootstrap.Modal(document.getElementById('hapusPenggunaModal'));
         modal.show();
@@ -456,8 +458,8 @@ $(document).ready(function() {
         const currentStatus = $(this).data('status');
         const newStatus = currentStatus === 'active' ? 'nonaktif' : 'aktif';
         
-        $('#statusMessage').text(`Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?`);
-        $('#formToggleStatus').attr('action', `/superadmin/pengguna/toggle-status/${id}`);
+        $('#statusMessage').text(Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?);
+        $('#formToggleStatus').attr('action', /superadmin/pengguna/toggle-status/${id});
         
         const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
         modal.show();
