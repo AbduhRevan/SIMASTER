@@ -3,9 +3,7 @@
 @section('title', 'Kelola Website')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-
-  <h3 class="fw-bold mb-4">Kelola Website</h3>
+<div class="container-fluid py-3">
 
   {{-- Alert Success --}}
   @if(session('success'))

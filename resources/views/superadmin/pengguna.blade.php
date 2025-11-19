@@ -3,6 +3,7 @@
 @section('title', 'Kelola Pengguna')
 
 @section('content')
+<div class="container-fluid py-3">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 @if(session('success'))
@@ -11,11 +12,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 @endif
-
-<!-- 🟥 HEADER -->
-<div class="mb-4">
-    <h4 class="fw-bold text-dark">Kelola Pengguna</h4>
-</div>
 
 <!-- Filter Section -->
 <div class="card table-card mb-3">

@@ -32,11 +32,6 @@
     </div>
 @endif
 
-<!-- HEADER -->
-<div class="mb-4">
-    <h4 class="fw-bold text-dark">Data Master Rak Server</h4>
-</div>
-
 <div class="card table-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Search -->
