@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.bidang')
 
 @section('title', 'Dashboard Banglola')
 @section('page-title', 'Dashboard Banglola')

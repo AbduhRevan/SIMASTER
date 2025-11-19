@@ -61,7 +61,7 @@
   {{-- Daftar Website --}}
   <div class="row g-4 mt-2" id="websiteContainer">
     @forelse($websites as $website)
-    <div class="col-md-4 website-card">
+    <div class="col-12 col-sm-6 col-lg-4 website-card">
       <div class="card shadow-sm border-0 p-3 h-100" style="border-radius: 15px;">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h5 class="fw-bold mb-0">{{ $website->nama_website }}</h5>
@@ -385,6 +385,11 @@
 
 {{-- Style --}}
 <style>
+  .website-card .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
   .bg-maroon {
     background-color: #7A1313 !important;
   }

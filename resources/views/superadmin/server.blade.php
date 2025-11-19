@@ -61,25 +61,25 @@
 <div class="container-fluid">
     <!-- Ringkasan Server -->
     <div class="row mb-4 text-center">
-        <div class="col-md-3 mb-2">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card-summary">
                 <h5>Total</h5>
                 <h2>{{ $total }}</h2>
             </div>
         </div>
-        <div class="col-md-3 mb-2">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card-summary">
                 <h5>Aktif</h5>
                 <h2>{{ $aktif }}</h2>
             </div>
         </div>
-        <div class="col-md-3 mb-2">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card-summary">
                 <h5>Maintenance</h5>
                 <h2>{{ $maintenance }}</h2>
             </div>
         </div>
-        <div class="col-md-3 mb-2">
+        <div class="col-6 col-md-3 mb-3">
             <div class="card-summary">
                 <h5>Tidak Aktif</h5>
                 <h2>{{ $tidakAktif }}</h2>
@@ -96,6 +96,7 @@
             </button>
         </div>
 
+        <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead>
                 <tr>
@@ -146,6 +147,7 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 

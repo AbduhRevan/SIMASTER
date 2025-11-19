@@ -53,6 +53,7 @@
     </div>
 
     <!-- TABLE -->
+    <div class="table-responsive">
     <table class="table table-bordered align-middle">
         <thead class="table-light">
             <tr>
@@ -159,6 +160,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <!-- PAGINATION -->
     <div class="d-flex justify-content-between align-items-center mt-3">

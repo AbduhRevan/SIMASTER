@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Summernote CSS is already loaded here -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
     <style>
         * {
@@ -222,29 +221,26 @@
             color: #333;
         }
         
-         /* --- CUSTOM STYLE FOR SUMMERNOTE --- */
-        /* Membuat container Summernote lebih rapi dan terintegrasi dengan desain card/form */
+        /* CUSTOM STYLE FOR SUMMERNOTE */
         .note-editor.note-frame {
-            border: 1px solid #dee2e6; /* Border seperti form-control */
-            border-radius: 8px; /* Sudut membulat */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Bayangan halus */
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* Styling untuk Toolbar */
         .note-editor .note-toolbar {
-            background-color: #f8f9fa; /* Latar belakang abu-abu muda */
+            background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
             border-top-left-radius: 7px;
             border-top-right-radius: 7px;
             padding: 10px;
         }
 
-        /* Styling untuk Area Edit */
         .note-editor .note-editing-area .note-editable {
             background-color: #fff;
             color: #333;
-            min-height: 250px; /* Jaga tinggi default */
-            padding: 15px; /* Padding di dalam area teks */
+            min-height: 250px;
+            padding: 15px;
         }
 
         /* Responsive */
@@ -289,36 +285,19 @@
         <!-- Menu Container -->
         <div class="menu-container">
             <!-- Dashboard -->
-            <a href="{{ route('superadmin.dashboard') }}" class="menu-link {{ request()->is('superadmin/dashboard') ? 'active' : '' }}">
+            <a href="{{ route('banglola.dashboard') }}" class="menu-link {{ request()->is('banglola/dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
                 <span>Dashboard</span>
             </a>
 
-            <!-- Data Master Section -->
-            <div class="menu-section">
-                <div class="menu-section-title">Data Master</div>
-                <a href="{{ route('superadmin.bidang') }}" class="menu-link {{ request()->is('superadmin/bidang') ? 'active' : '' }}">
-                    <i class="fa-solid fa-briefcase"></i>
-                    <span>Bidang</span>
-                </a>
-                <a href="{{ route('superadmin.satuankerja') }}" class="menu-link {{ request()->is('superadmin/satuankerja') ? 'active' : '' }}">
-                    <i class="fa-solid fa-building"></i>
-                    <span>Satuan Kerja</span>
-                </a>
-                <a href="{{ route('superadmin.rakserver') }}" class="menu-link {{ request()->is('superadmin/rakserver') ? 'active' : '' }}">
-                    <i class="fa-solid fa-server"></i>
-                    <span>Rak Server</span>
-                </a>
-            </div>
-
             <!-- Manajemen Aset Section -->
             <div class="menu-section">
                 <div class="menu-section-title">Manajemen Aset</div>
-                <a href="{{ route('superadmin.server.index') }}" class="menu-link {{ request()->routeIs('superadmin.server.*') ? 'active' : '' }}">
+                <a href="{{ route('banglola.server.index') }}" class="menu-link {{ request()->routeIs('banglola.server.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-database"></i>
                     <span>Server</span>
                 </a>
-                <a href="{{ route('superadmin.website.index') }}" class="menu-link {{ request()->routeIs('superadmin.website.*') ? 'active' : '' }}">
+                <a href="{{ route('banglola.website.index') }}" class="menu-link {{ request()->routeIs('banglola.website.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-globe"></i>
                     <span>Website</span>
                 </a>
@@ -331,22 +310,13 @@
             <!-- Sistem Section -->
             <div class="menu-section">
                 <div class="menu-section-title">Sistem</div>
-                 <a href="{{ route('superadmin.pengguna.index') }}" class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Pengguna</span>
-                </a>
-                <a href="{{ route('superadmin.logAktivitas') }}" class="menu-link {{ request()->routeIs('superadmin.logAktivitas') ? 'active' : '' }}">
+                <a href="{{ route('banglola.logAktivitas') }}" class="menu-link {{ request()->routeIs('banglola.logAktivitas') ? 'active' : '' }}">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Log Aktivitas</span>
                 </a>
                 <a href="{{ route('pengaturan') }}" class="menu-link {{ request()->is('pengaturan') ? 'active' : '' }}">
                     <i class="fa-solid fa-gear"></i>
                     <span>Pengaturan</span>
-                </a>
-                <a href="{{ route('superadmin.arsip') }}" 
-                    class="menu-link {{ request()->routeIs('superadmin.arsip') ? 'active' : '' }}">
-                    <i class="fa-solid fa-box-archive"></i>
-                    <span>Arsip Sementara</span>
                 </a>
             </div>
         </div>
@@ -370,20 +340,15 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Summernote Libraries are already linked in the original file -->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.js"></script>
 
-    <!-- Global Summernote Initialization Script -->
     <script>
-        // Gunakan fungsi ready jQuery untuk memastikan DOM telah dimuat sepenuhnya sebelum inisialisasi
         $(document).ready(function() {
-            // Secara otomatis inisialisasi Summernote pada setiap textarea yang memiliki kelas 'summernote-editor'
             $('.summernote-editor').summernote({
                 placeholder: 'Tulis konten di sini...',
                 tabsize: 2,
                 height: 150,
-                dialogsInBody: true, // Opsional: Membantu memastikan modal Summernote tampil di atas elemen lain
+                dialogsInBody: true,
                 toolbar: [
                     ['style', ['style']],
                     ['font', ['bold', 'italic', 'underline', 'clear']],
