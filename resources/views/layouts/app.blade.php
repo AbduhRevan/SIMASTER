@@ -27,9 +27,10 @@
             left: 0;
             height: 100vh;
             width: 260px;
-            background: linear-gradient(180deg, #8B0000 0%, #6B0000 100%);
+            background: linear-gradient(270deg, #800000 0%, #660708 100%);
             color: #fff;
             padding: 0;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -58,7 +59,6 @@
         .sidebar .logo {
             text-align: center;
             padding: 25px 20px;
-            background: rgba(0,0,0,0.1);
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
@@ -95,8 +95,8 @@
         
         /* Menu Section */
         .menu-section {
+            margin-top: 15px;
             margin-bottom: 20px;
-            padding-bottom: 20px;
             border-bottom: 1px solid rgba(255,255,255,0.15);
         }
         
@@ -142,17 +142,19 @@
             transform: translateX(3px);
         }
         
-        .menu-link.active {
+            .menu-link.active {
             background-color: #fff;
-            color: #8B0000;
+            color: #660708;
             font-weight: 600;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 12px 16px;     
+            border-radius: 10px;    
         }
-        
+
         .menu-link.active i {
-            color: #8B0000;
+            color: #660708;
         }
-        
+
         /* Logout Button */
         .logout-section {
             padding: 15px 12px;
@@ -190,8 +192,8 @@
         
         /* Content Area */
         .content {
-            margin-left: 260px;
-            padding: 25px 30px;
+            margin-left: 300px;
+            padding: 100px 40px 30px 40px;
             min-height: 100vh;
         }
         
@@ -221,18 +223,143 @@
             font-weight: 600;
             color: #333;
         }
+
+        /* ===== TOP NAVBAR ===== */
+        .top-navbar {
+            position: fixed;
+            top: 20px; 
+            left: 300px; 
+            right: 40px; 
+            height: 60px;
+            background: linear-gradient(270deg, #800000 0%, #660708 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1001;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            border-radius: 12px; 
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* RIGHT USER DROPDOWN */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            padding: 6px 10px;      
+            border-radius: 8px;     
+            color: #fff;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .user-info:hover {
+            background-color: rgba(255,255,255,0.12);  
+            color: #fff;
+        }
+
+        .user-info i {
+            font-size: 20px;
+        }
+
+        .user-info:hover i {
+            color: #fff;
+        }
+        
+        /* DROPDOWN MENU */
+        .dropdown-menu {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 220px;
+            background: linear-gradient(270deg, #800000 0%, #660708 100%);
+            border-radius: 14px;
+            padding: 10px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            display: none;
+        }
+
+       /* ITEM */
+        .dropdown-item {
+            color: #fff;
+            width: calc(100% - 20px);
+            margin: 0 auto;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: 0.2s ease;
+        }
+
+        /* HOVER */
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1); 
+            color: #fff;
+            font-weight: 500;
+            box-shadow: none; 
+        }
+
+        /* ICON */
+        .dropdown-item i {
+            width: 18px;
+            color: #fff;
+            transition: 0.2s ease;
+        }
+
+        .dropdown-item:hover i {
+            color: #fff;
+        }
+
+        /* ACTIVE STATE */
+        .dropdown-item.active {
+            background-color: #fff;
+            color: #660708;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .dropdown-item.active i {
+            color: #660708;
+        }
+
+        /* DIVIDER */
+        .dropdown-divider {
+            height: 1px;
+            background-color: rgba(255,255,255,0.15);
+            border: none;
+            margin: 10px 15px;   
+        }
+
+        /* CONTENT AREA  */
+        .content {
+            margin-left: 260px;
+            padding: 100px 30px 30px;
+        }
         
          /* --- CUSTOM STYLE FOR SUMMERNOTE --- */
-        /* Membuat container Summernote lebih rapi dan terintegrasi dengan desain card/form */
         .note-editor.note-frame {
-            border: 1px solid #dee2e6; /* Border seperti form-control */
-            border-radius: 8px; /* Sudut membulat */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Bayangan halus */
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         /* Styling untuk Toolbar */
         .note-editor .note-toolbar {
-            background-color: #f8f9fa; /* Latar belakang abu-abu muda */
+            background-color: #f8f9fa; 
             border-bottom: 1px solid #dee2e6;
             border-top-left-radius: 7px;
             border-top-right-radius: 7px;
@@ -243,8 +370,8 @@
         .note-editor .note-editing-area .note-editable {
             background-color: #fff;
             color: #333;
-            min-height: 250px; /* Jaga tinggi default */
-            padding: 15px; /* Padding di dalam area teks */
+            min-height: 250px; 
+            padding: 15px; 
         }
 
         /* Responsive */
@@ -276,6 +403,22 @@
     </style>
 </head>
 
+<script>
+function toggleDropdown() {
+    const d = document.getElementById("dropdownMenu");
+    d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+document.addEventListener("click", function(e) {
+    const dropdown = document.getElementById("dropdownMenu");
+    const button = document.querySelector(".user-info");
+
+    if (!button.contains(e.target)) {
+        dropdown.style.display = "none";
+    }
+});
+</script>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -285,7 +428,7 @@
             <h5>SIMASTER</h5>
             <small>SISTEM INFORMASI<br>MANAJEMEN ASET TERPADU</small>
         </div>
-
+                 
         <!-- Menu Container -->
         <div class="menu-container">
             <!-- Dashboard -->
@@ -339,29 +482,52 @@
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Log Aktivitas</span>
                 </a>
+
                 <a href="{{ route('pengaturan') }}" class="menu-link {{ request()->is('pengaturan') ? 'active' : '' }}">
                     <i class="fa-solid fa-gear"></i>
                     <span>Pengaturan</span>
                 </a>
-                <a href="{{ route('superadmin.arsip') }}" 
-                    class="menu-link {{ request()->routeIs('superadmin.arsip') ? 'active' : '' }}">
-                    <i class="fa-solid fa-box-archive"></i>
-                    <span>Arsip Sementara</span>
-                </a>
             </div>
         </div>
+    </div>
 
-        <!-- Logout Section -->
-        <div class="logout-section">
+       <!-- TOP HEADER -->
+<div class="top-navbar">
+    <div class="page-title">
+        @yield('title')
+    </div>
+
+    <div class="user-dropdown">
+        <div class="user-info" onclick="toggleDropdown()">
+            <i class="fa-solid fa-user-circle"></i>
+            <span>{{ Auth::user()->role ?? 'Pengguna' }}</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="{{ route('profil.saya') }}" class="dropdown-item {{ request()->routeIs('profil.saya') ? 'active' : '' }}">
+        <i class="fa-solid fa-user"></i> Profil Saya
+            </a>
+
+            <a href="{{ route('ganti.password') }}" class="dropdown-item {{ request()->routeIs('ganti.password') ? 'active' : '' }}">
+        <i class="fa-solid fa-lock"></i> Ganti Password
+            </a>
+
+            <a href="{{ route('panduan.pengguna') }}" class="dropdown-item {{ request()->routeIs('panduan.pengguna') ? 'active' : '' }}">
+        <i class="fa-solid fa-book"></i> Panduan Pengguna
+            </a>
+
+            <div class="dropdown-divider"></div>
+
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="logout-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Logout</span>
+                <button class="dropdown-item">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </button>
             </form>
         </div>
     </div>
+</div>   
 
     <!-- Content -->
     <div class="content">

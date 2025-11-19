@@ -1,8 +1,10 @@
+routes 
 <?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\superadmin\ProfilController;
 use App\Http\Controllers\superadmin\BidangController;
 use App\Http\Controllers\superadmin\SatkerController;
 use App\Http\Controllers\superadmin\RakController;
@@ -23,6 +25,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes dengan middleware auth dan role
 Route::middleware(['auth'])->group(function () {
+
+    // Profil, Password, Panduan Pengguna
+        Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
+        Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
+        Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
     
     // Superadmin
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {

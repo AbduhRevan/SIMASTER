@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
+@section('title', 'Satuan Kerja')
+
 @section('content')
+<div class="container-fluid py-3">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 @if(session('success'))
@@ -284,7 +287,7 @@ $(document).ready(function() {
         const nama = $(this).data('nama');
         
         $('#namaSatkerHapus').text(nama);
-        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`);
+        $('#formHapusSatker').attr('action', /satker/soft-delete/${id});
         
         const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
         modal.show();

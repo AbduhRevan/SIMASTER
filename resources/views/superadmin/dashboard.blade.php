@@ -3,9 +3,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
-
-    <h4 class="fw-bold mb-4">Dashboard</h4>
+<div class="container-fluid py-3">
 
     {{-- ======= RINGKASAN WEBSITE DAN SERVER ======= --}}
     <div class="row mb-4 g-3">

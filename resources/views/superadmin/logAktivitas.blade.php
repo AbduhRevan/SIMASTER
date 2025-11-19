@@ -3,12 +3,7 @@
 @section('title', 'Log Aktivitas')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
-
-    {{-- Header --}}
-    <div class="mb-4">
-        <h4 class="fw-bold mb-0" style="color: #8B0000;">Log Aktivitas</h4>
-    </div>
+<div class="container-fluid py-3">
 
     {{-- Statistics Cards - Clean White Design --}}
     <div class="row g-3 mb-4">
