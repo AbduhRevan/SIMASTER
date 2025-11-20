@@ -13,6 +13,13 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <!-- Filter Section -->
 <div class="card table-card mb-3">
     <form id="filterForm" action="{{ route('superadmin.pengguna.index') }}" method="GET">
@@ -22,10 +29,10 @@
                 <select name="role" id="filterRole" class="form-select">
                     <option value="">Semua</option>
                     <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                    <option value="admin banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Admin Banglola</option>
-                    <option value="admin pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Admin Pamsis</option>
-                    <option value="admin infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Admin Infratik</option>
-                    <option value="admin tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Admin Tatausaha</option>
+                    <option value="banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Admin Banglola</option>
+                    <option value="pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Admin Pamsis</option>
+                    <option value="infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Admin Infratik</option>
+                    <option value="tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Admin Tatausaha</option>
                     <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                 </select>
             </div>
@@ -66,6 +73,7 @@
     </div>
 
     <!-- TABLE -->
+    <div class="table-responsive">
     <table class="table table-bordered align-middle">
         <thead class="table-light">
             <tr>
@@ -108,7 +116,8 @@
                             <!-- Toggle Status -->
                             <button class="btn btn-secondary btn-sm text-white btn-toggle-status"
                                 data-id="{{ $user->user_id }}"
-                                data-status="{{ $user->status }}">
+                                data-status="{{ $user->status }}"
+                                data-nama="{{ $user->nama_lengkap }}">
                                 <i class="fa-solid fa-ban"></i>
                             </button>
 
@@ -130,7 +139,7 @@
                                 <h5 class="modal-title">Edit Pengguna</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-                            <form action="{{ route('superadmin.pengguna.update', $user->user_id) }}" method="POST">
+                            <form action="{{ route('superadmin.pengguna.update', $user->user_id) }}" method="POST" class="form-edit-pengguna">
                                 @csrf
                                 @method('PUT')
                                 <div class="modal-body">
@@ -173,6 +182,13 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Status<span class="text-danger">*</span></label>
+                                        <select name="status" class="form-select" required>
+                                            <option value="active" {{ $user->status == 'active' ? 'selected' : '' }}>Aktif</option>
+                                            <option value="inactive" {{ $user->status == 'inactive' ? 'selected' : '' }}>NonAktif</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -189,6 +205,7 @@
             @endforelse
         </tbody>
     </table>
+</div>
 
     <!-- Pagination -->
     <div class="mt-3">
@@ -346,12 +363,19 @@
 }
 </style>
 
-@push('scripts')
 <script>
-$(document).ready(function() {
+// Pastikan script dijalankan setelah jQuery dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    // Cek apakah jQuery tersedia
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery tidak ditemukan! Pastikan jQuery sudah dimuat.');
+        return;
+    }
+
+    const $ = jQuery;
+
     // ✅ LIVE SEARCH FUNCTIONALITY
     $('#searchInput').on('keyup', function() {
-        const searchValue = $(this).val().toLowerCase();
         filterTable();
     });
 
@@ -376,10 +400,10 @@ $(document).ready(function() {
         let visibleRows = 0;
 
         $('.pengguna-row').each(function() {
-            const nama = $(this).data('nama');
-            const username = $(this).data('username');
-            const role = $(this).data('role');
-            const status = $(this).data('status');
+            const nama = $(this).data('nama') || '';
+            const username = $(this).data('username') || '';
+            const role = $(this).data('role') || '';
+            const status = $(this).data('status') || '';
 
             // Check search
             const matchSearch = searchValue === '' || 
@@ -418,49 +442,75 @@ $(document).ready(function() {
             $('#emptyRow').hide();
         } else {
             $('#noResultRow').remove();
+            if ($('.pengguna-row').length === 0) {
+                $('#emptyRow').show();
+            }
         }
     }
 
     // ✅ VALIDASI PASSWORD CONFIRMATION
-    const formTambah = document.getElementById('formTambahPengguna');
-    if(formTambah) {
-        formTambah.addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const passwordConfirm = document.getElementById('password_confirmation').value;
-            
-            if(password !== passwordConfirm) {
-                e.preventDefault();
-                alert('Password dan Konfirmasi Password tidak cocok!');
-                return false;
-            }
-        });
-    }
+    $('#formTambahPengguna').on('submit', function(e) {
+        const password = $('#password').val();
+        const passwordConfirm = $('#password_confirmation').val();
+        
+        if(password !== passwordConfirm) {
+            e.preventDefault();
+            alert('Password dan Konfirmasi Password tidak cocok!');
+            return false;
+        }
+    });
 
     // ✅ HANDLE HAPUS BUTTON
-    $('.btn-hapus').on('click', function() {
+    $(document).on('click', '.btn-hapus', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         
         $('#namaPenggunaHapus').text(nama);
-        $('#formHapusPengguna').attr('action', /superadmin/pengguna/${id});
+        
+        // Perbaiki URL formation
+        const deleteUrl = '{{ route("superadmin.pengguna.destroy", ":id") }}'.replace(':id', id);
+        $('#formHapusPengguna').attr('action', deleteUrl);
         
         const modal = new bootstrap.Modal(document.getElementById('hapusPenggunaModal'));
         modal.show();
     });
 
     // ✅ HANDLE TOGGLE STATUS BUTTON
-    $('.btn-toggle-status').on('click', function() {
+    $(document).on('click', '.btn-toggle-status', function() {
         const id = $(this).data('id');
         const currentStatus = $(this).data('status');
+        const nama = $(this).data('nama');
         const newStatus = currentStatus === 'active' ? 'nonaktif' : 'aktif';
         
-        $('#statusMessage').text(Apakah Anda yakin ingin mengubah status pengguna ini menjadi ${newStatus}?);
-        $('#formToggleStatus').attr('action', /superadmin/pengguna/toggle-status/${id});
+        $('#statusMessage').html(`Apakah Anda yakin ingin mengubah status pengguna <strong>${nama}</strong> menjadi <strong>${newStatus}</strong>?`);
+        
+        // Perbaiki URL formation untuk toggle status
+        const toggleUrl = '{{ route("superadmin.pengguna.index") }}/' + id + '/toggle-status';
+        $('#formToggleStatus').attr('action', toggleUrl);
         
         const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
         modal.show();
     });
+
+    // ✅ VALIDASI FORM EDIT
+    $('.form-edit-pengguna').on('submit', function(e) {
+        const form = $(this);
+        const namaLengkap = form.find('input[name="nama_lengkap"]').val().trim();
+        const usernameEmail = form.find('input[name="username_email"]').val().trim();
+        const role = form.find('select[name="role"]').val();
+        const bidangId = form.find('select[name="bidang_id"]').val();
+        
+        if (!namaLengkap || !usernameEmail || !role || !bidangId) {
+            e.preventDefault();
+            alert('Semua field wajib diisi!');
+            return false;
+        }
+    });
+
+    // Initial filter untuk memastikan tampilan sesuai dengan filter yang aktif
+    if ($('#filterRole').val() || $('#filterStatus').val()) {
+        filterTable();
+    }
 });
 </script>
-@endpush
 @endsection

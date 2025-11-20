@@ -82,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('superadmin.pengguna.edit');
         Route::put('/pengguna/{id}', [PenggunaController::class, 'update'])->name('superadmin.pengguna.update');
         Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])->name('superadmin.pengguna.destroy');
-        Route::post('/pengguna/toggle-status/{id}', [PenggunaController::class, 'toggleStatus'])->name('superadmin.pengguna.toggle-status');
+        Route::post('/pengguna/{id}/toggle-status', [PenggunaController::class, 'toggleStatus'])->name('superadmin.pengguna.toggle-status');
         Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('superadmin.pengguna.bidang');
 
         // Log Aktivitas
@@ -100,6 +100,17 @@ Route::middleware(['auth'])->group(function () {
             return view('banglola.dashboard');
         })->name('banglola.dashboard');
     });
+
+    // Banglola - Server
+    Route::get('/banglola/server', [\App\Http\Controllers\Banglola\ServerController::class, 'index'])->name('banglola.server.index');
+
+    // Banglola - Website
+    Route::get('/banglola/website', [\App\Http\Controllers\Banglola\WebsiteController::class, 'index'])->name('banglola.website.index');
+
+    // Banglola - Log Aktivitas
+    Route::get('/banglola/log-aktivitas', function () {
+    return view('superadmin.logAktivitas');
+    })->name('banglola.logAktivitas');
 
     // Pamsis
     Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {

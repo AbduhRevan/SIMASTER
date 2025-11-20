@@ -60,10 +60,21 @@ class PenggunaController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:6|confirmed',
             'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
-            'bidang_id' => 'nullable|exists:bidang,bidang_id',
+            'bidang_id' => 'required|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+            'username_email.required' => 'Username/Email wajib diisi',
+            'username_email.unique' => 'Username/Email sudah terdaftar',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 6 karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
+            'role.required' => 'Role wajib dipilih',
+            'bidang_id.required' => 'Bidang wajib dipilih',
+            'bidang_id.exists' => 'Bidang tidak valid',
+            'status.required' => 'Status wajib dipilih'
         ]);
 
         if ($validator->fails()) {
@@ -72,18 +83,24 @@ class PenggunaController extends Controller
                            ->withInput();
         }
 
-        // Create user dengan password yang di-hash
-        Pengguna::create([
-            'nama_lengkap' => $request->nama_lengkap,
-            'username_email' => $request->username_email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'bidang_id' => $request->bidang_id,
-            'status' => $request->status,
-        ]);
+        try {
+            // Create user dengan password yang di-hash
+            Pengguna::create([
+                'nama_lengkap' => $request->nama_lengkap,
+                'username_email' => $request->username_email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'bidang_id' => $request->bidang_id,
+                'status' => $request->status,
+            ]);
 
-        return redirect()->route('superadmin.pengguna.index')
-                       ->with('success', 'Pengguna berhasil ditambahkan');
+            return redirect()->route('superadmin.pengguna.index')
+                           ->with('success', 'Pengguna berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                           ->withInput();
+        }
     }
 
     // Menampilkan data untuk edit (untuk modal)
@@ -102,10 +119,19 @@ class PenggunaController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email,' . $id . ',user_id',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
             'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
-            'bidang_id' => 'nullable|exists:bidang,bidang_id',
+            'bidang_id' => 'required|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+            'username_email.required' => 'Username/Email wajib diisi',
+            'username_email.unique' => 'Username/Email sudah digunakan',
+            'password.min' => 'Password minimal 6 karakter',
+            'role.required' => 'Role wajib dipilih',
+            'bidang_id.required' => 'Bidang wajib dipilih',
+            'bidang_id.exists' => 'Bidang tidak valid',
+            'status.required' => 'Status wajib dipilih'
         ]);
 
         if ($validator->fails()) {
@@ -114,45 +140,72 @@ class PenggunaController extends Controller
                            ->withInput();
         }
 
-        // Siapkan data untuk update
-        $data = [
-            'nama_lengkap' => $request->nama_lengkap,
-            'username_email' => $request->username_email,
-            'role' => $request->role,
-            'bidang_id' => $request->bidang_id,
-            'status' => $request->status,
-        ];
+        try {
+            // Siapkan data untuk update
+            $data = [
+                'nama_lengkap' => $request->nama_lengkap,
+                'username_email' => $request->username_email,
+                'role' => $request->role,
+                'bidang_id' => $request->bidang_id,
+                'status' => $request->status,
+            ];
 
-        // Update password hanya jika diisi
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            // Update password hanya jika diisi
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->password);
+            }
+
+            $pengguna->update($data);
+
+            return redirect()->route('superadmin.pengguna.index')
+                           ->with('success', 'Data pengguna berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                           ->withInput();
         }
-
-        $pengguna->update($data);
-
-        return redirect()->route('superadmin.pengguna.index')
-                       ->with('success', 'Pengguna berhasil diperbarui');
     }
 
     // Toggle status (aktif/nonaktif)
     public function toggleStatus($id)
     {
-        $pengguna = Pengguna::findOrFail($id);
-        $pengguna->status = $pengguna->status == 'active' ? 'inactive' : 'active';
-        $pengguna->save();
+        try {
+            $pengguna = Pengguna::findOrFail($id);
+            
+            // Toggle status
+            $pengguna->status = $pengguna->status == 'active' ? 'inactive' : 'active';
+            $pengguna->save();
 
-        return redirect()->route('superadmin.pengguna.index')
-                       ->with('success', 'Status pengguna berhasil diubah');
+            $statusText = $pengguna->status == 'active' ? 'aktif' : 'nonaktif';
+
+            return redirect()->route('superadmin.pengguna.index')
+                           ->with('success', "Status pengguna berhasil diubah menjadi {$statusText}!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     // Hapus pengguna
     public function destroy($id)
     {
-        $pengguna = Pengguna::findOrFail($id);
-        $pengguna->delete();
+        try {
+            $pengguna = Pengguna::findOrFail($id);
+            
+            // Cek apakah user adalah dirinya sendiri (opsional, sesuaikan dengan kebutuhan)
+            // if ($pengguna->user_id === auth()->id()) {
+            //     return redirect()->back()
+            //                    ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
+            // }
 
-        return redirect()->route('superadmin.pengguna.index')
-                       ->with('success', 'Pengguna berhasil dihapus');
+            $pengguna->delete();
+
+            return redirect()->route('superadmin.pengguna.index')
+                           ->with('success', 'Pengguna berhasil dihapus dan dipindahkan ke arsip!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     // Method helper untuk get bidang (jika diperlukan)

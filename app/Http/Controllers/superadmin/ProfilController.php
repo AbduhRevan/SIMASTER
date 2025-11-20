@@ -143,6 +143,6 @@ public function updatePassword(Request $request)
     public function panduanPengguna()
     {
         // Asumsi view ada di 'profile/panduanPengguna.blade.php'
-        return view('profile.panduanPengguna');
+        return view('profil.panduan_pengguna');
     }
 }
