@@ -87,11 +87,6 @@ Route::middleware(['auth'])->group(function () {
 
         // Log Aktivitas
         Route::get('/logAktivitas', [LogAktivitasController::class, 'index'])->name('superadmin.logAktivitas');
-
-        // Pengaturan
-        Route::get('/pengaturan', function () {
-            return view('pengaturan');
-        })->name('pengaturan');
     });
 
     // Banglola

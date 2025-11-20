@@ -482,11 +482,6 @@ document.addEventListener("click", function(e) {
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Log Aktivitas</span>
                 </a>
-
-                <a href="{{ route('pengaturan') }}" class="menu-link {{ request()->is('pengaturan') ? 'active' : '' }}">
-                    <i class="fa-solid fa-gear"></i>
-                    <span>Pengaturan</span>
-                </a>
             </div>
         </div>
     </div>
