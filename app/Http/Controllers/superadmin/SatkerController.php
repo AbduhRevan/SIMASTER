@@ -14,15 +14,6 @@ class SatkerController extends Controller
     public function index()
     {
         $satker = Satker::orderBy('nama_satker')->paginate(6);
-
-        // Log VIEW (opsional, jika ingin mencatat aktivitas melihat halaman)
-        LogAktivitas::log(
-            'VIEW',
-            'satuan_kerja',
-            'Melihat halaman daftar satuan kerja',
-            Auth::id()
-        );
-
         return view('superadmin.satuankerja', compact('satker'));
     }
 
@@ -129,15 +120,6 @@ class SatkerController extends Controller
     public function arsip()
     {
         $satker = Satker::onlyTrashed()->orderBy('nama_satker')->paginate(10);
-
-        // Log VIEW arsip (opsional)
-        LogAktivitas::log(
-            'VIEW',
-            'satuan_kerja',
-            'Melihat halaman arsip satuan kerja',
-            Auth::id()
-        );
-
         return view('superadmin.arsip', compact('satker'));
     }
 

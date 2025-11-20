@@ -5,7 +5,14 @@
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-<div class="container-fluid py-3">
+{{-- Penting: Hapus padding dari parent content di layout.blade.php --}}
+<style>
+    .content {
+        padding: 100px 40px 30px 40px !important; /* Sesuaikan dengan navbar */
+    }
+</style>
+
+<div class="profile-wrapper">
     {{-- Alert Messages --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -21,7 +28,7 @@
         </div>
     @endif
 
-    {{-- CARD PROFIL (CENTER LAYOUT) --}}
+    {{-- CARD PROFIL (FULL WIDTH LAYOUT) --}}
     <div class="profile-card">
         {{-- Avatar with Camera Icon (Display Only) --}}
         <div class="avatar-wrapper">
@@ -81,14 +88,25 @@
 </div>
 
 <style>
-/* Profile Card Styling */
+/* Profile Wrapper - Remove all padding */
+.profile-wrapper {
+    margin: 0;
+    padding: 0;
+}
+
+/* Alerts inside wrapper */
+.profile-wrapper .alert {
+    margin-bottom: 15px;
+}
+
+/* Profile Card Styling - FULL WIDTH */
 .profile-card {
     background: #fff;
     border-radius: 15px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     padding: 40px 30px;
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
 }
 
 /* Avatar Section */
