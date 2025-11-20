@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\superadmin\Satker;
 
 class SatuanKerjaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $satuanKerja = [
@@ -18,8 +15,8 @@ class SatuanKerjaSeeder extends Seeder
                 'singkatan_satker' => 'Badiklat Kemhan',
             ],
             [
-                'nama_satker' => 'Badan Instalasi Strategis Pertahanan Kementerian Pertahanan',
-                'singkatan_satker' => 'Bainstrahan Kemhan',
+                'nama_satker' => 'Balai Penelitian Industri Strategis Pertahanan',
+                'singkatan_satker' => 'Balinstrahan Kemhan',
             ],
             [
                 'nama_satker' => 'Badan Penelitian dan Pengembangan Kementerian Pertahanan',
@@ -100,13 +97,14 @@ class SatuanKerjaSeeder extends Seeder
         ];
 
         foreach ($satuanKerja as $satker) {
-            // Pastikan singkatan tidak lebih dari 50 karakter
+            // Validasi panjang singkatan
             $singkatan = $satker['singkatan_satker'];
-            if (strlen($singkatan) > 50) {
-                $singkatan = substr($singkatan, 0, 50);
+            if (strlen($singkatan) > 100) {
+                $singkatan = substr($singkatan, 0, 100);
             }
 
-            DB::table('satuan_kerja')->insert([
+            // ✅ Gunakan Model untuk mendukung SoftDeletes
+            Satker::create([
                 'nama_satker' => $satker['nama_satker'],
                 'singkatan_satker' => $singkatan,
             ]);

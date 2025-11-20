@@ -10,14 +10,14 @@ class Satker extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'satuan_kerja'; // nama tabel
+    protected $table = 'satuan_kerja';
     protected $primaryKey = 'satker_id';
-    public $timestamps = false;
-    
+
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'nama_satker',
         'singkatan_satker',
     ];
-
-    protected $dates = ['deleted_at'];
 }

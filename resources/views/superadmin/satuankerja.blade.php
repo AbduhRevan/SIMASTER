@@ -276,13 +276,16 @@ $(document).ready(function() {
         }
     });
 
-    // ✅ MODAL HAPUS HANDLER
+    // ✅ MODAL HAPUS HANDLER - FIXED: Gunakan backtick untuk template literal
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         
+        console.log('Delete ID:', id); // Debug log
+        console.log('Delete Nama:', nama); // Debug log
+        
         $('#namaSatkerHapus').text(nama);
-        $('#formHapusSatker').attr('action', /satker/soft-delete/${id});
+        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`); // ✅ PERBAIKAN: Gunakan backtick
         
         const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
         modal.show();
