@@ -5,6 +5,8 @@ namespace App\Http\Controllers\superadmin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\superadmin\RakServer;
+use App\Models\LogAktivitas;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class RakController extends Controller
@@ -42,12 +44,20 @@ class RakController extends Controller
         ]);
 
         try {
-            RakServer::create([
+            $rak = RakServer::create([
                 'nomor_rak' => $request->nomor_rak,
                 'ruangan' => $request->ruangan,
                 'kapasitas_u_slot' => $request->kapasitas_u_slot,
                 'keterangan' => $request->keterangan,
             ]);
+
+            // TAMBAHKAN LOG CREATE
+            LogAktivitas::log(
+                'CREATE',
+                'rak_server',
+                "Menambahkan rak server baru: {$rak->nomor_rak} di ruangan {$rak->ruangan} dengan kapasitas {$rak->kapasitas_u_slot}U",
+                Auth::id()
+            );
 
             return redirect()->route('superadmin.rakserver')
                 ->with('success', 'Data Rak Server berhasil ditambahkan!');
@@ -64,6 +74,11 @@ class RakController extends Controller
     public function update(Request $request, $id)
     {
         $rak = RakServer::findOrFail($id);
+
+        // Simpan data lama untuk log
+        $nomorLama = $rak->nomor_rak;
+        $ruanganLama = $rak->ruangan;
+        $kapasitasLama = $rak->kapasitas_u_slot;
 
         $request->validate([
             'nomor_rak' => 'required|string|max:50|unique:rak_server,nomor_rak,' . $id . ',rak_id',
@@ -90,6 +105,29 @@ class RakController extends Controller
                 'keterangan' => $request->keterangan,
             ]);
 
+            // TAMBAHKAN LOG UPDATE
+            $perubahan = [];
+            if ($nomorLama !== $request->nomor_rak) {
+                $perubahan[] = "nomor rak dari '{$nomorLama}' menjadi '{$request->nomor_rak}'";
+            }
+            if ($ruanganLama !== $request->ruangan) {
+                $perubahan[] = "ruangan dari '{$ruanganLama}' menjadi '{$request->ruangan}'";
+            }
+            if ($kapasitasLama != $request->kapasitas_u_slot) {
+                $perubahan[] = "kapasitas dari {$kapasitasLama}U menjadi {$request->kapasitas_u_slot}U";
+            }
+
+            $deskripsiPerubahan = count($perubahan) > 0
+                ? "Mengupdate rak server {$request->nomor_rak}: " . implode(', ', $perubahan)
+                : "Mengupdate rak server: {$request->nomor_rak}";
+
+            LogAktivitas::log(
+                'UPDATE',
+                'rak_server',
+                $deskripsiPerubahan,
+                Auth::id()
+            );
+
             return redirect()->route('superadmin.rakserver')
                 ->with('success', 'Data Rak Server berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -106,14 +144,24 @@ class RakController extends Controller
     {
         try {
             $rak = RakServer::findOrFail($id);
-            
+            $nomorRak = $rak->nomor_rak;
+            $ruangan = $rak->ruangan;
+
             // Cek apakah rak masih digunakan oleh server
             if ($rak->servers()->count() > 0) {
                 return redirect()->back()
                     ->with('error', 'Rak server tidak dapat dihapus karena masih digunakan oleh ' . $rak->servers()->count() . ' server!');
             }
-            
+
             $rak->delete();
+
+            // TAMBAHKAN LOG DELETE
+            LogAktivitas::log(
+                'DELETE',
+                'rak_server',
+                "Menghapus rak server: {$nomorRak} di ruangan {$ruangan}",
+                Auth::id()
+            );
 
             return redirect()->route('superadmin.rakserver')
                 ->with('success', 'Data Rak Server berhasil dihapus!');
