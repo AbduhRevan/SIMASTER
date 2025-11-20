@@ -7,14 +7,16 @@ use App\Models\superadmin\Website;
 use App\Models\superadmin\Bidang;
 use App\Models\superadmin\Satker;
 use App\Models\superadmin\Server;
+use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WebsiteController extends Controller
 {
     public function index()
     {
         $websites = Website::with(['bidang', 'satker'])->get();
-        
+
         // Hitung statistik
         $total = $websites->count();
         $aktif = $websites->where('status', 'active')->count();
@@ -50,7 +52,32 @@ class WebsiteController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        Website::create($validated);
+        $website = Website::create($validated);
+
+        // TAMBAHKAN LOG CREATE
+        $logDetails = [];
+        $logDetails[] = "website: {$website->nama_website}";
+        $logDetails[] = "URL: {$website->url}";
+
+        if ($website->bidang_id) {
+            $bidangNama = Bidang::find($website->bidang_id)->singkatan_bidang ?? 'Unknown';
+            $logDetails[] = "bidang: {$bidangNama}";
+        }
+        if ($website->satker_id) {
+            $satkerNama = Satker::find($website->satker_id)->singkatan_satker ?? 'Unknown';
+            $logDetails[] = "satker: {$satkerNama}";
+        }
+        if ($website->tahun_pengadaan) {
+            $logDetails[] = "tahun: {$website->tahun_pengadaan}";
+        }
+        $logDetails[] = "status: " . $this->getStatusLabel($website->status);
+
+        LogAktivitas::log(
+            'CREATE',
+            'website',
+            "Menambahkan website baru - " . implode(', ', $logDetails),
+            Auth::id()
+        );
 
         return redirect()->route('superadmin.website.index')
             ->with('success', 'Website berhasil ditambahkan!');
@@ -59,6 +86,14 @@ class WebsiteController extends Controller
     public function update(Request $request, $id)
     {
         $website = Website::findOrFail($id);
+
+        // Simpan data lama untuk log
+        $namaLama = $website->nama_website;
+        $urlLama = $website->url;
+        $bidangLama = $website->bidang_id;
+        $satkerLama = $website->satker_id;
+        $statusLama = $website->status;
+        $tahunLama = $website->tahun_pengadaan;
 
         $validated = $request->validate([
             'nama_website' => 'required|string|max:150',
@@ -72,6 +107,47 @@ class WebsiteController extends Controller
 
         $website->update($validated);
 
+        // TAMBAHKAN LOG UPDATE
+        $perubahan = [];
+
+        if ($namaLama !== $request->nama_website) {
+            $perubahan[] = "nama dari '{$namaLama}' menjadi '{$request->nama_website}'";
+        }
+        if ($urlLama !== $request->url) {
+            $perubahan[] = "URL dari '{$urlLama}' menjadi '{$request->url}'";
+        }
+        if ($bidangLama != $request->bidang_id) {
+            $bidangLamaNama = $bidangLama ? (Bidang::find($bidangLama)->singkatan_bidang ?? 'Unknown') : 'tidak ada';
+            $bidangBaruNama = $request->bidang_id ? (Bidang::find($request->bidang_id)->singkatan_bidang ?? 'Unknown') : 'tidak ada';
+            $perubahan[] = "bidang dari {$bidangLamaNama} menjadi {$bidangBaruNama}";
+        }
+        if ($satkerLama != $request->satker_id) {
+            $satkerLamaNama = $satkerLama ? (Satker::find($satkerLama)->singkatan_satker ?? 'Unknown') : 'tidak ada';
+            $satkerBaruNama = $request->satker_id ? (Satker::find($request->satker_id)->singkatan_satker ?? 'Unknown') : 'tidak ada';
+            $perubahan[] = "satker dari {$satkerLamaNama} menjadi {$satkerBaruNama}";
+        }
+        if ($statusLama !== $request->status) {
+            $statusLamaLabel = $this->getStatusLabel($statusLama);
+            $statusBaruLabel = $this->getStatusLabel($request->status);
+            $perubahan[] = "status dari {$statusLamaLabel} menjadi {$statusBaruLabel}";
+        }
+        if ($tahunLama != $request->tahun_pengadaan) {
+            $tahunLamaText = $tahunLama ?? 'tidak ada';
+            $tahunBaruText = $request->tahun_pengadaan ?? 'tidak ada';
+            $perubahan[] = "tahun pengadaan dari {$tahunLamaText} menjadi {$tahunBaruText}";
+        }
+
+        $deskripsiPerubahan = count($perubahan) > 0
+            ? "Mengupdate website {$request->nama_website}: " . implode(', ', $perubahan)
+            : "Mengupdate data website: {$request->nama_website}";
+
+        LogAktivitas::log(
+            'UPDATE',
+            'website',
+            $deskripsiPerubahan,
+            Auth::id()
+        );
+
         return redirect()->route('superadmin.website.index')
             ->with('success', 'Website berhasil diperbarui!');
     }
@@ -79,7 +155,21 @@ class WebsiteController extends Controller
     public function destroy($id)
     {
         $website = Website::findOrFail($id);
+
+        // Simpan data untuk log
+        $namaWebsite = $website->nama_website;
+        $urlWebsite = $website->url;
+        $bidangNama = $website->bidang_id ? (Bidang::find($website->bidang_id)->singkatan_bidang ?? 'Unknown') : 'tidak ada';
+
         $website->delete();
+
+        // TAMBAHKAN LOG DELETE
+        LogAktivitas::log(
+            'DELETE',
+            'website',
+            "Menghapus website: {$namaWebsite} ({$urlWebsite}) dari bidang {$bidangNama}",
+            Auth::id()
+        );
 
         return redirect()->route('superadmin.website.index')
             ->with('success', 'Website berhasil dihapus!');
@@ -88,13 +178,26 @@ class WebsiteController extends Controller
     public function detail(Request $request, $id)
     {
         $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
-        
+
         // Jika request dari AJAX, return JSON
         if ($request->ajax()) {
             return response()->json($website);
         }
-        
+
         // Jika diakses langsung via URL, redirect ke index
         return redirect()->route('superadmin.website.index');
+    }
+
+    /**
+     * Helper method untuk format status label
+     */
+    private function getStatusLabel($status)
+    {
+        return match ($status) {
+            'active' => 'Aktif',
+            'inactive' => 'Tidak Aktif',
+            'maintenance' => 'Maintenance',
+            default => ucfirst($status)
+        };
     }
 }
