@@ -1,4 +1,3 @@
-routes 
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -31,91 +30,69 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
         Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
         Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
-    
+   
     // Superadmin
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('superadmin.dashboard');
-        })->name('superadmin.dashboard');
-    });
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('superadmin.dashboard');
 
-    // Dashboard
-    Route::get('/superadmin/dashboard', [DashboardController::class, 'index'])->name('superadmin.dashboard');
- // Data Master
- // Bidang
-        Route::get('/superadmin/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
-        Route::post('/superadmin/bidang/store', [BidangController::class, 'store'])->name('superadmin.bidang.store');
-        Route::put('/superadmin/bidang/update/{id}', [BidangController::class, 'update'])->name('superadmin.bidang.update');
+        // Data Master
+        // Bidang
+        Route::get('/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
+        Route::post('/bidang/store', [BidangController::class, 'store'])->name('superadmin.bidang.store');
+        Route::put('/bidang/update/{id}', [BidangController::class, 'update'])->name('superadmin.bidang.update');
         Route::delete('/bidang/soft-delete/{id}', [BidangController::class, 'softDelete'])->name('superadmin.bidang.softdelete');
- // Satuan Kerja 
-        Route::get('/superadmin/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
-        Route::post('/superadmin/satuankerja/store', [SatkerController::class, 'store'])->name('superadmin.satker.store');
-        Route::put('/superadmin/satker/update/{id}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
+
+        // Satuan Kerja 
+        Route::get('/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
+        Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('superadmin.satker.store');
+        Route::put('/satker/update/{id}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
         Route::delete('/satker/soft-delete/{id}', [SatkerController::class, 'softDelete'])->name('superadmin.satker.softdelete');
 
-
- // Rak Server
-        Route::get('/superadmin/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
-        Route::post('/superadmin/rakserver/store', [RakController::class, 'store'])->name('superadmin.rakserver.store');
+        // Rak Server
+        Route::get('/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
+        Route::post('/rakserver/store', [RakController::class, 'store'])->name('superadmin.rakserver.store');
         Route::put('/rakserver/update/{id}', [RakController::class, 'update'])->name('superadmin.rakserver.update');
-        Route::delete('/rakserver/{id}', [RakController::class, 'destroy'])->name('rakserver.destroy');
+        Route::delete('/rakserver/delete/{id}', [RakController::class, 'destroy'])->name('superadmin.rakserver.delete');
 
-// Arsip Sementara
+        // Arsip Sementara
         Route::get('/arsip', [BidangController::class, 'arsip'])->name('superadmin.arsip');
         Route::post('/bidang/restore/{id}', [BidangController::class, 'restore'])->name('superadmin.bidang.restore');
         Route::delete('/bidang/force-delete/{id}', [BidangController::class, 'forceDelete'])->name('superadmin.bidang.forceDelete');
 
-    //Manajemen Aset
-    Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
+        // Manajemen Aset - Server
+        Route::get('/server', [ServerController::class, 'index'])->name('superadmin.server.index');
+        Route::get('/server/{id}', [ServerController::class, 'show'])->name('superadmin.server.detail');
+        Route::post('/server/store', [ServerController::class, 'store'])->name('superadmin.server.store');
 
-        // Server
-        Route::get('/superadmin/server', [\App\Http\Controllers\Superadmin\ServerController::class, 'index'])
-        ->name('superadmin.server.index');
-
-         Route::get('/superadmin/server/{id}', [\App\Http\Controllers\Superadmin\ServerController::class, 'show'])
-        ->name('superadmin.server.detail');
-
-         Route::post('/superadmin/server/store', [\App\Http\Controllers\Superadmin\ServerController::class, 'store'])
-        ->name('superadmin.server.store');
-        });
-    
         // Website
-        // Routes untuk Website
-    Route::prefix('superadmin')->name('superadmin.')->middleware(['auth'])->group(function () {
-    Route::get('/website', [WebsiteController::class, 'index'])->name('website.index');
-    Route::post('/website/store', [WebsiteController::class, 'store'])->name('website.store');
-    Route::put('/website/update/{id}', [WebsiteController::class, 'update'])->name('website.update');
-    Route::delete('/website/delete/{id}', [WebsiteController::class, 'destroy'])->name('website.destroy');
-    Route::get('/website/{id}/detail', [WebsiteController::class, 'detail'])->name('website.detail');
-});
-    Route::get('/website', function () {
-        return view('superadmin.website');
-    })->name('superadmin.website');
-    
-    Route::get('/pemeliharaan', function () {
-        return view('superadmin.pemeliharaan');
-    })->name('superadmin.pemeliharaan');
-    
-    //Sistem
-    // pengguna
-Route::prefix('superadmin')->name('superadmin.')->group(function() {
-    Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
-    Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
-    Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
-    Route::put('/pengguna/{id}', [PenggunaController::class, 'update'])->name('pengguna.update');
-    Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
-    Route::post('/pengguna/toggle-status/{id}', [PenggunaController::class, 'toggleStatus'])->name('pengguna.toggle-status');
-    Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('pengguna.bidang');
-});
+        Route::get('/website', [WebsiteController::class, 'index'])->name('superadmin.website.index');
+        Route::post('/website/store', [WebsiteController::class, 'store'])->name('superadmin.website.store');
+        Route::put('/website/update/{id}', [WebsiteController::class, 'update'])->name('superadmin.website.update');
+        Route::delete('/website/delete/{id}', [WebsiteController::class, 'destroy'])->name('superadmin.website.destroy');
+        Route::get('/website/{id}/detail', [WebsiteController::class, 'detail'])->name('superadmin.website.detail');
 
+        // Pemeliharaan
+        Route::get('/pemeliharaan', function () {
+            return view('superadmin.pemeliharaan');
+        })->name('superadmin.pemeliharaan');
 
-    Route::get('/logAktivitas', [LogAktivitasController::class, 'index'])->name('superadmin.logAktivitas');
+        // Sistem - Pengguna
+        Route::get('/pengguna', [PenggunaController::class, 'index'])->name('superadmin.pengguna.index');
+        Route::post('/pengguna', [PenggunaController::class, 'store'])->name('superadmin.pengguna.store');
+        Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('superadmin.pengguna.edit');
+        Route::put('/pengguna/{id}', [PenggunaController::class, 'update'])->name('superadmin.pengguna.update');
+        Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])->name('superadmin.pengguna.destroy');
+        Route::post('/pengguna/toggle-status/{id}', [PenggunaController::class, 'toggleStatus'])->name('superadmin.pengguna.toggle-status');
+        Route::get('/pengguna/bidang', [PenggunaController::class, 'getBidang'])->name('superadmin.pengguna.bidang');
 
-    //Pengaturan
-    Route::get('/pengaturan', function () {
-        return view('pengaturan');
-    })->name('pengaturan');
-});
+        // Log Aktivitas
+        Route::get('/logAktivitas', [LogAktivitasController::class, 'index'])->name('superadmin.logAktivitas');
+
+        // Pengaturan
+        Route::get('/pengaturan', function () {
+            return view('pengaturan');
+        })->name('pengaturan');
+    });
 
     // Banglola
     Route::middleware(['role:banglola'])->prefix('banglola')->group(function () {
@@ -151,3 +128,4 @@ Route::prefix('superadmin')->name('superadmin.')->group(function() {
             return view('pimpinan.dashboard');
         })->name('pimpinan.dashboard');
     });
+});
