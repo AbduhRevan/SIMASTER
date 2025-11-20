@@ -17,7 +17,7 @@ class RakController extends Controller
     public function index()
     {
         // Ambil semua rak beserta relasi server untuk hitung terpakai
-        $rak = RakServer::with('servers')->orderBy('rak_id', 'desc')->get();
+        $rak = RakServer::with('servers')->orderBy('rak_id', 'asc')->get();
         return view('superadmin.rakserver', compact('rak'));
     }
 
