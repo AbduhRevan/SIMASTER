@@ -73,41 +73,64 @@ class ProfilController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function gantiPassword()
-    {
-        // Asumsi view ada di 'profile/gantiPassword.blade.php'
-        return view('profil.gantiPassword');
-    }
+   public function gantiPassword()
+{
+    return view('profil.ganti_password');
+}
 
-    /**
-     * Proses penyimpanan password baru.
-     * Route: POST /ganti-password
-     * Name: ganti.password.post (jika ditambahkan)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function updatePassword(Request $request)
-    {
-        $request->validate([
-            'current_password' => ['required', function ($attribute, $value, $fail) {
+/**
+ * Proses penyimpanan password baru dengan validasi lengkap dan auto logout.
+ * 
+ * @param  \Illuminate\Http\Request  $request
+ * @return \Illuminate\Http\RedirectResponse
+ */
+public function updatePassword(Request $request)
+{
+    // Validasi input dengan aturan password yang ketat
+    $request->validate([
+        'current_password' => [
+            'required',
+            function ($attribute, $value, $fail) {
                 if (!Hash::check($value, Auth::user()->password)) {
                     $fail('Password lama yang Anda masukkan salah.');
                 }
-            }],
-            'new_password' => 'required|min:8|confirmed',
-        ]);
+            }
+        ],
+        'new_password' => [
+            'required',
+            'min:8',
+            'confirmed',
+            'regex:/[A-Z]/',      // Harus ada huruf besar
+            'regex:/[a-z]/',      // Harus ada huruf kecil
+            'regex:/[0-9]/',      // Harus ada angka
+        ],
+    ], [
+        'new_password.min' => 'Password baru harus minimal 8 karakter.',
+        'new_password.regex' => 'Password harus mengandung huruf besar, huruf kecil, dan angka.',
+        'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
+    ]);
 
-        try {
-            $user = Auth::user();
-            $user->password = Hash::make($request->new_password);
-            $user->save();
+    try {
+        $user = Auth::user();
+        
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
 
-            return redirect()->route('ganti.password')->with('success', 'Password berhasil diubah.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengubah password: ' . $e->getMessage());
-        }
+        // Logout user dari semua session
+        Auth::logout();
+        
+        // Invalidate session
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Redirect ke halaman login dengan pesan sukses
+        return redirect()->route('login')->with('success', 'Password berhasil diubah. Silakan login dengan password baru Anda.');
+        
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Gagal mengubah password: ' . $e->getMessage());
     }
+}
 
 
     /**

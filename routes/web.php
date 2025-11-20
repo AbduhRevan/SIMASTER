@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     // Profil, Password, Panduan Pengguna
         Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
         Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
+        Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
         Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
     
     // Superadmin
