@@ -61,8 +61,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Manajemen Aset - Server
         Route::get('/server', [ServerController::class, 'index'])->name('superadmin.server.index');
-        Route::get('/server/{id}', [ServerController::class, 'show'])->name('superadmin.server.detail');
+        Route::get('/server/{id}/detail', [ServerController::class, 'detail'])->name('superadmin.server.detail');
+        Route::get('/server/{id}/edit', [ServerController::class, 'edit'])->name('superadmin.server.edit');
+        Route::put('/server/update/{id}', [ServerController::class, 'update'])->name('superadmin.server.update');
         Route::post('/server/store', [ServerController::class, 'store'])->name('superadmin.server.store');
+        Route::delete('/superadmin/server/{id}', [ServerController::class, 'destroy'])->name('superadmin.server.delete');
 
         // Website
         Route::get('/website', [WebsiteController::class, 'index'])->name('superadmin.website.index');

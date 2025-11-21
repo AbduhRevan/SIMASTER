@@ -70,18 +70,26 @@ class ServerController extends Controller
         // Jika ada website_name, buat website baru atau cari yang sudah ada
         $websiteName = null;
         if (!empty($request->website_name)) {
-            $website = Website::firstOrCreate(
-                ['nama_website' => $request->website_name],
-                [
-                    'url' => '#', // default, bisa disesuaikan
-                    'status' => 'active',
-                    'satker_id' => $request->satker_id,
-                    'bidang_id' => $request->bidang_id,
-                ]
-            );
-            $validated['website_id'] = $website->website_id;
-            $websiteName = $website->nama_website;
-        }
+
+    // Cek apakah website dengan nama yang sama sudah ada
+    $website = Website::where('nama_website', $request->website_name)->first();
+
+    if (!$website) {
+        // Buat URL placeholder unik (tidak bentrok dengan unique index)
+        $placeholderUrl = 'placeholder-' . uniqid();
+
+        $website = Website::create([
+            'nama_website' => $request->website_name,
+            'url' => $placeholderUrl,
+            'status' => 'active',
+            'satker_id' => $request->satker_id,
+            'bidang_id' => $request->bidang_id,
+        ]);
+    }
+
+    $validated['website_id'] = $website->website_id;
+}
+
 
         // Hapus website_name dari validated karena bukan kolom di table server
         unset($validated['website_name']);
@@ -131,15 +139,26 @@ class ServerController extends Controller
      */
     public function detail($id)
     {
-        $server = Server::with(['rak', 'bidang', 'satker', 'website'])->findOrFail($id);
+    $server = Server::with(['rak', 'bidang', 'satker', 'website'])->findOrFail($id);
 
-        // Data untuk dropdown edit
-        $raks = RakServer::all();
-        $bidangs = Bidang::all();
-        $satkers = Satker::all();
-
-        return view('superadmin.server_detail', compact('server', 'raks', 'bidangs', 'satkers'));
+    return response()->json([
+        'status' => 'success',
+        'data' => $server
+    ]);
     }
+
+    /**
+ * Show the form for editing the specified server (untuk AJAX)
+ */
+public function edit($id)
+{
+    $server = Server::with(['rak', 'bidang', 'satker', 'website'])->findOrFail($id);
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $server
+    ]);
+}
 
     /**
      * Update the specified server
