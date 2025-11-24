@@ -85,6 +85,25 @@
         border-radius: 10px;
         margin-bottom: 15px;
     }
+
+    .accordion-body {
+    color: #6B6B6B !important;
+    background-color: #F5F5F5; /* kalau mau background sama seperti gambar */
+}
+
+
+    /* Hilangkan background biru saat accordion dibuka */
+.accordion-button:not(.collapsed) {
+    background-color: #ffffff !important; 
+    color: #000 !important;               
+    box-shadow: none !important;           
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 </style>
 
 <div class="guide-container">
