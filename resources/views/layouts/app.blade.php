@@ -465,7 +465,7 @@ document.addEventListener("click", function(e) {
                     <i class="fa-solid fa-globe"></i>
                     <span>Website</span>
                 </a>
-                <a href="#" class="menu-link">
+                <a href="{{ route('superadmin.pemeliharaan') }}" class="menu-link {{ request()->routeIs('superadmin.pemeliharaan') ? 'active' : '' }}">
                     <i class="fa-solid fa-screwdriver-wrench"></i>
                     <span>Pemeliharaan</span>
                 </a>

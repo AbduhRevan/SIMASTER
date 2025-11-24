@@ -11,6 +11,7 @@ use App\Http\Controllers\superadmin\WebsiteController;
 use App\Http\Controllers\superadmin\DashboardController;
 use App\Http\Controllers\superadmin\ServerController;
 use App\Http\Controllers\superadmin\LogAktivitasController;
+use App\Http\Controllers\PemeliharaanController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -75,10 +76,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/website/{id}/detail', [WebsiteController::class, 'detail'])->name('superadmin.website.detail');
 
         // Pemeliharaan
-        Route::get('/pemeliharaan', function () {
-            return view('superadmin.pemeliharaan');
-        })->name('superadmin.pemeliharaan');
-
+        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('superadmin.pemeliharaan');
+        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('superadmin.pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('superadmin.pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('superadmin.pemeliharaan.destroy');
         // Sistem - Pengguna
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('superadmin.pengguna.index');
         Route::post('/pengguna', [PenggunaController::class, 'store'])->name('superadmin.pengguna.store');
