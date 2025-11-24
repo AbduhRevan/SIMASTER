@@ -430,7 +430,10 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-  // Search functionality
+
+  /* ==========================================================
+     SEARCH WEBSITE
+  ========================================================== */
   $('#searchInput').on('keyup', function() {
     const value = $(this).val().toLowerCase();
     $('.website-card').filter(function() {
@@ -438,7 +441,9 @@ $(document).ready(function() {
     });
   });
 
-  // Detail button handler dengan AJAX
+  /* ==========================================================
+     DETAIL WEBSITE (AJAX)
+  ========================================================== */
   $('.btn-detail').click(function() {
     const id = $(this).data('id');
     
@@ -446,57 +451,37 @@ $(document).ready(function() {
       url: `/superadmin/website/${id}/detail`,
       type: 'GET',
       success: function(data) {
-        // Set nama website di header
+
         $('#detailNamaWebsite').text(data.nama_website);
         $('#detailNama').text(data.nama_website);
-        
-        // Set URL
+
         $('#detailUrlContainer').html(
           `<a href="${data.url}" target="_blank" class="text-decoration-none">
             <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> ${data.url}
           </a>`
         );
-        
-        // Set Status dengan badge
+
         let statusBadge = '';
         if(data.status === 'active') {
-          statusBadge = '<span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>';
+          statusBadge = '<span class="badge bg-success px-3 py-2">Aktif</span>';
         } else if(data.status === 'maintenance') {
-          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>';
+          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2">Maintenance</span>';
         } else {
-          statusBadge = '<span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>';
+          statusBadge = '<span class="badge bg-danger px-3 py-2">Tidak Aktif</span>';
         }
         $('#detailStatus').html(statusBadge);
-        
-        // Set Tahun Pengadaan
+
         $('#detailTahun').text(data.tahun_pengadaan || '-');
-        
-        // Set Satker
-        $('#detailSatker').html(
-          '<i class="fa-solid fa-building me-1"></i> ' + 
-          (data.satker ? data.satker.nama_satker : '-')
-        );
-        
-        // Set Bidang
-        $('#detailBidang').html(
-          '<i class="fa-solid fa-briefcase me-1"></i> ' + 
-          (data.bidang ? data.bidang.nama_bidang : '-')
-        );
-        
-        // Set Server
-        $('#detailServer').html(
-          '<i class="fa-solid fa-server me-1"></i> ' + 
-          (data.server ? data.server.nama_server : '-')
-        );
-        
-        // Set Keterangan
+        $('#detailSatker').html('<i class="fa-solid fa-building me-1"></i> ' + (data.satker ? data.satker.nama_satker : '-'));
+        $('#detailBidang').html('<i class="fa-solid fa-briefcase me-1"></i> ' + (data.bidang ? data.bidang.nama_bidang : '-'));
+        $('#detailServer').html('<i class="fa-solid fa-server me-1"></i> ' + (data.server ? data.server.nama_server : '-'));
+
         if(data.keterangan) {
           $('#detailKeterangan').html(data.keterangan.replace(/\n/g, '<br>'));
         } else {
           $('#detailKeterangan').html('<p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>');
         }
-        
-        // Show modal
+
         $('#detailModal').modal('show');
       },
       error: function() {
@@ -505,30 +490,41 @@ $(document).ready(function() {
     });
   });
 
-  // Bidang visibility untuk Modal Tambah
-  $('#satkerSelect').change(function() {
-  const selectedName = $('#satkerSelect option:selected').data('name')?.toLowerCase() || '';
-  if (selectedName.includes('Pusdatin Kemhan')) {
-    $('#bidangWrapper').show();
-  } else {
-    $('#bidangWrapper').hide();
-    $('#bidangSelect').val('');
+  /* ==========================================================
+     FUNGSI BERSAMA: CEK SATKER, TAMPILKAN BIDANG
+  ========================================================== */
+  function shouldShowBidang(selected) {
+      const name = selected.data('name')?.toLowerCase() || "";
+      return name.includes("pusat data dan informasi");
   }
-});
 
-
-  // Bidang visibility untuk Modal Edit
-  $('#editSatker').change(function() {
-    const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
-      $('#editBidangWrapper').show();
-    } else {
-      $('#editBidangWrapper').hide();
-      $('#editBidang').val('');
-    }
+  /* ==========================================================
+     TAMBAH WEBSITE — SHOW/HIDE BIDANG
+  ========================================================== */
+  $('#satkerSelect').change(function() {
+      if (shouldShowBidang($('#satkerSelect option:selected'))) {
+          $('#bidangWrapper').show();
+      } else {
+          $('#bidangWrapper').hide();
+          $('#bidangSelect').val('');
+      }
   });
 
-  // Edit button handler
+  /* ==========================================================
+     EDIT WEBSITE — SHOW/HIDE BIDANG
+  ========================================================== */
+  $('#editSatker').change(function() {
+      if (shouldShowBidang($('#editSatker option:selected'))) {
+          $('#editBidangWrapper').show();
+      } else {
+          $('#editBidangWrapper').hide();
+          $('#editBidang').val('');
+      }
+  });
+
+  /* ==========================================================
+     EDIT BUTTON CLICK
+  ========================================================== */
   $('.btn-edit').click(function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
@@ -547,17 +543,21 @@ $(document).ready(function() {
     $('#editTahun').val(tahun || '');
     $('#editKeterangan').val(keterangan || '');
 
-    // Check if bidang should be shown
-    const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
-      $('#editBidangWrapper').show();
+    // Check bidang saat modal dibuka
+    if (shouldShowBidang($('#editSatker option:selected'))) {
+        $('#editBidangWrapper').show();
+    } else {
+        $('#editBidangWrapper').hide();
+        $('#editBidang').val('');
     }
 
     $('#editForm').attr('action', `/superadmin/website/update/${id}`);
     $('#editModal').modal('show');
   });
 
-  // Delete button handler
+  /* ==========================================================
+     DELETE BUTTON CLICK
+  ========================================================== */
   $('.btn-hapus').click(function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
@@ -566,6 +566,7 @@ $(document).ready(function() {
     $('#hapusForm').attr('action', `/superadmin/website/delete/${id}`);
     $('#hapusModal').modal('show');
   });
+
 });
 </script>
 @endpush
