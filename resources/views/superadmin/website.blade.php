@@ -354,29 +354,45 @@
 {{-- Modal Konfirmasi Hapus --}}
 <div class="modal fade" id="hapusModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow">
-      <div class="modal-header bg-danger text-white border-0 rounded-top-4">
+    <div class="modal-content border-0 rounded-4 shadow overflow-hidden">
+
+      <!-- Header Merah Maroon -->
+      <div class="modal-header bg-maroon text-white border-0">
         <h5 class="modal-title fw-bold">Konfirmasi Hapus</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
+      <!-- Body -->
       <div class="modal-body text-center p-4">
-        <i class="fa-solid fa-triangle-exclamation text-danger mb-3" style="font-size: 3rem;"></i>
-        <p class="mb-4 fs-6">
-          Apakah Anda yakin ingin menghapus website<br>
-          <span class="fw-bold" id="hapusNama">""</span>?
+
+        <!-- Icon Warning Kuning -->
+        <div class="mb-3">
+          <i class="fa-solid fa-triangle-exclamation text-warning" style="font-size: 4rem;"></i>
+        </div>
+
+        <!-- Teks Konfirmasi -->
+        <p class="mb-3 fs-6">
+          Apakah Anda yakin ingin menghapus website <br>
+          <span class="fw-bold" id="hapusNama"></span>?
         </p>
-        <p class="text-muted small">Data yang dihapus tidak dapat dikembalikan.</p>
+
+        <!-- Alert Kuning (sesuai tampilan Server) -->
+        <div class="alert alert-warning small mb-0">
+          Data akan dipindahkan ke Arsip Sementara dan dapat dipulihkan
+          dalam waktu 30 hari sebelum dihapus permanen.
+        </div>
       </div>
 
+      <!-- Footer Tombol -->
       <form id="hapusForm" method="POST">
         @csrf
         @method('DELETE')
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger px-4">Hapus</button>
         </div>
       </form>
+
     </div>
   </div>
 </div>
