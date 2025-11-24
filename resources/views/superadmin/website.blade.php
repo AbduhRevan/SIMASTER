@@ -398,45 +398,29 @@
 {{-- Modal Konfirmasi Hapus --}}
 <div class="modal fade" id="hapusModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow overflow-hidden">
-
-      <!-- Header Merah Maroon -->
-      <div class="modal-header bg-maroon text-white border-0">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header bg-danger text-white border-0 rounded-top-4">
         <h5 class="modal-title fw-bold">Konfirmasi Hapus</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
-      <!-- Body -->
       <div class="modal-body text-center p-4">
-
-        <!-- Icon Warning Kuning -->
-        <div class="mb-3">
-          <i class="fa-solid fa-triangle-exclamation text-warning" style="font-size: 4rem;"></i>
-        </div>
-
-        <!-- Teks Konfirmasi -->
-        <p class="mb-3 fs-6">
-          Apakah Anda yakin ingin menghapus website <br>
-          <span class="fw-bold" id="hapusNama"></span>?
+        <i class="fa-solid fa-triangle-exclamation text-danger mb-3" style="font-size: 3rem;"></i>
+        <p class="mb-4 fs-6">
+          Apakah Anda yakin ingin menghapus website<br>
+          <span class="fw-bold" id="hapusNama">""</span>?
         </p>
-
-        <!-- Alert Kuning (sesuai tampilan Server) -->
-        <div class="alert alert-warning small mb-0">
-          Data akan dipindahkan ke Arsip Sementara dan dapat dipulihkan
-          dalam waktu 30 hari sebelum dihapus permanen.
-        </div>
+        <p class="text-muted small">Data yang dihapus tidak dapat dikembalikan.</p>
       </div>
 
-      <!-- Footer Tombol -->
       <form id="hapusForm" method="POST">
         @csrf
         @method('DELETE')
-        <div class="modal-footer border-0 justify-content-center">
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-danger px-4">Hapus</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger">Ya, Hapus</button>
         </div>
       </form>
-
     </div>
   </div>
 </div>
@@ -474,10 +458,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-
-  /* ==========================================================
-     SEARCH WEBSITE
-  ========================================================== */
+  // Search functionality
   $('#searchInput').on('keyup', function() {
     const value = $(this).val().toLowerCase();
     $('.website-card').filter(function() {
@@ -485,9 +466,7 @@ $(document).ready(function() {
     });
   });
 
-  /* ==========================================================
-     DETAIL WEBSITE (AJAX)
-  ========================================================== */
+  // Detail button handler dengan AJAX
   $('.btn-detail').click(function() {
     const id = $(this).data('id');
     
@@ -495,36 +474,24 @@ $(document).ready(function() {
       url: `/superadmin/website/${id}/detail`,
       type: 'GET',
       success: function(data) {
-<<<<<<< HEAD
         $('#detailNamaWebsite').text(data.nama_website);
         $('#detailNama').text(data.nama_website);
         
-=======
-
-        $('#detailNamaWebsite').text(data.nama_website);
-        $('#detailNama').text(data.nama_website);
-
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
         $('#detailUrlContainer').html(
           `<a href="${data.url}" target="_blank" class="text-decoration-none">
             <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> ${data.url}
           </a>`
         );
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
         let statusBadge = '';
         if(data.status === 'active') {
-          statusBadge = '<span class="badge bg-success px-3 py-2">Aktif</span>';
+          statusBadge = '<span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>';
         } else if(data.status === 'maintenance') {
-          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2">Maintenance</span>';
+          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>';
         } else {
-          statusBadge = '<span class="badge bg-danger px-3 py-2">Tidak Aktif</span>';
+          statusBadge = '<span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>';
         }
         $('#detailStatus').html(statusBadge);
-<<<<<<< HEAD
         
         $('#detailTahun').text(data.tahun_pengadaan || '-');
         
@@ -543,24 +510,12 @@ $(document).ready(function() {
           (data.bidang ? data.bidang.nama_bidang : '-')
         );
         
-=======
-
-        $('#detailTahun').text(data.tahun_pengadaan || '-');
-        $('#detailSatker').html('<i class="fa-solid fa-building me-1"></i> ' + (data.satker ? data.satker.nama_satker : '-'));
-        $('#detailBidang').html('<i class="fa-solid fa-briefcase me-1"></i> ' + (data.bidang ? data.bidang.nama_bidang : '-'));
-        $('#detailServer').html('<i class="fa-solid fa-server me-1"></i> ' + (data.server ? data.server.nama_server : '-'));
-
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
         if(data.keterangan) {
           $('#detailKeterangan').html(data.keterangan.replace(/\n/g, '<br>'));
         } else {
           $('#detailKeterangan').html('<p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>');
         }
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
         $('#detailModal').modal('show');
       },
       error: function() {
@@ -569,7 +524,6 @@ $(document).ready(function() {
     });
   });
 
-<<<<<<< HEAD
   // Bidang visibility untuk Modal Tambah
   $('#satkerSelect').change(function() {
     const selectedName = $('#satkerSelect option:selected').data('name')?.toLowerCase() || '';
@@ -590,43 +544,9 @@ $(document).ready(function() {
       $('#editBidangWrapper').hide();
       $('#editBidang').val('');
     }
-=======
-  /* ==========================================================
-     FUNGSI BERSAMA: CEK SATKER, TAMPILKAN BIDANG
-  ========================================================== */
-  function shouldShowBidang(selected) {
-      const name = selected.data('name')?.toLowerCase() || "";
-      return name.includes("pusat data dan informasi");
-  }
-
-  /* ==========================================================
-     TAMBAH WEBSITE — SHOW/HIDE BIDANG
-  ========================================================== */
-  $('#satkerSelect').change(function() {
-      if (shouldShowBidang($('#satkerSelect option:selected'))) {
-          $('#bidangWrapper').show();
-      } else {
-          $('#bidangWrapper').hide();
-          $('#bidangSelect').val('');
-      }
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
   });
 
-  /* ==========================================================
-     EDIT WEBSITE — SHOW/HIDE BIDANG
-  ========================================================== */
-  $('#editSatker').change(function() {
-      if (shouldShowBidang($('#editSatker option:selected'))) {
-          $('#editBidangWrapper').show();
-      } else {
-          $('#editBidangWrapper').hide();
-          $('#editBidang').val('');
-      }
-  });
-
-  /* ==========================================================
-     EDIT BUTTON CLICK
-  ========================================================== */
+  // Edit button handler
   $('.btn-edit').click(function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
@@ -647,28 +567,17 @@ $(document).ready(function() {
     $('#editTahun').val(tahun || '');
     $('#editKeterangan').val(keterangan || '');
 
-<<<<<<< HEAD
     // Check if bidang should be shown
     const selectedName = $('#editSatker option:selected').data('name')?.toLowerCase() || '';
     if(selectedName.includes('pusat data dan informasi')) {
       $('#editBidangWrapper').show();
-=======
-    // Check bidang saat modal dibuka
-    if (shouldShowBidang($('#editSatker option:selected'))) {
-        $('#editBidangWrapper').show();
-    } else {
-        $('#editBidangWrapper').hide();
-        $('#editBidang').val('');
->>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
     }
 
     $('#editForm').attr('action', `/superadmin/website/update/${id}`);
     $('#editModal').modal('show');
   });
 
-  /* ==========================================================
-     DELETE BUTTON CLICK
-  ========================================================== */
+  // Delete button handler
   $('.btn-hapus').click(function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
@@ -677,7 +586,6 @@ $(document).ready(function() {
     $('#hapusForm').attr('action', `/superadmin/website/delete/${id}`);
     $('#hapusModal').modal('show');
   });
-
 });
 </script>
 @endpush
