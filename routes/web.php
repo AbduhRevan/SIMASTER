@@ -27,10 +27,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
 
     // Profil, Password, Panduan Pengguna
+<<<<<<< HEAD
     Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
     Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
     Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
     Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
+=======
+        Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
+        Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
+        Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
+        Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
+        Route::get('/panduan-pengguna/{category?}', [PanduanController::class, 'index'])->name('panduan.index');
+>>>>>>> 8866e5e3f04ce2bd12dbc69145e2ee277ad9dd5f
 
     // Superadmin
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
