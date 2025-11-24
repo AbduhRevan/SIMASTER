@@ -45,13 +45,13 @@
 
     <!-- WRAPPER TABLE -->
     <div class="table-responsive">
-        <table class="table table-bordered align-middle mb-0">
+        <table class="table table-bordered align-middle mb-0 table-fixed">
             <thead class="table-light">
                 <tr>
-                    <th>No</th>
-                    <th>Nama Satuan Kerja</th>
-                    <th>Singkatan</th>
-                    <th class="text-center" style="width: 100px;">Aksi</th>
+                    <th style="width: 60px;">No</th>
+                    <th style="width: 45%;">Nama Satuan Kerja</th>
+                    <th style="width: 35%;">Singkatan</th>
+                    <th class="text-center" style="width: 120px;">Aksi</th>
                 </tr>
             </thead>
             <tbody id="satkerTableBody">
@@ -118,10 +118,10 @@
         </table>
     </div>
 
-    <!-- Pagination Info -->
+    <!-- Pagination Info & Links -->
     @if ($satker->count() > 0)
-        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-            <p class="mb-0 text-secondary small">
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3" id="paginationWrapper">
+            <p class="mb-0 text-secondary small" id="paginationInfo">
                 Menampilkan {{ $satker->firstItem() }}–{{ $satker->lastItem() }} dari {{ $satker->total() }} data
             </p>
             <div class="pagination-custom">
@@ -226,28 +226,145 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
-.pagination-custom nav {
-    display: flex;
-    gap: 6px;
+
+/* ✅ FIXED TABLE LAYOUT - KOLOM KONSISTEN */
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
 }
+
+.table-fixed th,
+.table-fixed td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.table-fixed th:nth-child(1),
+.table-fixed td:nth-child(1) {
+    width: 60px;
+    text-align: center;
+}
+
+.table-fixed th:nth-child(2),
+.table-fixed td:nth-child(2) {
+    width: 45%;
+}
+
+.table-fixed th:nth-child(3),
+.table-fixed td:nth-child(3) {
+    width: 35%;
+}
+
+.table-fixed th:nth-child(4),
+.table-fixed td:nth-child(4) {
+    width: 120px;
+    text-align: center;
+}
+
+/* ✅ IMPROVED PAGINATION STYLING */
+.pagination-custom {
+    display: flex;
+    align-items: center;
+}
+
+.pagination {
+    margin: 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pagination .page-item {
+    margin: 0;
+}
+
+.pagination .page-link {
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 36px;
+    height: 36px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+}
+
 .pagination .page-item.active .page-link {
     background-color: #7b0000;
     border-color: #7b0000;
-}
-.pagination .page-link {
-    color: #7b0000;
-    border-radius: 8px;
-}
-.pagination .page-link:hover {
-    background-color: #7b0000;
     color: white;
+    font-weight: 600;
+}
+
+.pagination .page-link:hover:not(.page-item.disabled .page-link) {
+    background-color: #7b0000;
+    border-color: #7b0000;
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #999;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    background-color: #f5f5f5;
+    color: #999;
+    border-color: #ddd;
+}
+
+/* Pagination Info Text */
+#paginationInfo {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #paginationWrapper {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .pagination-custom {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #paginationInfo {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Responsive table columns */
+    .table-fixed th:nth-child(2),
+    .table-fixed td:nth-child(2) {
+        width: 50%;
+    }
+    
+    .table-fixed th:nth-child(3),
+    .table-fixed td:nth-child(3) {
+        width: 30%;
+    }
 }
 </style>
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ✅ SEARCH FUNCTIONALITY
+    // ✅ IMPROVED SEARCH FUNCTIONALITY WITH PAGINATION CONTROL
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
         let visibleRows = 0;
@@ -264,11 +381,37 @@ $(document).ready(function() {
             }
         });
 
-        // Tampilkan pesan jika tidak ada hasil
+        // ✅ HIDE/SHOW PAGINATION SAAT SEARCH AKTIF
+        if (searchValue.length > 0) {
+            $('#paginationWrapper').hide();
+            
+            // Tampilkan jumlah hasil pencarian
+            if (visibleRows > 0) {
+                if ($('#searchResultInfo').length === 0) {
+                    $('.table-responsive').after(
+                        `<div id="searchResultInfo" class="mt-3 text-secondary small">
+                            Menampilkan ${visibleRows} hasil pencarian
+                        </div>`
+                    );
+                } else {
+                    $('#searchResultInfo').html(`Menampilkan ${visibleRows} hasil pencarian`);
+                }
+            }
+        } else {
+            $('#paginationWrapper').show();
+            $('#searchResultInfo').remove();
+        }
+
+        // ✅ TAMPILKAN PESAN JIKA TIDAK ADA HASIL
         if (visibleRows === 0 && $('.satker-row').length > 0) {
             if ($('#noResultRow').length === 0) {
                 $('#satkerTableBody').append(
-                    '<tr id="noResultRow"><td colspan="4" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                    `<tr id="noResultRow">
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            Tidak ada data yang sesuai dengan pencarian "${searchValue}"
+                        </td>
+                    </tr>`
                 );
             }
         } else {
@@ -276,16 +419,21 @@ $(document).ready(function() {
         }
     });
 
-    // ✅ MODAL HAPUS HANDLER - FIXED: Gunakan backtick untuk template literal
+    // ✅ CLEAR SEARCH ON ESC KEY
+    $('#searchInput').on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+            $(this).trigger('keyup');
+        }
+    });
+
+    // ✅ MODAL HAPUS HANDLER
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         
-        console.log('Delete ID:', id); // Debug log
-        console.log('Delete Nama:', nama); // Debug log
-        
         $('#namaSatkerHapus').text(nama);
-        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`); // ✅ PERBAIKAN: Gunakan backtick
+        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`);
         
         const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
         modal.show();
@@ -296,6 +444,13 @@ $(document).ready(function() {
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahSatkerModal'));
         tambahModal.show();
     @endif
+
+    // ✅ SMOOTH SCROLL TO TOP ON PAGINATION CLICK
+    $('.pagination a').on('click', function() {
+        $('html, body').animate({
+            scrollTop: $('.table-card').offset().top - 100
+        }, 400);
+    });
 });
 </script>
 @endpush
