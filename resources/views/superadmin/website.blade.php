@@ -13,6 +13,13 @@
   </div>
   @endif
 
+  @if(session('error'))
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  @endif
+
   {{-- Statistik --}}
   <div class="row mb-4">
     <div class="col-md-3">
@@ -79,6 +86,11 @@
         </p>
 
         <p class="mb-1 text-muted small">
+          <i class="fa-solid fa-server me-1"></i> 
+          Server: {{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}
+        </p>
+
+        <p class="mb-1 text-muted small">
           <i class="fa-solid fa-briefcase me-1"></i> 
           {{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
         </p>
@@ -98,6 +110,7 @@
             data-url="{{ $website->url }}"
             data-bidang="{{ $website->bidang_id }}"
             data-satker="{{ $website->satker_id }}"
+            data-server="{{ $website->server_id }}"
             data-status="{{ $website->status }}"
             data-tahun="{{ $website->tahun_pengadaan }}"
             data-keterangan="{{ $website->keterangan }}">
@@ -157,8 +170,15 @@
           </div>
 
           <div class="col-md-6 mb-4">
-            <h6 class="text-muted mb-3 fw-semibold">ORGANISASI</h6>
+            <h6 class="text-muted mb-3 fw-semibold">ORGANISASI & INFRASTRUKTUR</h6>
             
+            <div class="mb-3">
+              <label class="text-muted small mb-1">Server</label>
+              <p class="fw-semibold mb-0" id="detailServer">
+                <i class="fa-solid fa-server me-1"></i> -
+              </p>
+            </div>
+
             <div class="mb-3">
               <label class="text-muted small mb-1">Satuan Kerja</label>
               <p class="fw-semibold mb-0" id="detailSatker">
@@ -170,13 +190,6 @@
               <label class="text-muted small mb-1">Bidang</label>
               <p class="fw-semibold mb-0" id="detailBidang">
                 <i class="fa-solid fa-briefcase me-1"></i> -
-              </p>
-            </div>
-
-            <div class="mb-3">
-              <label class="text-muted small mb-1">Server</label>
-              <p class="fw-semibold mb-0" id="detailServer">
-                <i class="fa-solid fa-server me-1"></i> -
               </p>
             </div>
           </div>
@@ -217,6 +230,22 @@
           <div class="mb-3">
             <label class="form-label fw-semibold">URL <span class="text-danger">*</span></label>
             <input type="url" name="url" class="form-control" placeholder="https://example.com" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Server</label>
+            <select name="server_id" class="form-select">
+              <option value="">Pilih Server (Opsional)</option>
+              @foreach($servers as $server)
+                <option value="{{ $server->server_id }}">
+                  {{ $server->nama_server }} 
+                  @if($server->rak)
+                    ({{ $server->rak->nomor_rak }})
+                  @endif
+                </option>
+              @endforeach
+            </select>
+            <small class="text-muted">Website ini akan terhubung ke server yang dipilih</small>
           </div>
 
           <div class="row">
@@ -261,7 +290,7 @@
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Keterangan</label>
-            <textarea name="keterangan" id="summernote" class="form-control summernote-editor"></textarea>
+            <textarea name="keterangan" class="form-control" rows="3" placeholder="Keterangan tambahan..."></textarea>
           </div>
         </div>
 
@@ -295,6 +324,21 @@
           <div class="mb-3">
             <label class="form-label fw-semibold">URL <span class="text-danger">*</span></label>
             <input type="url" name="url" id="editUrl" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Server</label>
+            <select name="server_id" id="editServer" class="form-select">
+              <option value="">Pilih Server (Opsional)</option>
+              @foreach($servers as $server)
+                <option value="{{ $server->server_id }}">
+                  {{ $server->nama_server }}
+                  @if($server->rak)
+                    ({{ $server->rak->nomor_rak }})
+                  @endif
+                </option>
+              @endforeach
+            </select>
           </div>
 
           <div class="row">
@@ -430,18 +474,15 @@ $(document).ready(function() {
       url: `/superadmin/website/${id}/detail`,
       type: 'GET',
       success: function(data) {
-        // Set nama website di header
         $('#detailNamaWebsite').text(data.nama_website);
         $('#detailNama').text(data.nama_website);
         
-        // Set URL
         $('#detailUrlContainer').html(
           `<a href="${data.url}" target="_blank" class="text-decoration-none">
             <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> ${data.url}
           </a>`
         );
         
-        // Set Status dengan badge
         let statusBadge = '';
         if(data.status === 'active') {
           statusBadge = '<span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>';
@@ -452,35 +493,29 @@ $(document).ready(function() {
         }
         $('#detailStatus').html(statusBadge);
         
-        // Set Tahun Pengadaan
         $('#detailTahun').text(data.tahun_pengadaan || '-');
         
-        // Set Satker
+        $('#detailServer').html(
+          '<i class="fa-solid fa-server me-1"></i> ' + 
+          (data.server ? data.server.nama_server : 'Belum terhubung')
+        );
+        
         $('#detailSatker').html(
           '<i class="fa-solid fa-building me-1"></i> ' + 
           (data.satker ? data.satker.nama_satker : '-')
         );
         
-        // Set Bidang
         $('#detailBidang').html(
           '<i class="fa-solid fa-briefcase me-1"></i> ' + 
           (data.bidang ? data.bidang.nama_bidang : '-')
         );
         
-        // Set Server
-        $('#detailServer').html(
-          '<i class="fa-solid fa-server me-1"></i> ' + 
-          (data.server ? data.server.nama_server : '-')
-        );
-        
-        // Set Keterangan
         if(data.keterangan) {
           $('#detailKeterangan').html(data.keterangan.replace(/\n/g, '<br>'));
         } else {
           $('#detailKeterangan').html('<p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>');
         }
         
-        // Show modal
         $('#detailModal').modal('show');
       },
       error: function() {
@@ -491,20 +526,19 @@ $(document).ready(function() {
 
   // Bidang visibility untuk Modal Tambah
   $('#satkerSelect').change(function() {
-  const selectedName = $('#satkerSelect option:selected').data('name')?.toLowerCase() || '';
-  if (selectedName.includes('Pusdatin Kemhan')) {
-    $('#bidangWrapper').show();
-  } else {
-    $('#bidangWrapper').hide();
-    $('#bidangSelect').val('');
-  }
-});
-
+    const selectedName = $('#satkerSelect option:selected').data('name')?.toLowerCase() || '';
+    if (selectedName.includes('pusat data dan informasi')) {
+      $('#bidangWrapper').show();
+    } else {
+      $('#bidangWrapper').hide();
+      $('#bidangSelect').val('');
+    }
+  });
 
   // Bidang visibility untuk Modal Edit
   $('#editSatker').change(function() {
-    const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
+    const selectedName = $('#editSatker option:selected').data('name')?.toLowerCase() || '';
+    if(selectedName.includes('pusat data dan informasi')) {
       $('#editBidangWrapper').show();
     } else {
       $('#editBidangWrapper').hide();
@@ -519,6 +553,7 @@ $(document).ready(function() {
     const url = $(this).data('url');
     const bidang = $(this).data('bidang');
     const satker = $(this).data('satker');
+    const server = $(this).data('server');
     const status = $(this).data('status');
     const tahun = $(this).data('tahun');
     const keterangan = $(this).data('keterangan');
@@ -527,13 +562,14 @@ $(document).ready(function() {
     $('#editUrl').val(url);
     $('#editSatker').val(satker || '');
     $('#editBidang').val(bidang || '');
+    $('#editServer').val(server || '');
     $('#editStatus').val(status);
     $('#editTahun').val(tahun || '');
     $('#editKeterangan').val(keterangan || '');
 
     // Check if bidang should be shown
-    const selectedName = $('#editSatker option:selected').data('name');
-    if(selectedName === 'Pusat Data dan Informasi Kementerian Pertahanan') {
+    const selectedName = $('#editSatker option:selected').data('name')?.toLowerCase() || '';
+    if(selectedName.includes('pusat data dan informasi')) {
       $('#editBidangWrapper').show();
     }
 

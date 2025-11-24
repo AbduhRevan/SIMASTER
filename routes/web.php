@@ -27,11 +27,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
 
     // Profil, Password, Panduan Pengguna
-        Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
-        Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
-        Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
-        Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
-   
+    Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
+    Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
+    Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
+    Route::get('/panduan-pengguna', [ProfilController::class, 'panduanPengguna'])->name('panduan.pengguna');
+
     // Superadmin
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('superadmin.dashboard');
@@ -61,12 +61,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/bidang/force-delete/{id}', [BidangController::class, 'forceDelete'])->name('superadmin.bidang.forceDelete');
 
         // Manajemen Aset - Server
+        // ⚠️ PENTING: Route dengan parameter spesifik HARUS di atas route dengan parameter dinamis
+        Route::get('/server/rak/{rakId}/available-slots', [ServerController::class, 'getAvailableSlots'])->name('superadmin.server.availableSlots');
+
         Route::get('/server', [ServerController::class, 'index'])->name('superadmin.server.index');
+        Route::post('/server/store', [ServerController::class, 'store'])->name('superadmin.server.store');
         Route::get('/server/{id}/detail', [ServerController::class, 'detail'])->name('superadmin.server.detail');
         Route::get('/server/{id}/edit', [ServerController::class, 'edit'])->name('superadmin.server.edit');
         Route::put('/server/update/{id}', [ServerController::class, 'update'])->name('superadmin.server.update');
-        Route::post('/server/store', [ServerController::class, 'store'])->name('superadmin.server.store');
-        Route::delete('/superadmin/server/{id}', [ServerController::class, 'destroy'])->name('superadmin.server.delete');
+        Route::delete('/server/{id}', [ServerController::class, 'destroy'])->name('superadmin.server.destroy');
 
         // Website
         Route::get('/website', [WebsiteController::class, 'index'])->name('superadmin.website.index');
@@ -80,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('superadmin.pemeliharaan.store');
         Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('superadmin.pemeliharaan.update');
         Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('superadmin.pemeliharaan.destroy');
+
         // Sistem - Pengguna
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('superadmin.pengguna.index');
         Route::post('/pengguna', [PenggunaController::class, 'store'])->name('superadmin.pengguna.store');
@@ -98,18 +102,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', function () {
             return view('banglola.dashboard');
         })->name('banglola.dashboard');
+
+        // Banglola - Server
+        Route::get('/server', [\App\Http\Controllers\Banglola\ServerController::class, 'index'])->name('banglola.server.index');
+
+        // Banglola - Website
+        Route::get('/website', [\App\Http\Controllers\Banglola\WebsiteController::class, 'index'])->name('banglola.website.index');
+
+        // Banglola - Log Aktivitas
+        Route::get('/log-aktivitas', function () {
+            return view('superadmin.logAktivitas');
+        })->name('banglola.logAktivitas');
     });
-
-    // Banglola - Server
-    Route::get('/banglola/server', [\App\Http\Controllers\Banglola\ServerController::class, 'index'])->name('banglola.server.index');
-
-    // Banglola - Website
-    Route::get('/banglola/website', [\App\Http\Controllers\Banglola\WebsiteController::class, 'index'])->name('banglola.website.index');
-
-    // Banglola - Log Aktivitas
-    Route::get('/banglola/log-aktivitas', function () {
-    return view('superadmin.logAktivitas');
-    })->name('banglola.logAktivitas');
 
     // Pamsis
     Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {

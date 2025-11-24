@@ -11,27 +11,41 @@ class Server extends Model
 
     protected $table = 'server';
     protected $primaryKey = 'server_id';
-    public $timestamps = true; 
+    public $timestamps = true;
 
     protected $fillable = [
-        'nama_server', 'brand', 'spesifikasi', 'power_status',
-        'rak_id', 'u_slot', 'bidang_id', 'satker_id', 'website_id', 'keterangan'
+        'nama_server',
+        'brand',
+        'spesifikasi',
+        'power_status',
+        'rak_id',
+        'u_slot',
+        'bidang_id',
+        'satker_id',
+        'keterangan'
     ];
 
     // Relasi join tabel lain
-    public function rak() {
+    public function rak()
+    {
         return $this->belongsTo(RakServer::class, 'rak_id', 'rak_id');
     }
 
-    public function bidang() {
+    public function bidang()
+    {
         return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
     }
 
-    public function satker() {
+    public function satker()
+    {
         return $this->belongsTo(Satker::class, 'satker_id', 'satker_id');
     }
 
-    public function website() {
-        return $this->belongsTo(Website::class, 'website_id', 'website_id');
+    /**
+     * RELASI: 1 server bisa punya banyak website
+     */
+    public function websites()
+    {
+        return $this->hasMany(Website::class, 'server_id', 'server_id');
     }
 }

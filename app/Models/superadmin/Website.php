@@ -18,23 +18,29 @@ class Website extends Model
         'url',
         'bidang_id',
         'satker_id',
+        'server_id', // TAMBAHKAN INI
         'status',
         'tahun_pengadaan',
         'keterangan',
     ];
 
     // Relasi ke Bidang
-    public function bidang() {
+    public function bidang()
+    {
         return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
     }
 
     // Relasi ke Satker
-    public function satker() {
+    public function satker()
+    {
         return $this->belongsTo(Satker::class, 'satker_id', 'satker_id');
     }
 
-    // Relasi ke Server
-    public function server() {
-        return $this->belongsTo(Server::class, 'website_id', 'website_id');
+    /**
+     * RELASI DIUBAH: Website belongs to Server
+     */
+    public function server()
+    {
+        return $this->belongsTo(Server::class, 'server_id', 'server_id');
     }
 }

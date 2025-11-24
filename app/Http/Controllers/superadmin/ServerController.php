@@ -19,11 +19,10 @@ class ServerController extends Controller
      */
     public function index()
     {
-        $servers = Server::with(['rak', 'bidang', 'satker', 'website'])->get();
+        $servers = Server::with(['rak', 'bidang', 'satker', 'websites'])->get();
         $raks = RakServer::all();
         $bidangs = Bidang::all();
         $satkers = Satker::all();
-        $websites = Website::all();
 
         // Hitung statistik
         $total = $servers->count();
@@ -39,9 +38,27 @@ class ServerController extends Controller
             'tidakAktif',
             'raks',
             'bidangs',
-            'satkers',
-            'websites'
+            'satkers'
         ));
+    }
+
+    /**
+     * API: Get available slots for a rack
+     */
+    public function getAvailableSlots($rakId)
+    {
+        $rak = RakServer::with('servers')->findOrFail($rakId);
+
+        return response()->json([
+            'success' => true,
+            'rak_id' => $rak->rak_id,
+            'nomor_rak' => $rak->nomor_rak,
+            'kapasitas_total' => $rak->kapasitas_u_slot,
+            'occupied_slots' => $rak->getOccupiedSlots(),
+            'available_slots' => $rak->getAvailableSlots(),
+            'terpakai' => $rak->terpakai_u,
+            'sisa' => $rak->sisa_u
+        ]);
     }
 
     /**
@@ -57,46 +74,64 @@ class ServerController extends Controller
             'u_slot' => 'nullable|string|max:50',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
-            'website_name' => 'nullable|string|max:150',
             'keterangan' => 'nullable|string',
             'power_status' => 'nullable|in:ON,OFF,STANDBY',
         ]);
 
-        // Set default power status jika tidak ada
+        // VALIDASI SLOT
+        if ($request->rak_id && $request->u_slot) {
+            $rak = RakServer::with('servers')->findOrFail($request->rak_id);
+            $slotParts = explode('-', $request->u_slot);
+
+            if (count($slotParts) == 2) {
+                $start = (int)$slotParts[0];
+                $end = (int)$slotParts[1];
+
+                // Validasi range
+                if ($start > $end) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot awal harus lebih kecil dari slot akhir');
+                }
+
+                if ($end > $rak->kapasitas_u_slot) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Slot melebihi kapasitas rak (max: {$rak->kapasitas_u_slot}U)");
+                }
+
+                // Cek ketersediaan
+                if (!$rak->isSlotRangeAvailable($start, $end)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot yang dipilih sudah terpakai oleh server lain');
+                }
+            } else {
+                // Single slot
+                $slot = (int)$slotParts[0];
+
+                if ($slot > $rak->kapasitas_u_slot) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Slot melebihi kapasitas rak (max: {$rak->kapasitas_u_slot}U)");
+                }
+
+                if (in_array($slot, $rak->getOccupiedSlots())) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot yang dipilih sudah terpakai oleh server lain');
+                }
+            }
+        }
+
+        // Set default power status
         if (!isset($validated['power_status'])) {
             $validated['power_status'] = 'ON';
         }
 
-        // Jika ada website_name, buat website baru atau cari yang sudah ada
-        $websiteName = null;
-        if (!empty($request->website_name)) {
-
-    // Cek apakah website dengan nama yang sama sudah ada
-    $website = Website::where('nama_website', $request->website_name)->first();
-
-    if (!$website) {
-        // Buat URL placeholder unik (tidak bentrok dengan unique index)
-        $placeholderUrl = 'placeholder-' . uniqid();
-
-        $website = Website::create([
-            'nama_website' => $request->website_name,
-            'url' => $placeholderUrl,
-            'status' => 'active',
-            'satker_id' => $request->satker_id,
-            'bidang_id' => $request->bidang_id,
-        ]);
-    }
-
-    $validated['website_id'] = $website->website_id;
-}
-
-
-        // Hapus website_name dari validated karena bukan kolom di table server
-        unset($validated['website_name']);
-
         $server = Server::create($validated);
 
-        // TAMBAHKAN LOG CREATE
+        // Log
         $logDetails = [];
         $logDetails[] = "server: {$server->nama_server}";
 
@@ -118,9 +153,6 @@ class ServerController extends Controller
             $satkerNama = Satker::find($server->satker_id)->singkatan_satker ?? 'Unknown';
             $logDetails[] = "satker: {$satkerNama}";
         }
-        if ($websiteName) {
-            $logDetails[] = "website: {$websiteName}";
-        }
         $logDetails[] = "status: {$server->power_status}";
 
         LogAktivitas::log(
@@ -139,26 +171,26 @@ class ServerController extends Controller
      */
     public function detail($id)
     {
-    $server = Server::with(['rak', 'bidang', 'satker', 'website'])->findOrFail($id);
+        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
 
-    return response()->json([
-        'status' => 'success',
-        'data' => $server
-    ]);
+        return response()->json([
+            'status' => 'success',
+            'data' => $server
+        ]);
     }
 
     /**
- * Show the form for editing the specified server (untuk AJAX)
- */
-public function edit($id)
-{
-    $server = Server::with(['rak', 'bidang', 'satker', 'website'])->findOrFail($id);
+     * Show the form for editing the specified server (untuk AJAX)
+     */
+    public function edit($id)
+    {
+        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
 
-    return response()->json([
-        'status' => 'success',
-        'data' => $server
-    ]);
-}
+        return response()->json([
+            'status' => 'success',
+            'data' => $server
+        ]);
+    }
 
     /**
      * Update the specified server
@@ -189,9 +221,76 @@ public function edit($id)
             'keterangan' => 'nullable|string',
         ]);
 
+        // VALIDASI SLOT (exclude server yang sedang diedit)
+        if ($request->rak_id && $request->u_slot) {
+            $rak = RakServer::with('servers')->findOrFail($request->rak_id);
+            $slotParts = explode('-', $request->u_slot);
+
+            if (count($slotParts) == 2) {
+                $start = (int)$slotParts[0];
+                $end = (int)$slotParts[1];
+
+                if ($start > $end) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot awal harus lebih kecil dari slot akhir');
+                }
+
+                if ($end > $rak->kapasitas_u_slot) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Slot melebihi kapasitas rak (max: {$rak->kapasitas_u_slot}U)");
+                }
+
+                // Cek ketersediaan (exclude server yang sedang diedit)
+                if (!$rak->isSlotRangeAvailable($start, $end, $server->server_id)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot yang dipilih sudah terpakai oleh server lain');
+                }
+            } else {
+                $slot = (int)$slotParts[0];
+
+                if ($slot > $rak->kapasitas_u_slot) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Slot melebihi kapasitas rak (max: {$rak->kapasitas_u_slot}U)");
+                }
+
+                // Cek apakah slot dipakai server lain (exclude server ini)
+                $occupiedByOthers = false;
+                foreach ($rak->servers as $s) {
+                    if ($s->server_id == $server->server_id) continue;
+
+                    if ($s->u_slot) {
+                        $parts = explode('-', $s->u_slot);
+                        if (count($parts) == 2) {
+                            $start = (int)$parts[0];
+                            $end = (int)$parts[1];
+                            if ($slot >= $start && $slot <= $end) {
+                                $occupiedByOthers = true;
+                                break;
+                            }
+                        } else {
+                            if ((int)$parts[0] == $slot) {
+                                $occupiedByOthers = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($occupiedByOthers) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Slot yang dipilih sudah terpakai oleh server lain');
+                }
+            }
+        }
+
         $server->update($validated);
 
-        // TAMBAHKAN LOG UPDATE
+        // Log update
         $perubahan = [];
 
         if ($namaLama !== $request->nama_server) {
@@ -258,7 +357,7 @@ public function edit($id)
 
         $server->delete();
 
-        // TAMBAHKAN LOG DELETE
+        // Log delete
         LogAktivitas::log(
             'DELETE',
             'server',

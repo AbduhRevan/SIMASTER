@@ -15,7 +15,7 @@ class WebsiteController extends Controller
 {
     public function index()
     {
-        $websites = Website::with(['bidang', 'satker'])->get();
+        $websites = Website::with(['bidang', 'satker', 'server'])->get();
 
         // Hitung statistik
         $total = $websites->count();
@@ -47,6 +47,7 @@ class WebsiteController extends Controller
             'url' => 'required|url|max:255|unique:website,url',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
+            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
@@ -54,7 +55,7 @@ class WebsiteController extends Controller
 
         $website = Website::create($validated);
 
-        // TAMBAHKAN LOG CREATE
+        // Log
         $logDetails = [];
         $logDetails[] = "website: {$website->nama_website}";
         $logDetails[] = "URL: {$website->url}";
@@ -66,6 +67,10 @@ class WebsiteController extends Controller
         if ($website->satker_id) {
             $satkerNama = Satker::find($website->satker_id)->singkatan_satker ?? 'Unknown';
             $logDetails[] = "satker: {$satkerNama}";
+        }
+        if ($website->server_id) {
+            $serverNama = Server::find($website->server_id)->nama_server ?? 'Unknown';
+            $logDetails[] = "server: {$serverNama}";
         }
         if ($website->tahun_pengadaan) {
             $logDetails[] = "tahun: {$website->tahun_pengadaan}";
@@ -92,6 +97,7 @@ class WebsiteController extends Controller
         $urlLama = $website->url;
         $bidangLama = $website->bidang_id;
         $satkerLama = $website->satker_id;
+        $serverLama = $website->server_id;
         $statusLama = $website->status;
         $tahunLama = $website->tahun_pengadaan;
 
@@ -100,6 +106,7 @@ class WebsiteController extends Controller
             'url' => 'required|url|max:255|unique:website,url,' . $id . ',website_id',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
+            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
@@ -107,7 +114,7 @@ class WebsiteController extends Controller
 
         $website->update($validated);
 
-        // TAMBAHKAN LOG UPDATE
+        // Log update
         $perubahan = [];
 
         if ($namaLama !== $request->nama_website) {
@@ -125,6 +132,11 @@ class WebsiteController extends Controller
             $satkerLamaNama = $satkerLama ? (Satker::find($satkerLama)->singkatan_satker ?? 'Unknown') : 'tidak ada';
             $satkerBaruNama = $request->satker_id ? (Satker::find($request->satker_id)->singkatan_satker ?? 'Unknown') : 'tidak ada';
             $perubahan[] = "satker dari {$satkerLamaNama} menjadi {$satkerBaruNama}";
+        }
+        if ($serverLama != $request->server_id) {
+            $serverLamaNama = $serverLama ? (Server::find($serverLama)->nama_server ?? 'Unknown') : 'tidak ada';
+            $serverBaruNama = $request->server_id ? (Server::find($request->server_id)->nama_server ?? 'Unknown') : 'tidak ada';
+            $perubahan[] = "server dari {$serverLamaNama} menjadi {$serverBaruNama}";
         }
         if ($statusLama !== $request->status) {
             $statusLamaLabel = $this->getStatusLabel($statusLama);
@@ -163,7 +175,7 @@ class WebsiteController extends Controller
 
         $website->delete();
 
-        // TAMBAHKAN LOG DELETE
+        // Log delete
         LogAktivitas::log(
             'DELETE',
             'website',

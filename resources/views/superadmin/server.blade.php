@@ -10,7 +10,7 @@
     color: white;
 }
 
-/* Tombol Stepper */
+/* Tombol Maroon */
 .btn-maroon {
     background-color: #800000;
     color: white;
@@ -20,26 +20,6 @@
 .btn-maroon:hover {
     background-color: #660000;
     color: white;
-}
-
-#prevBtn {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-}
-
-#prevBtn:hover {
-    background-color: #5a6268;
-}
-
-#saveBtn {
-    background-color: #0d6efd;
-    color: white;
-    border: none;
-}
-
-#saveBtn:hover {
-    background-color: #0b5ed7;
 }
 
 /* Card Summary Style */
@@ -76,19 +56,7 @@
     padding-left: 38px;
 }
 
-/* Tombol Maroon */
-.btn-maroon {
-    background-color: #7b0000 !important;
-    border: none;
-    color: white;
-}
-
-.btn-maroon:hover {
-    background-color: #5a0000 !important;
-    color: white;
-}
-
-/* Tombol Aksi (Detail, Edit, Delete) - Sama seperti di Kelola Pengguna */
+/* Tombol Aksi */
 .action-buttons {
     display: inline-flex;
     gap: 5px;
@@ -116,7 +84,6 @@
     font-size: 14px;
 }
 
-/* Tombol Detail - Info/Cyan */
 .btn-detail {
     background-color: #17a2b8;
     color: white;
@@ -127,7 +94,6 @@
     color: white;
 }
 
-/* Tombol Edit - Warning/Yellow */
 .btn-edit {
     background-color: #ffc107;
     color: white;
@@ -138,7 +104,6 @@
     color: white;
 }
 
-/* Tombol Delete - Danger/Red */
 .btn-delete {
     background-color: #dc3545;
     color: white;
@@ -149,22 +114,51 @@
     color: white;
 }
 
-/* Modal Konfirmasi Hapus - Style seperti Bidang */
-.bg-maroon {
-    background-color: #7b0000 !important;
+/* Slot Info Badge */
+.slot-info {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
 }
 
-.btn-maroon {
-    background-color: #7b0000 !important;
-    border: none;
+.slot-available {
+    color: #28a745;
+    font-weight: 600;
 }
 
-.btn-maroon:hover {
-    background-color: #5a0000 !important;
+.slot-occupied {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Loading Indicator */
+.loading-slots {
+    display: none;
+    text-align: center;
+    padding: 10px;
+    color: #6c757d;
 }
 </style>
 
 <div class="container-fluid">
+    <!-- Alert Messages -->
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     <!-- Ringkasan Server -->
     <div class="row mb-4 text-center">
         <div class="col-6 col-md-3 mb-3">
@@ -199,7 +193,7 @@
             <!-- Search dengan Icon -->
             <div class="search-wrapper">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control" placeholder="Cari nama/server/website/IP">
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari nama/server/rak">
             </div>
             
             <!-- Tombol Tambah Maroon -->
@@ -217,7 +211,7 @@
                     <th class="text-center">Rak / Slot</th>
                     <th class="text-center">Bidang</th>
                     <th class="text-center">Satker</th>
-                    <th class="text-center">Website</th>
+                    <th class="text-center">Jumlah Website</th>
                     <th class="text-center">Status</th>
                     <th class="text-center">Aksi</th>
                 </tr>
@@ -232,7 +226,9 @@
                         {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
                     </td>
                     <td class="text-center server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
-                    <td class="text-center server-website">{{ $server->website ? $server->website->nama_website : '-' }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-info">{{ $server->websites->count() }} Website</span>
+                    </td>
                     <td class="text-center">
                         @if($server->power_status==='ON')
                             <span class="badge bg-success">Aktif</span>
@@ -288,7 +284,7 @@
             <div class="modal-body">
                 <table class="table table-bordered">
                     <tr>
-                        <th>Nama Server</th>
+                        <th width="200">Nama Server</th>
                         <td id="detailNamaServer"></td>
                     </tr>
                     <tr>
@@ -316,8 +312,12 @@
                         <td id="detailSatker"></td>
                     </tr>
                     <tr>
-                        <th>Website</th>
-                        <td id="detailWebsite"></td>
+                        <th>Website Terhubung</th>
+                        <td id="detailWebsites"></td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td id="detailStatus"></td>
                     </tr>
                     <tr>
                         <th>Keterangan</th>
@@ -359,19 +359,74 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-semibold">Rak Server</label>
-                            <select class="form-select" name="rak_id">
+                            <select class="form-select" name="rak_id" id="rakSelect">
                                 <option value="">Pilih Rak</option>
                                 @foreach($raks as $rak)
-                                    <option value="{{ $rak->rak_id }}">{{ $rak->nomor_rak }}</option>
+                                    <option value="{{ $rak->rak_id }}" 
+                                            data-kapasitas="{{ $rak->kapasitas_u_slot }}"
+                                            data-terpakai="{{ $rak->terpakai_u }}"
+                                            data-sisa="{{ $rak->sisa_u }}">
+                                        {{ $rak->nomor_rak }} ({{ $rak->ruangan }}) - Sisa: {{ $rak->sisa_u }}U / {{ $rak->kapasitas_u_slot }}U
+                                    </option>
                                 @endforeach
                             </select>
+                            <div id="rakInfo" class="slot-info" style="display:none;">
+                                <small>
+                                    <i class="fas fa-info-circle"></i> 
+                                    Kapasitas: <span id="rakKapasitas"></span>U | 
+                                    Terpakai: <span id="rakTerpakai"></span>U | 
+                                    <span class="slot-available">Tersedia: <span id="rakSisa"></span>U</span>
+                                </small>
+                            </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">U-Slot</label>
-                            <input type="text" class="form-control" name="u_slot" placeholder="Contoh: 1-3">
+                        <div class="col-md-12 mb-3" id="slotWrapper" style="display:none;">
+                            <label class="form-label fw-semibold">U-Slot <span class="text-danger">*</span></label>
+                            
+                            <div class="loading-slots" id="loadingSlots">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat slot...
+                            </div>
+                            
+                            <div id="slotSelectWrapper" style="display:none;">
+                                <div class="mb-2">
+                                    <label class="form-check-label small">
+                                        <input type="radio" name="slot_type" value="single" class="form-check-input" checked> Single Slot
+                                    </label>
+                                    <label class="form-check-label small ms-3">
+                                        <input type="radio" name="slot_type" value="range" class="form-check-input"> Range Slot
+                                    </label>
+                                </div>
+
+                                <!-- Single Slot -->
+                                <div id="singleSlotDiv">
+                                    <select class="form-select" name="u_slot_single" id="singleSlotSelect">
+                                        <option value="">Pilih Slot</option>
+                                    </select>
+                                </div>
+
+                                <!-- Range Slot -->
+                                <div id="rangeSlotDiv" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <select class="form-select" id="slotStart">
+                                                <option value="">Slot Awal</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select" id="slotEnd">
+                                                <option value="">Slot Akhir</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="u_slot_range" id="slotRangeValue">
+                                </div>
+
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-lightbulb"></i> Hanya slot yang tersedia yang ditampilkan
+                                </small>
+                            </div>
                         </div>
                     </div>
 
@@ -400,11 +455,6 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Website</label>
-                        <input type="text" class="form-control" name="website_name" placeholder="Nama website (opsional)">
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
                         <select class="form-select" name="power_status" required>
                             <option value="">Pilih Status</option>
@@ -416,7 +466,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
-                        <textarea class="form-control summernote-editor" name="keterangan" rows="3" placeholder="Tulis keterangan di sini..."></textarea>
+                        <textarea class="form-control" name="keterangan" rows="3" placeholder="Tulis keterangan di sini..."></textarea>
                     </div>
                 </div>
                 
@@ -461,19 +511,70 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label">Rak Server</label>
                             <select class="form-select" id="editRakId" name="rak_id">
                                 <option value="">Pilih Rak</option>
                                 @foreach($raks as $rak)
-                                    <option value="{{ $rak->rak_id }}">{{ $rak->nomor_rak }}</option>
+                                    <option value="{{ $rak->rak_id }}" 
+                                            data-kapasitas="{{ $rak->kapasitas_u_slot }}"
+                                            data-terpakai="{{ $rak->terpakai_u }}"
+                                            data-sisa="{{ $rak->sisa_u }}">
+                                        {{ $rak->nomor_rak }} ({{ $rak->ruangan }}) - Sisa: {{ $rak->sisa_u }}U
+                                    </option>
                                 @endforeach
                             </select>
+                            <div id="editRakInfo" class="slot-info" style="display:none;">
+                                <small>
+                                    <i class="fas fa-info-circle"></i> 
+                                    Kapasitas: <span id="editRakKapasitas"></span>U | 
+                                    Terpakai: <span id="editRakTerpakai"></span>U | 
+                                    <span class="slot-available">Tersedia: <span id="editRakSisa"></span>U</span>
+                                </small>
+                            </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3" id="editSlotWrapper" style="display:none;">
                             <label class="form-label">U-Slot</label>
-                            <input type="text" class="form-control" id="editUSlot" name="u_slot" placeholder="Contoh: 1-3">
+                            
+                            <div class="loading-slots" id="editLoadingSlots">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat slot...
+                            </div>
+                            
+                            <div id="editSlotSelectWrapper" style="display:none;">
+                                <div class="mb-2">
+                                    <label class="form-check-label small">
+                                        <input type="radio" name="edit_slot_type" value="single" class="form-check-input" checked> Single Slot
+                                    </label>
+                                    <label class="form-check-label small ms-3">
+                                        <input type="radio" name="edit_slot_type" value="range" class="form-check-input"> Range Slot
+                                    </label>
+                                </div>
+
+                                <!-- Single Slot -->
+                                <div id="editSingleSlotDiv">
+                                    <select class="form-select" name="u_slot_single" id="editSingleSlotSelect">
+                                        <option value="">Pilih Slot</option>
+                                    </select>
+                                </div>
+
+                                <!-- Range Slot -->
+                                <div id="editRangeSlotDiv" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <select class="form-select" id="editSlotStart">
+                                                <option value="">Slot Awal</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select" id="editSlotEnd">
+                                                <option value="">Slot Akhir</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="u_slot_range" id="editSlotRangeValue">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -510,7 +611,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Keterangan</label>
-                        <textarea class="form-control summernote-edit" id="editKeterangan" name="keterangan" rows="3"></textarea>
+                        <textarea class="form-control" id="editKeterangan" name="keterangan" rows="3"></textarea>
                     </div>
                 </div>
                 
@@ -535,17 +636,14 @@
                 @csrf
                 @method('DELETE')
                 <div class="modal-body text-center py-4">
-                    <!-- Icon Warning -->
                     <div class="mb-3">
                         <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
                     </div>
                     
-                    <!-- Teks Konfirmasi -->
                     <p class="mb-3">Apakah Anda yakin ingin menghapus server <strong id="namaServerHapus"></strong>?</p>
                     
-                    <!-- Alert Box -->
                     <div class="alert alert-warning small mb-0">
-                        Data akan dipindahkan ke Arsip Sementara dan dapat dipulihkan dalam waktu 30 hari sebelum dihapus permanen.
+                        Data akan dihapus permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
@@ -557,67 +655,227 @@
     </div>
 </div>
 
-<!-- JS Stepper dan Logic Halaman -->
 @push('scripts')
 <script>
 $(document).ready(function() {
-    let currentStep = 0;
-    const steps = $('.step');
-    const nextBtn = $('#nextBtn');
-    const prevBtn = $('#prevBtn');
-    const saveBtn = $('#saveBtn');
+    let availableSlots = [];
+    let occupiedSlots = [];
+    let currentServerId = null; // untuk edit
 
-    function showStep(index){
-        steps.hide();
-        $(steps[index]).show();
-        prevBtn.toggle(index > 0);
-        nextBtn.toggle(index < steps.length - 1);
-        saveBtn.toggle(index === steps.length - 1);
+    // === FORM TAMBAH: Slot Type Toggle ===
+    $('input[name="slot_type"]').change(function() {
+        if($(this).val() === 'single') {
+            $('#singleSlotDiv').show();
+            $('#rangeSlotDiv').hide();
+        } else {
+            $('#singleSlotDiv').hide();
+            $('#rangeSlotDiv').show();
+        }
+    });
+
+    // === FORM EDIT: Slot Type Toggle ===
+    $('input[name="edit_slot_type"]').change(function() {
+        if($(this).val() === 'single') {
+            $('#editSingleSlotDiv').show();
+            $('#editRangeSlotDiv').hide();
+        } else {
+            $('#editSingleSlotDiv').hide();
+            $('#editRangeSlotDiv').show();
+        }
+    });
+
+    // === FORM TAMBAH: Rak Selected ===
+    $('#rakSelect').change(function() {
+        const rakId = $(this).val();
+        
+        if(rakId) {
+            const selectedOption = $(this).find('option:selected');
+            const kapasitas = selectedOption.data('kapasitas');
+            const terpakai = selectedOption.data('terpakai');
+            const sisa = selectedOption.data('sisa');
+
+            // Show info
+            $('#rakKapasitas').text(kapasitas);
+            $('#rakTerpakai').text(terpakai);
+            $('#rakSisa').text(sisa);
+            $('#rakInfo').show();
+
+            // Load available slots
+            loadAvailableSlots(rakId);
+        } else {
+            $('#rakInfo').hide();
+            $('#slotWrapper').hide();
+        }
+    });
+
+    // === FORM EDIT: Rak Selected ===
+    $('#editRakId').change(function() {
+        const rakId = $(this).val();
+        
+        if(rakId) {
+            const selectedOption = $(this).find('option:selected');
+            const kapasitas = selectedOption.data('kapasitas');
+            const terpakai = selectedOption.data('terpakai');
+            const sisa = selectedOption.data('sisa');
+
+            $('#editRakKapasitas').text(kapasitas);
+            $('#editRakTerpakai').text(terpakai);
+            $('#editRakSisa').text(sisa);
+            $('#editRakInfo').show();
+
+            loadAvailableSlotsForEdit(rakId, currentServerId);
+        } else {
+            $('#editRakInfo').hide();
+            $('#editSlotWrapper').hide();
+        }
+    });
+
+    // === Function: Load Available Slots (TAMBAH) ===
+    function loadAvailableSlots(rakId) {
+        $('#loadingSlots').show();
+        $('#slotSelectWrapper').hide();
+        $('#slotWrapper').show();
+
+        $.ajax({
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
+            type: 'GET',
+            success: function(response) {
+                availableSlots = response.available_slots;
+                occupiedSlots = response.occupied_slots;
+                
+                populateSlotDropdowns(availableSlots);
+                
+                $('#loadingSlots').hide();
+                $('#slotSelectWrapper').show();
+            },
+            error: function() {
+                alert('Gagal memuat data slot');
+                $('#loadingSlots').hide();
+            }
+        });
     }
 
-    // Reset form ketika modal ditutup
-    $('#tambahModal').on('hidden.bs.modal', function () {
-        $('#serverForm')[0].reset();
-        $('#bidangWrapper').hide();
-        $('#bidangSelect').val('');
-        currentStep = 0;
-        showStep(currentStep);
-    });
+    // === Function: Load Available Slots (EDIT) ===
+    function loadAvailableSlotsForEdit(rakId, serverId) {
+        $('#editLoadingSlots').show();
+        $('#editSlotSelectWrapper').hide();
+        $('#editSlotWrapper').show();
 
-    // Jalankan setelah modal muncul
-    $('#tambahModal').on('shown.bs.modal', function () {
-        showStep(currentStep);
-    });
+        $.ajax({
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
+            type: 'GET',
+            success: function(response) {
+                availableSlots = response.available_slots;
+                occupiedSlots = response.occupied_slots;
+                
+                populateEditSlotDropdowns(availableSlots);
+                
+                $('#editLoadingSlots').hide();
+                $('#editSlotSelectWrapper').show();
+            },
+            error: function() {
+                alert('Gagal memuat data slot');
+                $('#editLoadingSlots').hide();
+            }
+        });
+    }
 
-    nextBtn.click(function(){
-        $('#confirmNama').text($('input[name="nama_server"]').val() || '-');
-        $('#confirmBrand').text($('input[name="brand"]').val() || '-');
-        $('#confirmSpesifikasi').text($('textarea[name="spesifikasi"]').val() || '-');
-        $('#confirmSatker').text($('#satkerSelect option:selected').text() || '-');
+    // === Function: Populate Slot Dropdowns (TAMBAH) ===
+    function populateSlotDropdowns(slots) {
+        // Single slot
+        $('#singleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        slots.forEach(slot => {
+            $('#singleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
+        });
+
+        // Range slot (start & end)
+        $('#slotStart, #slotEnd').empty().append('<option value="">Pilih</option>');
+        slots.forEach(slot => {
+            $('#slotStart').append(`<option value="${slot}">${slot}U</option>`);
+            $('#slotEnd').append(`<option value="${slot}">${slot}U</option>`);
+        });
+    }
+
+    // === Function: Populate Slot Dropdowns (EDIT) ===
+    function populateEditSlotDropdowns(slots) {
+        // Single slot
+        $('#editSingleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        slots.forEach(slot => {
+            $('#editSingleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
+        });
+
+        // Range slot
+        $('#editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih</option>');
+        slots.forEach(slot => {
+            $('#editSlotStart').append(`<option value="${slot}">${slot}U</option>`);
+            $('#editSlotEnd').append(`<option value="${slot}">${slot}U</option>`);
+        });
+    }
+
+    // === Handle Range Slot Change (TAMBAH) ===
+    $('#slotStart, #slotEnd').change(function() {
+        const start = $('#slotStart').val();
+        const end = $('#slotEnd').val();
         
-        if($('#bidangWrapper').is(':visible')) {
-            $('#confirmBidang').text($('#bidangSelect option:selected').text() || '-');
+        if(start && end) {
+            $('#slotRangeValue').val(`${start}-${end}`);
         } else {
-            $('#confirmBidang').text('-');
+            $('#slotRangeValue').val('');
         }
-        
-        $('#confirmRak').text($('select[name="rak_id"] option:selected').text() || '-');
-        $('#confirmSlot').text($('input[name="u_slot"]').val() || '-');
-        $('#confirmWebsite').text($('input[name="website_name"]').val() || '-');
-        
-        const keteranganContent = $('.summernote').summernote('code');
-        $('#confirmKeterangan').html(keteranganContent || '-');
-
-        currentStep++;
-        showStep(currentStep);
     });
 
-    prevBtn.click(function(){
-        currentStep--;
-        showStep(currentStep);
+    // === Handle Range Slot Change (EDIT) ===
+    $('#editSlotStart, #editSlotEnd').change(function() {
+        const start = $('#editSlotStart').val();
+        const end = $('#editSlotEnd').val();
+        
+        if(start && end) {
+            $('#editSlotRangeValue').val(`${start}-${end}`);
+        } else {
+            $('#editSlotRangeValue').val('');
+        }
     });
 
-    // 🔥 DETAIL SERVER AJAX
+    // === Form Submit: Set correct u_slot value ===
+    $('#serverForm').submit(function(e) {
+        const slotType = $('input[name="slot_type"]:checked').val();
+        
+        if($('#rakSelect').val()) {
+            let slotValue = '';
+            
+            if(slotType === 'single') {
+                slotValue = $('#singleSlotSelect').val();
+            } else {
+                slotValue = $('#slotRangeValue').val();
+            }
+            
+            // Remove existing hidden input
+            $('input[name="u_slot"]').remove();
+            
+            // Add hidden input with correct value
+            $(this).append(`<input type="hidden" name="u_slot" value="${slotValue}">`);
+        }
+    });
+
+    // === Edit Form Submit ===
+    $('#editServerForm').submit(function(e) {
+        const slotType = $('input[name="edit_slot_type"]:checked').val();
+        
+        if($('#editRakId').val()) {
+            let slotValue = '';
+            
+            if(slotType === 'single') {
+                slotValue = $('#editSingleSlotSelect').val();
+            } else {
+                slotValue = $('#editSlotRangeValue').val();
+            }
+            
+            $('input[name="u_slot"]').remove();
+            $(this).append(`<input type="hidden" name="u_slot" value="${slotValue}">`);
+        }
+    });
+
+    // === Detail Server AJAX ===
     $(document).on('click', '.btn-detail-server', function () {
         let id = $(this).data('id');
 
@@ -634,7 +892,29 @@ $(document).ready(function() {
                 $('#detailUSlot').text(s.u_slot ?? '-');
                 $('#detailBidang').text(s.bidang ? s.bidang.nama_bidang : '-');
                 $('#detailSatker').text(s.satker ? s.satker.nama_satker : '-');
-                $('#detailWebsite').text(s.website ? s.website.nama_website : '-');
+                
+                // Tampilkan daftar website
+                let websitesHtml = '-';
+                if(s.websites && s.websites.length > 0) {
+                    websitesHtml = '<ul class="mb-0">';
+                    s.websites.forEach(w => {
+                        websitesHtml += `<li><a href="${w.url}" target="_blank">${w.nama_website}</a></li>`;
+                    });
+                    websitesHtml += '</ul>';
+                }
+                $('#detailWebsites').html(websitesHtml);
+                
+                // Status
+                let statusBadge = '';
+                if(s.power_status === 'ON') {
+                    statusBadge = '<span class="badge bg-success">Aktif</span>';
+                } else if(s.power_status === 'STANDBY') {
+                    statusBadge = '<span class="badge bg-warning text-dark">Maintenance</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-danger">Tidak Aktif</span>';
+                }
+                $('#detailStatus').html(statusBadge);
+                
                 $('#detailKeterangan').html(s.keterangan ?? '-');
                 $('#modalDetailServer').modal('show');
             },
@@ -645,9 +925,10 @@ $(document).ready(function() {
         });
     });
 
-    // 🔥 EDIT SERVER - LOAD DATA
+    // === Edit Server - Load Data ===
     $(document).on('click', '.btn-edit-server', function () {
         let id = $(this).data('id');
+        currentServerId = id;
 
         $.ajax({
             url: `/superadmin/server/${id}/edit`,
@@ -660,19 +941,12 @@ $(document).ready(function() {
                 $('#editBrand').val(s.brand);
                 $('#editSpesifikasi').val(s.spesifikasi);
                 $('#editRakId').val(s.rak_id);
-                $('#editUSlot').val(s.u_slot);
                 $('#editSatkerId').val(s.satker_id);
                 $('#editBidangId').val(s.bidang_id);
                 $('#editPowerStatus').val(s.power_status);
-                
-                // Set keterangan ke summernote
-                if (typeof $('.summernote-edit').summernote === 'function') {
-                    $('.summernote-edit').summernote('code', s.keterangan || '');
-                } else {
-                    $('#editKeterangan').val(s.keterangan || '');
-                }
+                $('#editKeterangan').val(s.keterangan || '');
 
-                // Cek apakah harus menampilkan bidang
+                // Cek bidang visibility
                 const selectedSatker = $('#editSatkerId option:selected').data('name');
                 if (selectedSatker === 'Pusat Data dan Informasi Kemhan') {
                     $('#editBidangWrapper').show();
@@ -680,9 +954,30 @@ $(document).ready(function() {
                     $('#editBidangWrapper').hide();
                 }
 
-                // Set URL form action
+                // Trigger rak change untuk load slots
+                if(s.rak_id) {
+                    $('#editRakId').trigger('change');
+                    
+                    // Set slot value after slots loaded
+                    setTimeout(() => {
+                        if(s.u_slot) {
+                            if(s.u_slot.includes('-')) {
+                                // Range slot
+                                $('input[name="edit_slot_type"][value="range"]').prop('checked', true).trigger('change');
+                                const parts = s.u_slot.split('-');
+                                $('#editSlotStart').val(parts[0]);
+                                $('#editSlotEnd').val(parts[1]);
+                                $('#editSlotRangeValue').val(s.u_slot);
+                            } else {
+                                // Single slot
+                                $('input[name="edit_slot_type"][value="single"]').prop('checked', true).trigger('change');
+                                $('#editSingleSlotSelect').val(s.u_slot);
+                            }
+                        }
+                    }, 500);
+                }
+
                 $('#editServerForm').attr('action', `/superadmin/server/update/${s.server_id}`);
-                
                 $('#modalEditServer').modal('show');
             },
             error: function(xhr) {
@@ -704,24 +999,19 @@ $(document).ready(function() {
         }
     });
 
-    // 🔍 SEARCH FUNCTIONALITY - Sama seperti di Bidang
+    // === Search Functionality ===
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
         let visibleRows = 0;
 
         $('.server-row').each(function() {
             const nama = $(this).find('.server-nama').text().toLowerCase();
-            const brand = $(this).find('.server-brand').text().toLowerCase();
-            const spesifikasi = $(this).find('.server-spesifikasi').text().toLowerCase();
             const rak = $(this).find('.server-rak').text().toLowerCase();
             const bidang = $(this).find('.server-bidang').text().toLowerCase();
             const satker = $(this).find('.server-satker').text().toLowerCase();
-            const website = $(this).find('.server-website').text().toLowerCase();
             
-            if (nama.includes(searchValue) || brand.includes(searchValue) || 
-                spesifikasi.includes(searchValue) || rak.includes(searchValue) ||
-                bidang.includes(searchValue) || satker.includes(searchValue) || 
-                website.includes(searchValue)) {
+            if (nama.includes(searchValue) || rak.includes(searchValue) ||
+                bidang.includes(searchValue) || satker.includes(searchValue)) {
                 $(this).show();
                 visibleRows++;
             } else {
@@ -729,11 +1019,10 @@ $(document).ready(function() {
             }
         });
 
-        // Tampilkan pesan jika tidak ada hasil
         if (visibleRows === 0 && $('.server-row').length > 0) {
             if ($('#noResultRow').length === 0) {
                 $('table tbody').append(
-                    '<tr id="noResultRow"><td colspan="10" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                    '<tr id="noResultRow"><td colspan="8" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
                 );
             }
         } else {
@@ -741,7 +1030,7 @@ $(document).ready(function() {
         }
     });
 
-    // 🔥 MODAL HAPUS HANDLER - Sama seperti di Bidang
+    // === Modal Hapus Handler ===
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
@@ -753,50 +1042,16 @@ $(document).ready(function() {
         modal.show();
     });
 
-    // Handle form submit untuk hapus
-    $('#formHapusServer').on('submit', function(e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        const actionUrl = form.attr('action');
-        
-        $.ajax({
-            url: actionUrl,
-            type: 'POST',
-            data: form.serialize(),
-            success: function(response) {
-                $('#hapusServerModal').modal('hide');
-                alert('Server berhasil dihapus');
-                location.reload();
-            },
-            error: function(xhr) {
-                $('#hapusServerModal').modal('hide');
-                alert('Gagal menghapus server');
-                console.error(xhr);
-            }
-        });
-    });
-
-    // Bidang muncul HANYA jika nama Satker adalah "Pusat Data dan Informasi Kemhan"
+    // Bidang visibility untuk form tambah
     $('#satkerSelect').change(function(){
         const selectedName = $('#satkerSelect option:selected').data('name');
         
-        console.log('Satker dipilih:', selectedName); // Debug
-        
-        // Cek apakah nama satker mengandung "Pusat Data dan Informasi"
         if(selectedName && selectedName.includes('Pusat Data dan Informasi')) {
             $('#bidangWrapper').show();
-            console.log('Bidang ditampilkan'); // Debug
         } else {
             $('#bidangWrapper').hide();
             $('#bidangSelect').val('');
-            console.log('Bidang disembunyikan'); // Debug
         }
-    });
-
-    // Trigger change saat modal dibuka untuk cek nilai awal
-    $('#tambahModal').on('shown.bs.modal', function () {
-        $('#satkerSelect').trigger('change');
     });
 });
 </script>
