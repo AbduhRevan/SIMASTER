@@ -25,6 +25,11 @@ use App\Http\Controllers\infratik\WebsiteController as InfratikWebsite;
 use App\Http\Controllers\infratik\DashboardController as InfratikDashboard;
 use App\Http\Controllers\infratik\ServerController as InfratikServer;
 
+// Pamsis
+use App\Http\Controllers\pamsis\WebsiteController as PamsisWebsite;
+use App\Http\Controllers\pamsis\DashboardController as PamsisDashboard;
+use App\Http\Controllers\pamsis\ServerController as PamsisServer;
+
 // Redirect root ke login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -161,11 +166,38 @@ Route::middleware(['auth'])->group(function () {
     // PAMSIS ROLE
     // ====================================================================
 
-    Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('pamsis.dashboard');
-        })->name('pamsis.dashboard');
-    });
+     Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {
+        Route::get('/dashboard', [pamsisDashboard::class, 'index'])->name('pamsis.dashboard');
+
+        // pamsis - Server
+        Route::get('/server/rak/{rakId}/available-slots', [pamsisServer::class, 'getAvailableSlots'])->name('pamsis.server.availableSlots');
+        Route::get('/server', [pamsisServer::class, 'index'])->name('pamsis.server.index');
+        Route::post('/server/store', [pamsisServer::class, 'store'])->name('pamsis.server.store');
+        Route::get('/server/{id}/detail', [pamsisServer::class, 'detail'])->name('pamsis.server.detail');
+        Route::get('/server/{id}/edit', [pamsisServer::class, 'edit'])->name('pamsis.server.edit');
+        Route::put('/server/update/{id}', [pamsisServer::class, 'update'])->name('pamsis.server.update');
+        Route::delete('/server/{id}', [pamsisServer::class, 'destroy'])->name('pamsis.server.destroy');
+
+        // pamsis - Website
+        Route::get('/website', [pamsisWebsite::class, 'index'])->name('pamsis.website.index');
+        Route::post('/website/store', [pamsisWebsite::class, 'store'])->name('pamsis.website.store');
+        Route::put('/website/update/{id}', [pamsisWebsite::class, 'update'])->name('pamsis.website.update');
+        Route::delete('/website/delete/{id}', [pamsisWebsite::class, 'destroy'])->name('pamsis.website.destroy');
+        Route::get('/website/{id}/detail', [pamsisWebsite::class, 'detail'])->name('pamsis.website.detail');
+        
+        // pamsis - Log Aktivitas
+        Route::get('/log-aktivitas', function () {
+            return view('pamsis.logAktivitas');})->name('pamsis.logAktivitas');
+    
+        // pamsis - Pemeliharaan
+        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('pamsis.pemeliharaan');
+        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('pamsis.pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('pamsis.pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('pamsis.pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('pamsis.pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('pamsis.pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('.pemeliharaan.cancel');
+        });
 
     // ====================================================================
     // INFRATIK ROLE
