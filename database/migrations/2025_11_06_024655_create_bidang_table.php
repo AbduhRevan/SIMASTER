@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id('bidang_id');
             $table->string('nama_bidang', 100);
             $table->string('singkatan_bidang', 20)->nullable();
-            $table->softDeletes();
+            // HAPUS: $table->softDeletes();
             $table->unique('nama_bidang', 'uk_nama_bidang');
-            
+
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
             $table->collation = 'utf8mb4_unicode_ci';

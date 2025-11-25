@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SatkerController extends Controller
 {
-    // Menampilkan semua data satker (exclude soft deleted)
+    // Menampilkan semua data satker
     public function index()
     {
         $satker = Satker::orderBy('nama_satker')->paginate(6);
@@ -95,73 +95,42 @@ class SatkerController extends Controller
             ->with('success', 'Data Satuan Kerja berhasil diperbarui!');
     }
 
-    // Soft delete
-    public function softDelete($id)
+    // Menghapus data satker (hard delete)
+    public function destroy($id)
     {
-        $satker = Satker::findOrFail($id);
-        $namaSatker = $satker->nama_satker; // Simpan nama sebelum delete
+        try {
+            $satker = Satker::findOrFail($id);
+            $namaSatker = $satker->nama_satker;
 
-        $satker->delete();
+            // Cek apakah satker masih digunakan oleh pengguna atau website
+            // Uncomment jika ada relasi
+            // if ($satker->pengguna()->count() > 0) {
+            //     return redirect()->back()
+            //         ->with('error', 'Satuan Kerja tidak dapat dihapus karena masih digunakan oleh ' . $satker->pengguna()->count() . ' pengguna!');
+            // }
 
-        // TAMBAHKAN LOG DELETE
-        LogAktivitas::log(
-            'DELETE',
-            'satuan_kerja',
-            "Memindahkan satuan kerja ke arsip: {$namaSatker}",
-            Auth::id()
-        );
+            $satker->delete();
 
-        return redirect()
-            ->route('superadmin.satuankerja')
-            ->with('success', 'Data Satuan Kerja berhasil dipindahkan ke Arsip Sementara!');
+            // TAMBAHKAN LOG DELETE
+            LogAktivitas::log(
+                'DELETE',
+                'satuan_kerja',
+                "Menghapus permanen satuan kerja: {$namaSatker}",
+                Auth::id()
+            );
+
+            return redirect()
+                ->route('superadmin.satuankerja')
+                ->with('success', 'Data Satuan Kerja berhasil dihapus permanen!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+        }
     }
 
-    // Menampilkan data yang di-soft delete (untuk halaman arsip)
-    public function arsip()
-    {
-        $satker = Satker::onlyTrashed()->orderBy('nama_satker')->paginate(10);
-        return view('superadmin.arsip', compact('satker'));
-    }
-
-    // Restore data dari soft delete
-    public function restore($id)
-    {
-        $satker = Satker::onlyTrashed()->findOrFail($id);
-        $namaSatker = $satker->nama_satker;
-
-        $satker->restore();
-
-        // TAMBAHKAN LOG CREATE (karena dipulihkan)
-        LogAktivitas::log(
-            'CREATE',
-            'satuan_kerja',
-            "Memulihkan satuan kerja dari arsip: {$namaSatker}",
-            Auth::id()
-        );
-
-        return redirect()
-            ->route('superadmin.arsip')
-            ->with('success', 'Data Satuan Kerja berhasil dipulihkan!');
-    }
-
-    // Force delete (hapus permanen)
-    public function forceDelete($id)
-    {
-        $satker = Satker::onlyTrashed()->findOrFail($id);
-        $namaSatker = $satker->nama_satker;
-
-        $satker->forceDelete();
-
-        // TAMBAHKAN LOG DELETE
-        LogAktivitas::log(
-            'DELETE',
-            'satuan_kerja',
-            "Menghapus permanen satuan kerja dari arsip: {$namaSatker}",
-            Auth::id()
-        );
-
-        return redirect()
-            ->route('superadmin.arsip')
-            ->with('success', 'Data Satuan Kerja berhasil dihapus permanen!');
-    }
+    // HAPUS METHOD-METHOD INI:
+    // - softDelete()
+    // - arsip()
+    // - restore()
+    // - forceDelete()
 }

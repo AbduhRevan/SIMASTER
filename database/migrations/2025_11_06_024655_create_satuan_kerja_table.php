@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('nama_satker', 150);
             $table->string('singkatan_satker', 100)->nullable();
 
-            $table->softDeletes();
+            // HAPUS: $table->softDeletes();
 
             $table->unique('nama_satker', 'uk_nama_satker');
 

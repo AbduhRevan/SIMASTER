@@ -36,34 +36,35 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('superadmin.dashboard');
 
-        // Data Master
-        // Bidang
+        // ====================================================================
+        // DATA MASTER (Hard Delete - Hapus Permanen Langsung)
+        // ====================================================================
+
+        // Bidang (Hard Delete)
         Route::get('/bidang', [BidangController::class, 'index'])->name('superadmin.bidang');
         Route::post('/bidang/store', [BidangController::class, 'store'])->name('superadmin.bidang.store');
         Route::put('/bidang/update/{id}', [BidangController::class, 'update'])->name('superadmin.bidang.update');
-        Route::delete('/bidang/soft-delete/{id}', [BidangController::class, 'softDelete'])->name('superadmin.bidang.softdelete');
+        Route::delete('/bidang/delete/{id}', [BidangController::class, 'destroy'])->name('superadmin.bidang.delete');
 
-        // Satuan Kerja 
+        // Satuan Kerja (Hard Delete)
         Route::get('/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
         Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('superadmin.satker.store');
         Route::put('/satker/update/{id}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
-        Route::delete('/satker/soft-delete/{id}', [SatkerController::class, 'softDelete'])->name('superadmin.satker.softdelete');
+        Route::delete('/satker/delete/{id}', [SatkerController::class, 'destroy'])->name('superadmin.satker.delete');
 
-        // Rak Server
+        // Rak Server (Hard Delete)
         Route::get('/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
         Route::post('/rakserver/store', [RakController::class, 'store'])->name('superadmin.rakserver.store');
         Route::put('/rakserver/update/{id}', [RakController::class, 'update'])->name('superadmin.rakserver.update');
         Route::delete('/rakserver/delete/{id}', [RakController::class, 'destroy'])->name('superadmin.rakserver.delete');
 
-        // Arsip Sementara
-        Route::get('/arsip', [BidangController::class, 'arsip'])->name('superadmin.arsip');
-        Route::post('/bidang/restore/{id}', [BidangController::class, 'restore'])->name('superadmin.bidang.restore');
-        Route::delete('/bidang/force-delete/{id}', [BidangController::class, 'forceDelete'])->name('superadmin.bidang.forceDelete');
+        // ====================================================================
+        // MANAJEMEN ASET
+        // ====================================================================
 
-        // Manajemen Aset - Server
+        // Server
         // ⚠️ PENTING: Route dengan parameter spesifik HARUS di atas route dengan parameter dinamis
         Route::get('/server/rak/{rakId}/available-slots', [ServerController::class, 'getAvailableSlots'])->name('superadmin.server.availableSlots');
-
         Route::get('/server', [ServerController::class, 'index'])->name('superadmin.server.index');
         Route::post('/server/store', [ServerController::class, 'store'])->name('superadmin.server.store');
         Route::get('/server/{id}/detail', [ServerController::class, 'detail'])->name('superadmin.server.detail');
@@ -78,13 +79,23 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/website/delete/{id}', [WebsiteController::class, 'destroy'])->name('superadmin.website.destroy');
         Route::get('/website/{id}/detail', [WebsiteController::class, 'detail'])->name('superadmin.website.detail');
 
-        // Pemeliharaan
+        // ====================================================================
+        // PEMELIHARAAN
+        // ====================================================================
+
         Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('superadmin.pemeliharaan');
         Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('superadmin.pemeliharaan.store');
         Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('superadmin.pemeliharaan.update');
         Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('superadmin.pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('superadmin.pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('superadmin.pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('superadmin.pemeliharaan.cancel');
 
-        // Sistem - Pengguna
+        // ====================================================================
+        // SISTEM
+        // ====================================================================
+
+        // Pengguna
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('superadmin.pengguna.index');
         Route::post('/pengguna', [PenggunaController::class, 'store'])->name('superadmin.pengguna.store');
         Route::get('/pengguna/{id}/edit', [PenggunaController::class, 'edit'])->name('superadmin.pengguna.edit');
@@ -97,7 +108,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/logAktivitas', [LogAktivitasController::class, 'index'])->name('superadmin.logAktivitas');
     });
 
-    // Banglola
+    // ====================================================================
+    // BANGLOLA ROLE
+    // ====================================================================
+
     Route::middleware(['role:banglola'])->prefix('banglola')->group(function () {
         Route::get('/dashboard', function () {
             return view('banglola.dashboard');
@@ -117,28 +131,40 @@ Route::middleware(['auth'])->group(function () {
         });
 
 
-    // Pamsis
+    // ====================================================================
+    // PAMSIS ROLE
+    // ====================================================================
+
     Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {
         Route::get('/dashboard', function () {
             return view('pamsis.dashboard');
         })->name('pamsis.dashboard');
     });
 
-    // Infratik
+    // ====================================================================
+    // INFRATIK ROLE
+    // ====================================================================
+
     Route::middleware(['role:infratik'])->prefix('infratik')->group(function () {
         Route::get('/dashboard', function () {
             return view('infratik.dashboard');
         })->name('infratik.dashboard');
     });
 
-    // Tatausaha
+    // ====================================================================
+    // TATAUSAHA ROLE
+    // ====================================================================
+
     Route::middleware(['role:tatausaha'])->prefix('tatausaha')->group(function () {
         Route::get('/dashboard', function () {
             return view('tatausaha.dashboard');
         })->name('tatausaha.dashboard');
     });
 
-    // Pimpinan
+    // ====================================================================
+    // PIMPINAN ROLE
+    // ====================================================================
+
     Route::middleware(['role:pimpinan'])->prefix('pimpinan')->group(function () {
         Route::get('/dashboard', function () {
             return view('pimpinan.dashboard');

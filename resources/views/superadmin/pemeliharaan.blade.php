@@ -3,60 +3,69 @@
 @section('title', 'Pemeliharaan')
 
 @section('content')
-<div class="container-fluid py-3">
+<div class="container-fluid py-4">
+
+
+    {{-- Alert Messages --}}
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
     {{-- ======= RINGKASAN PEMELIHARAAN ======= --}}
     <div class="row mb-4 g-3">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 rounded-4 border-start border-primary border-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold text-secondary small mb-1">Total Pemeliharaan</div>
-                        <h3 class="text-primary mb-0">{{ $totalPemeliharaan }}</h3>
-                    </div>
-                    <div class="bg-primary-subtle rounded-3 p-3">
-                        <i class="fa fa-tools fa-2x text-primary"></i>
-                    </div>
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-list me-1"></i>Total Pemeliharaan
                 </div>
+                <h2 class="stat-value mb-0">{{ $totalPemeliharaan }}</h2>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 rounded-4 border-start border-success border-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold text-secondary small mb-1">Pemeliharaan Server</div>
-                        <h3 class="text-success mb-0">{{ $totalServer }}</h3>
-                    </div>
-                    <div class="bg-success-subtle rounded-3 p-3">
-                        <i class="fa fa-server fa-2x text-success"></i>
-                    </div>
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-plus-circle me-1 text-success"></i>Server
                 </div>
+                <h2 class="stat-value mb-0 text-success">{{ $totalServer }}</h2>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 rounded-4 border-start border-info border-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold text-secondary small mb-1">Pemeliharaan Website</div>
-                        <h3 class="text-info mb-0">{{ $totalWebsite }}</h3>
-                    </div>
-                    <div class="bg-info-subtle rounded-3 p-3">
-                        <i class="fa fa-globe fa-2x text-info"></i>
-                    </div>
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-edit me-1 text-warning"></i>Website
                 </div>
+                <h2 class="stat-value mb-0 text-warning">{{ $totalWebsite }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-spinner me-1 text-danger"></i>Berlangsung
+                </div>
+                <h2 class="stat-value mb-0 text-danger">{{ $berlangsung }}</h2>
             </div>
         </div>
     </div>
 
-    {{-- ======= JADWAL PEMELIHARAAN ======= --}}
-    <div class="card shadow-sm border-0 rounded-4 mb-4">
-        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center p-3">
-            <h6 class="fw-semibold mb-0">
-                <i class="fa fa-wrench me-2 text-secondary"></i> Jadwal Pemeliharaan
+    {{-- ======= RIWAYAT PEMELIHARAAN ======= --}}
+    <div class="card-content">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="fa fa-history me-2"></i> Riwayat Pemeliharaan
             </h6>
-
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tambahPemeliharaanModal">
                     <i class="fa fa-plus me-1"></i> Tambah Jadwal
@@ -64,28 +73,38 @@
             </div>
         </div>
 
-        <div class="card-body p-3">
+        <div class="card-body-custom">
             {{-- Filter --}}
-            <form method="GET" class="row g-2 mb-3">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control form-control-sm" 
-                        placeholder="Cari pemeliharaan..." value="{{ request('search') }}">
-                </div>
-                <div class="col-md-3">
-                    <select name="jenis" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="">Semua Jenis</option>
-                        <option value="server" {{ request('jenis') == 'server' ? 'selected' : '' }}>Server</option>
-                        <option value="website" {{ request('jenis') == 'website' ? 'selected' : '' }}>Website</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="date" name="tanggal" class="form-control form-control-sm" 
-                        value="{{ request('tanggal') }}" onchange="this.form.submit()">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-secondary btn-sm w-100">
-                        <i class="fa fa-search"></i> Filter
-                    </button>
+            <form method="GET" class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input type="text" name="search" class="form-control form-control-sm" 
+                            placeholder="Cari aktivitas..." value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="jenis" class="form-select form-select-sm">
+                            <option value="">Semua Jenis</option>
+                            <option value="server" {{ request('jenis') == 'server' ? 'selected' : '' }}>Server</option>
+                            <option value="website" {{ request('jenis') == 'website' ? 'selected' : '' }}>Website</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Semua Status</option>
+                            <option value="dijadwalkan" {{ request('status') == 'dijadwalkan' ? 'selected' : '' }}>Dijadwalkan</option>
+                            <option value="berlangsung" {{ request('status') == 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
+                            <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            <option value="dibatalkan" {{ request('status') == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ request('tanggal') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-secondary btn-sm w-100">
+                            <i class="fa fa-search me-1"></i> Filter
+                        </button>
+                    </div>
                 </div>
             </form>
 
@@ -95,11 +114,12 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">No</th>
-                            <th width="12%">Tanggal</th>
-                            <th width="12%">Jenis</th>
-                            <th width="23%">Asset</th>
-                            <th width="38%">Keterangan</th>
-                            <th width="10%" class="text-center">Aksi</th>
+                            <th width="10%">Tanggal</th>
+                            <th width="10%">Jenis</th>
+                            <th width="18%">Asset</th>
+                            <th width="12%">Status</th>
+                            <th width="25%">Keterangan</th>
+                            <th width="20%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,50 +142,128 @@
                                 <strong>{{ $item->server->nama_server ?? $item->website->nama_website ?? '-' }}</strong>
                             </td>
                             <td>
-                                <small>{{ Str::limit($item->keterangan, 80) }}</small>
+                                @if($item->status_pemeliharaan === 'dijadwalkan')
+                                    <span class="badge bg-secondary">
+                                        <i class="fa fa-clock me-1"></i> Dijadwalkan
+                                    </span>
+                                @elseif($item->status_pemeliharaan === 'berlangsung')
+                                    <span class="badge bg-warning">
+                                        <i class="fa fa-spinner fa-spin me-1"></i> Berlangsung
+                                    </span>
+                                @elseif($item->status_pemeliharaan === 'selesai')
+                                    <span class="badge bg-success">
+                                        <i class="fa fa-check-circle me-1"></i> Selesai
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger">
+                                        <i class="fa fa-times-circle me-1"></i> Dibatalkan
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                <small>{{ Str::limit($item->keterangan, 60) }}</small>
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
+                                    {{-- Tombol Detail --}}
                                     <button type="button" class="btn btn-outline-info" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#detailModal{{ $item->pemeliharaan_id }}"
                                         title="Detail">
                                         <i class="fa fa-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-warning"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal{{ $item->pemeliharaan_id }}"
-                                        title="Edit">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
-                                    <form action="{{ route('superadmin.pemeliharaan.destroy', $item->pemeliharaan_id) }}" 
-                                        method="POST" class="d-inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Hapus">
-                                            <i class="fa fa-trash"></i>
+
+                                    {{-- Tombol Mulai (hanya jika dijadwalkan) --}}
+                                    @if($item->canStart())
+                                        <form action="{{ route('superadmin.pemeliharaan.start', $item->pemeliharaan_id) }}" 
+                                            method="POST" class="d-inline"
+                                            onsubmit="return confirm('Mulai pemeliharaan untuk {{ $item->asset_name }}?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-success" title="Mulai Pemeliharaan">
+                                                <i class="fa fa-play"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Tombol Selesai (hanya jika berlangsung) --}}
+                                    @if($item->canFinish())
+                                        <form action="{{ route('superadmin.pemeliharaan.finish', $item->pemeliharaan_id) }}" 
+                                            method="POST" class="d-inline"
+                                            onsubmit="return confirm('Selesaikan pemeliharaan untuk {{ $item->asset_name }}?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-primary" title="Selesai Pemeliharaan">
+                                                <i class="fa fa-check"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Tombol Edit (hanya jika dijadwalkan atau dibatalkan) --}}
+                                    @if(in_array($item->status_pemeliharaan, ['dijadwalkan', 'dibatalkan']))
+                                        <button type="button" class="btn btn-outline-warning"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal{{ $item->pemeliharaan_id }}"
+                                            title="Edit">
+                                            <i class="fa fa-edit"></i>
                                         </button>
-                                    </form>
+                                    @endif
+
+                                    {{-- Tombol Batal (jika dijadwalkan atau berlangsung) --}}
+                                    @if($item->canCancel())
+                                        <form action="{{ route('superadmin.pemeliharaan.cancel', $item->pemeliharaan_id) }}" 
+                                            method="POST" class="d-inline"
+                                            onsubmit="return confirm('Batalkan pemeliharaan ini?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-secondary" title="Batalkan">
+                                                <i class="fa fa-ban"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Tombol Hapus (tidak bisa jika sedang berlangsung) --}}
+                                    @if($item->status_pemeliharaan !== 'berlangsung')
+                                        <form action="{{ route('superadmin.pemeliharaan.destroy', $item->pemeliharaan_id) }}" 
+                                            method="POST" class="d-inline"
+                                            onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" title="Hapus">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
 
                         {{-- Modal Detail --}}
                         <div class="modal fade" id="detailModal{{ $item->pemeliharaan_id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-info text-white">
-                                        <h5 class="modal-title">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header modal-header-gradient text-white border-0">
+                                        <h5 class="modal-title fw-bold">
                                             <i class="fa fa-info-circle me-2"></i> Detail Pemeliharaan
                                         </h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
-                                    <div class="modal-body">
+                                    <div class="modal-body p-4">
                                         <div class="row g-3">
                                             <div class="col-md-6">
                                                 <label class="form-label fw-semibold text-secondary small">Tanggal Pemeliharaan</label>
                                                 <p class="form-control-plaintext">{{ \Carbon\Carbon::parse($item->tanggal_pemeliharaan)->format('d F Y') }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold text-secondary small">Status</label>
+                                                <p class="form-control-plaintext">
+                                                    @if($item->status_pemeliharaan === 'dijadwalkan')
+                                                        <span class="badge bg-secondary">Dijadwalkan</span>
+                                                    @elseif($item->status_pemeliharaan === 'berlangsung')
+                                                        <span class="badge bg-warning">Berlangsung</span>
+                                                    @elseif($item->status_pemeliharaan === 'selesai')
+                                                        <span class="badge bg-success">Selesai</span>
+                                                    @else
+                                                        <span class="badge bg-danger">Dibatalkan</span>
+                                                    @endif
+                                                </p>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label fw-semibold text-secondary small">Jenis Asset</label>
@@ -181,17 +279,31 @@
                                                     @endif
                                                 </p>
                                             </div>
-                                            <div class="col-md-12">
+                                            <div class="col-md-6">
                                                 <label class="form-label fw-semibold text-secondary small">Nama Asset</label>
                                                 <p class="form-control-plaintext">{{ $item->server->nama_server ?? $item->website->nama_website ?? '-' }}</p>
                                             </div>
+                                            @if($item->status_sebelumnya)
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold text-secondary small">Status Sebelumnya</label>
+                                                <p class="form-control-plaintext">
+                                                    <span class="badge bg-light text-dark">{{ strtoupper($item->status_sebelumnya) }}</span>
+                                                </p>
+                                            </div>
+                                            @endif
+                                            @if($item->tanggal_selesai_aktual)
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold text-secondary small">Tanggal Selesai</label>
+                                                <p class="form-control-plaintext">{{ \Carbon\Carbon::parse($item->tanggal_selesai_aktual)->format('d F Y H:i') }}</p>
+                                            </div>
+                                            @endif
                                             <div class="col-md-12">
                                                 <label class="form-label fw-semibold text-secondary small">Keterangan</label>
                                                 <p class="form-control-plaintext bg-light p-3 rounded">{{ $item->keterangan ?? '-' }}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="modal-footer">
+                                    <div class="modal-footer border-0 bg-light">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                             <i class="fa fa-times me-1"></i> Tutup
                                         </button>
@@ -201,11 +313,12 @@
                         </div>
 
                         {{-- Modal Edit --}}
+                        @if(in_array($item->status_pemeliharaan, ['dijadwalkan', 'dibatalkan']))
                         <div class="modal fade" id="editModal{{ $item->pemeliharaan_id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-warning text-white">
-                                        <h5 class="modal-title">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header modal-header-gradient text-white border-0">
+                                        <h5 class="modal-title fw-bold">
                                             <i class="fa fa-edit me-2"></i> Edit Pemeliharaan
                                         </h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -269,10 +382,11 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
 
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
                                 Belum ada data pemeliharaan
                             </td>
@@ -285,7 +399,7 @@
 
         {{-- Pagination --}}
         @if(isset($pemeliharaan) && $pemeliharaan->hasPages())
-        <div class="card-footer bg-white border-0 py-3">
+        <div class="d-flex justify-content-center mt-3">
             {{ $pemeliharaan->links() }}
         </div>
         @endif
@@ -293,19 +407,131 @@
 
 </div>
 
+<style>
+/* Card Statistics */
+.card-stat {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Card Content */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+/* Table Styles */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Button Group */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border-radius: 8px 8px 0 0;
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
+}
+
+/* Modal Shadow */
+.modal-content {
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+
 {{-- ======= MODAL TAMBAH PEMELIHARAAN ======= --}}
 <div class="modal fade" id="tambahPemeliharaanModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
                     <i class="fa fa-plus-circle me-2"></i> Tambah Jadwal Pemeliharaan
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('superadmin.pemeliharaan.store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tanggal Pemeliharaan <span class="text-danger">*</span></label>
@@ -324,18 +550,24 @@
                             <select name="server_id" class="form-select">
                                 <option value="">-- Pilih Server --</option>
                                 @foreach($servers as $server)
-                                    <option value="{{ $server->server_id }}">{{ $server->nama_server }}</option>
+                                    <option value="{{ $server->server_id }}">
+                                        {{ $server->nama_server }} ({{ $server->power_status }})
+                                    </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted">Hanya menampilkan server yang tidak sedang maintenance</small>
                         </div>
                         <div class="col-md-12" id="websiteSelect" style="display:none;">
                             <label class="form-label fw-semibold">Pilih Website</label>
                             <select name="website_id" class="form-select">
                                 <option value="">-- Pilih Website --</option>
                                 @foreach($websites as $website)
-                                    <option value="{{ $website->website_id }}">{{ $website->nama_website }}</option>
+                                    <option value="{{ $website->website_id }}">
+                                        {{ $website->nama_website }} ({{ $website->status }})
+                                    </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted">Hanya menampilkan website yang tidak sedang maintenance</small>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Keterangan <span class="text-danger">*</span></label>
@@ -344,11 +576,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer border-0 bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fa fa-times me-1"></i> Batal
                     </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-maroon-gradient">
                         <i class="fa fa-save me-1"></i> Simpan
                     </button>
                 </div>
@@ -357,7 +589,6 @@
     </div>
 </div>
 
-{{-- ======= JAVASCRIPT ======= --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Handle Tambah Modal
@@ -400,17 +631,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<style>
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .btn-group-sm > .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-    }
-</style>
 
 @endsection
