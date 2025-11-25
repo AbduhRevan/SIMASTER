@@ -338,7 +338,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form id="serverForm" action="{{ route('banglola.server.store') }}" method="POST">
+            <form id="serverForm" action="{{ route('infratik.server.store') }}" method="POST">
                 @csrf
                 <div class="modal-body px-4 pb-4">
                     
@@ -738,7 +738,7 @@ $(document).ready(function() {
         $('#slotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`,
+            url: `/infratik/server/rak/${rakId}/available-slots`,
             type: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -799,7 +799,7 @@ $(document).ready(function() {
         $('#editSlotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`,
+            url: `/infratik/server/rak/${rakId}/available-slots`,
             type: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -948,7 +948,7 @@ $(document).ready(function() {
         let id = $(this).data('id');
 
         $.ajax({
-            url: `/banglola/server/${id}/detail`,
+            url: `/infratik/server/${id}/detail`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -999,7 +999,7 @@ $(document).ready(function() {
         currentServerId = id;
 
         $.ajax({
-            url: `/banglola/server/${id}/edit`,
+            url: `/infratik/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -1045,7 +1045,7 @@ $(document).ready(function() {
                     }, 500);
                 }
 
-                $('#editServerForm').attr('action', `/banglola/server/update/${s.server_id}`);
+                $('#editServerForm').attr('action', `/infratik/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
             },
             error: function(xhr) {
@@ -1104,7 +1104,7 @@ $(document).ready(function() {
         const nama = $(this).data('nama');
         
         $('#namaServerHapus').text(nama);
-        $('#formHapusServer').attr('action', `/banglola/server/${id}`);
+        $('#formHapusServer').attr('action', `/infratik/server/${id}`);
         
         const modal = new bootstrap.Modal(document.getElementById('hapusServerModal'));
         modal.show();
