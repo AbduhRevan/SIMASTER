@@ -13,6 +13,13 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <strong>Error!</strong>
@@ -189,7 +196,7 @@
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
                     <p>Apakah Anda yakin ingin menghapus satuan kerja <strong id="namaSatkerHapus"></strong>?</p>
                     <div class="alert alert-warning small mb-0">
-                        Data akan dipindahkan ke Arsip Sementara dan dapat dipulihkan dalam waktu 30 hari sebelum dihapus permanen.
+                        Data akan dihapus secara permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -433,7 +440,7 @@ $(document).ready(function() {
         const nama = $(this).data('nama');
         
         $('#namaSatkerHapus').text(nama);
-        $('#formHapusSatker').attr('action', `/satker/soft-delete/${id}`);
+        $('#formHapusSatker').attr('action', `/superadmin/satker/delete/${id}`);
         
         const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
         modal.show();

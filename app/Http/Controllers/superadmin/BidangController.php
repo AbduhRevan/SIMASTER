@@ -85,70 +85,40 @@ class BidangController extends Controller
             ->with('success', 'Data bidang berhasil diperbarui!');
     }
 
-    // Menghapus data bidang (soft delete)
-    public function softDelete($id)
+    // Menghapus data bidang (hard delete)
+    public function destroy($id)
     {
-        $bidang = Bidang::findOrFail($id);
-        $namaBidang = $bidang->nama_bidang;
+        try {
+            $bidang = Bidang::findOrFail($id);
+            $namaBidang = $bidang->nama_bidang;
 
-        $bidang->delete();
+            // Cek apakah bidang masih digunakan oleh pengguna
+            if ($bidang->pengguna()->count() > 0) {
+                return redirect()->back()
+                    ->with('error', 'Bidang tidak dapat dihapus karena masih digunakan oleh ' . $bidang->pengguna()->count() . ' pengguna!');
+            }
 
-        // TAMBAHKAN LOG DELETE
-        LogAktivitas::log(
-            'DELETE',
-            'bidang',
-            "Memindahkan bidang ke arsip: {$namaBidang}",
-            Auth::id()
-        );
+            $bidang->delete();
 
-        return redirect()->route('superadmin.bidang')
-            ->with('success', 'Data bidang berhasil dipindahkan ke arsip sementara.');
+            // TAMBAHKAN LOG DELETE
+            LogAktivitas::log(
+                'DELETE',
+                'bidang',
+                "Menghapus permanen bidang: {$namaBidang}",
+                Auth::id()
+            );
+
+            return redirect()->route('superadmin.bidang')
+                ->with('success', 'Data bidang berhasil dihapus permanen!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+        }
     }
 
-    // Halaman Arsip
-    public function arsip()
-    {
-        $bidangTerhapus = Bidang::onlyTrashed()->get();
-        return view('superadmin.arsip', compact('bidangTerhapus'));
-    }
-
-    // Mengembalikan data bidang yang sudah dihapus
-    public function restore($id)
-    {
-        $bidang = Bidang::withTrashed()->findOrFail($id);
-        $namaBidang = $bidang->nama_bidang;
-
-        $bidang->restore();
-
-        // TAMBAHKAN LOG CREATE (karena dipulihkan)
-        LogAktivitas::log(
-            'CREATE',
-            'bidang',
-            "Memulihkan bidang dari arsip: {$namaBidang}",
-            Auth::id()
-        );
-
-        return redirect()->route('superadmin.arsip')
-            ->with('success', 'Data bidang berhasil dipulihkan.');
-    }
-
-    // Hapus Permanen
-    public function forceDelete($id)
-    {
-        $bidang = Bidang::withTrashed()->findOrFail($id);
-        $namaBidang = $bidang->nama_bidang;
-
-        $bidang->forceDelete();
-
-        // TAMBAHKAN LOG DELETE
-        LogAktivitas::log(
-            'DELETE',
-            'bidang',
-            "Menghapus permanen bidang dari arsip: {$namaBidang}",
-            Auth::id()
-        );
-
-        return redirect()->route('superadmin.arsip')
-            ->with('success', 'Data bidang berhasil dihapus permanen.');
-    }
+    // HAPUS METHOD-METHOD INI:
+    // - softDelete()
+    // - arsip()
+    // - restore()
+    // - forceDelete()
 }
