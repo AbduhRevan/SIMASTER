@@ -4,6 +4,7 @@ namespace App\Models\superadmin;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\banglola\Server;
 
 class RakServer extends Model
 {
