@@ -5,6 +5,11 @@ namespace App\Models\banglola;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\superadmin\RakServer;
+use App\Models\superadmin\Bidang;
+use App\Models\superadmin\Satker;
+use App\Models\banglola\Website;
+
 class Website extends Model
 {
     use HasFactory;
