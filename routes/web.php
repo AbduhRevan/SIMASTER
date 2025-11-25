@@ -20,6 +20,11 @@ use App\Http\Controllers\banglola\WebsiteController as BanglolaWebsite;
 use App\Http\Controllers\banglola\DashboardController as BanglolaDashboard;
 use App\Http\Controllers\banglola\ServerController as BanglolaServer;
 
+// Infratik
+use App\Http\Controllers\infratik\WebsiteController as InfratikWebsite;
+use App\Http\Controllers\infratik\DashboardController as InfratikDashboard;
+use App\Http\Controllers\infratik\ServerController as InfratikServer;
+
 // Redirect root ke login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -166,11 +171,39 @@ Route::middleware(['auth'])->group(function () {
     // INFRATIK ROLE
     // ====================================================================
 
-    Route::middleware(['role:infratik'])->prefix('infratik')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('infratik.dashboard');
-        })->name('infratik.dashboard');
-    });
+     Route::middleware(['role:infratik'])->prefix('infratik')->group(function () {
+        Route::get('/dashboard', [InfratikDashboard::class, 'index'])->name('infratik.dashboard');
+
+        // Infratik - Server
+        Route::get('/server/rak/{rakId}/available-slots', [infratikServer::class, 'getAvailableSlots'])->name('infratik.server.availableSlots');
+        Route::get('/server', [infratikServer::class, 'index'])->name('infratik.server.index');
+        Route::post('/server/store', [infratikServer::class, 'store'])->name('infratik.server.store');
+        Route::get('/server/{id}/detail', [infratikServer::class, 'detail'])->name('infratik.server.detail');
+        Route::get('/server/{id}/edit', [infratikServer::class, 'edit'])->name('infratik.server.edit');
+        Route::put('/server/update/{id}', [infratikServer::class, 'update'])->name('infratik.server.update');
+        Route::delete('/server/{id}', [infratikServer::class, 'destroy'])->name('infratik.server.destroy');
+
+        // infratik - Website
+        Route::get('/website', [infratikWebsite::class, 'index'])->name('infratik.website.index');
+        Route::post('/website/store', [infratikWebsite::class, 'store'])->name('infratik.website.store');
+        Route::put('/website/update/{id}', [infratikWebsite::class, 'update'])->name('infratik.website.update');
+        Route::delete('/website/delete/{id}', [infratikWebsite::class, 'destroy'])->name('infratik.website.destroy');
+        Route::get('/website/{id}/detail', [infratikWebsite::class, 'detail'])->name('infratik.website.detail');
+        
+        // infratik - Log Aktivitas
+        Route::get('/log-aktivitas', function () {
+            return view('infratik.logAktivitas');})->name('infratik.logAktivitas');
+    
+        // infratik - Pemeliharaan
+        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('infratik.pemeliharaan');
+        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('infratik.pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('infratik.pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('infratik.pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('infratik.pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('infratik.pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('.pemeliharaan.cancel');
+        });
+
 
     // ====================================================================
     // TATAUSAHA ROLE
