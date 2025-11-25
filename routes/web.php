@@ -111,9 +111,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Banglola - Log Aktivitas
         Route::get('/log-aktivitas', function () {
-            return view('superadmin.logAktivitas');
-        })->name('banglola.logAktivitas');
-    });
+            return view('banglola.logAktivitas');})->name('banglola.logAktivitas');
+    
+        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('superadmin.pemeliharaan');
+        });
+
 
     // Pamsis
     Route::middleware(['role:pamsis'])->prefix('pamsis')->group(function () {
