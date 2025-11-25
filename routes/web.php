@@ -83,6 +83,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('superadmin.pemeliharaan.store');
         Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('superadmin.pemeliharaan.update');
         Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('superadmin.pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('superadmin.pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('superadmin.pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('superadmin.pemeliharaan.cancel');
 
         // Sistem - Pengguna
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('superadmin.pengguna.index');

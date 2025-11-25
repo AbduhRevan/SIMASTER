@@ -13,17 +13,21 @@ class Pemeliharaan extends Model
 
     protected $table = 'pemeliharaan';
     protected $primaryKey = 'pemeliharaan_id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'server_id',
         'website_id',
         'tanggal_pemeliharaan',
+        'status_pemeliharaan',
+        'status_sebelumnya',
+        'tanggal_selesai_aktual',
         'keterangan',
     ];
 
     protected $casts = [
         'tanggal_pemeliharaan' => 'date',
+        'tanggal_selesai_aktual' => 'datetime',
     ];
 
     /**
@@ -66,5 +70,29 @@ class Pemeliharaan extends Model
             return 'website';
         }
         return null;
+    }
+
+    /**
+     * Cek apakah pemeliharaan dapat dimulai
+     */
+    public function canStart()
+    {
+        return $this->status_pemeliharaan === 'dijadwalkan';
+    }
+
+    /**
+     * Cek apakah pemeliharaan dapat diselesaikan
+     */
+    public function canFinish()
+    {
+        return $this->status_pemeliharaan === 'berlangsung';
+    }
+
+    /**
+     * Cek apakah pemeliharaan dapat dibatalkan
+     */
+    public function canCancel()
+    {
+        return in_array($this->status_pemeliharaan, ['dijadwalkan', 'berlangsung']);
     }
 }

@@ -167,11 +167,11 @@
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-secondary btn-sm" id="prevBtn" disabled>
-                <i class="fa-solid fa-chevron-left"></i> Previous
+                <i class="fa-solid fa-chevron-left"></i> Sebelumnya
             </button>
             <div class="d-flex gap-1" id="pageNumbers"></div>
             <button class="btn btn-outline-secondary btn-sm" id="nextBtn">
-                Next <i class="fa-solid fa-chevron-right"></i>
+                Berikutnya <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
     </div>

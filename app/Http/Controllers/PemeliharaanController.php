@@ -37,6 +37,11 @@ class PemeliharaanController extends Controller
             }
         }
 
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status_pemeliharaan', $request->status);
+        }
+
         // Filter berdasarkan tanggal
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal_pemeliharaan', $request->tanggal);
@@ -49,17 +54,35 @@ class PemeliharaanController extends Controller
         $totalPemeliharaan = Pemeliharaan::count();
         $totalServer = Pemeliharaan::whereNotNull('server_id')->count();
         $totalWebsite = Pemeliharaan::whereNotNull('website_id')->count();
+        $dijadwalkan = Pemeliharaan::where('status_pemeliharaan', 'dijadwalkan')->count();
+        $berlangsung = Pemeliharaan::where('status_pemeliharaan', 'berlangsung')->count();
 
-        // Ambil data server dan website untuk dropdown
-        // Pilih server yang power_status ON atau STANDBY
-        $servers = Server::whereIn('power_status', ['ON', 'STANDBY'])->orderBy('nama_server')->get();
-        $websites = Website::where('status', 'active')->orderBy('nama_website')->get();
+        // Ambil data server dan website untuk dropdown (yang tidak sedang maintenance dari pemeliharaan lain)
+        $servers = Server::whereIn('power_status', ['ON', 'OFF'])
+            ->whereNotIn('server_id', function ($query) {
+                $query->select('server_id')
+                    ->from('pemeliharaan')
+                    ->whereNotNull('server_id')
+                    ->where('status_pemeliharaan', 'berlangsung');
+            })
+            ->orderBy('nama_server')->get();
+
+        $websites = Website::whereIn('status', ['active', 'inactive'])
+            ->whereNotIn('website_id', function ($query) {
+                $query->select('website_id')
+                    ->from('pemeliharaan')
+                    ->whereNotNull('website_id')
+                    ->where('status_pemeliharaan', 'berlangsung');
+            })
+            ->orderBy('nama_website')->get();
 
         return view('superadmin.pemeliharaan', compact(
             'pemeliharaan',
             'totalPemeliharaan',
             'totalServer',
             'totalWebsite',
+            'dijadwalkan',
+            'berlangsung',
             'servers',
             'websites'
         ));
@@ -84,22 +107,203 @@ class PemeliharaanController extends Controller
         try {
             DB::beginTransaction();
 
+            // Validasi: Cek apakah aset sedang dalam pemeliharaan
+            if ($request->jenis_asset == 'server') {
+                $existing = Pemeliharaan::where('server_id', $request->server_id)
+                    ->where('status_pemeliharaan', 'berlangsung')
+                    ->exists();
+
+                if ($existing) {
+                    return redirect()->back()
+                        ->with('error', 'Server ini sedang dalam pemeliharaan yang masih berlangsung')
+                        ->withInput();
+                }
+            } else {
+                $existing = Pemeliharaan::where('website_id', $request->website_id)
+                    ->where('status_pemeliharaan', 'berlangsung')
+                    ->exists();
+
+                if ($existing) {
+                    return redirect()->back()
+                        ->with('error', 'Website ini sedang dalam pemeliharaan yang masih berlangsung')
+                        ->withInput();
+                }
+            }
+
             Pemeliharaan::create([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
+                'status_pemeliharaan' => 'dijadwalkan',
                 'keterangan' => $request->keterangan,
             ]);
 
             DB::commit();
 
             return redirect()->route('superadmin.pemeliharaan')
-                ->with('success', 'Data pemeliharaan berhasil ditambahkan');
+                ->with('success', 'Jadwal pemeliharaan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
-                ->with('error', 'Gagal menambahkan data pemeliharaan: ' . $e->getMessage())
+                ->with('error', 'Gagal menambahkan jadwal pemeliharaan: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    /**
+     * Mulai pemeliharaan - ubah status aset jadi maintenance
+     */
+    public function start($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pemeliharaan = Pemeliharaan::findOrFail($id);
+
+            // Validasi: hanya bisa dimulai jika statusnya dijadwalkan
+            if (!$pemeliharaan->canStart()) {
+                return redirect()->back()
+                    ->with('error', 'Pemeliharaan ini tidak dapat dimulai. Status saat ini: ' . $pemeliharaan->status_pemeliharaan);
+            }
+
+            // Ubah status aset
+            if ($pemeliharaan->server_id) {
+                $server = Server::findOrFail($pemeliharaan->server_id);
+
+                // Simpan status sebelumnya
+                $pemeliharaan->status_sebelumnya = $server->power_status;
+
+                // Ubah status server jadi STANDBY (maintenance)
+                $server->update(['power_status' => 'STANDBY']);
+
+                $assetName = $server->nama_server;
+                $assetType = 'Server';
+            } else {
+                $website = Website::findOrFail($pemeliharaan->website_id);
+
+                // Simpan status sebelumnya
+                $pemeliharaan->status_sebelumnya = $website->status;
+
+                // Ubah status website jadi maintenance
+                $website->update(['status' => 'maintenance']);
+
+                $assetName = $website->nama_website;
+                $assetType = 'Website';
+            }
+
+            // Update status pemeliharaan
+            $pemeliharaan->update([
+                'status_pemeliharaan' => 'berlangsung',
+                'status_sebelumnya' => $pemeliharaan->status_sebelumnya
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', "Pemeliharaan {$assetType} \"{$assetName}\" telah dimulai. Status diubah menjadi Maintenance.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal memulai pemeliharaan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Selesaikan pemeliharaan - kembalikan status aset ke semula
+     */
+    public function finish($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pemeliharaan = Pemeliharaan::findOrFail($id);
+
+            // Validasi: hanya bisa diselesaikan jika statusnya berlangsung
+            if (!$pemeliharaan->canFinish()) {
+                return redirect()->back()
+                    ->with('error', 'Pemeliharaan ini tidak dapat diselesaikan. Status saat ini: ' . $pemeliharaan->status_pemeliharaan);
+            }
+
+            // Kembalikan status aset
+            if ($pemeliharaan->server_id) {
+                $server = Server::findOrFail($pemeliharaan->server_id);
+
+                // Kembalikan ke status sebelumnya (default: ON jika null)
+                $statusKembali = $pemeliharaan->status_sebelumnya ?? 'ON';
+                $server->update(['power_status' => $statusKembali]);
+
+                $assetName = $server->nama_server;
+                $assetType = 'Server';
+            } else {
+                $website = Website::findOrFail($pemeliharaan->website_id);
+
+                // Kembalikan ke status sebelumnya (default: active jika null)
+                $statusKembali = $pemeliharaan->status_sebelumnya ?? 'active';
+                $website->update(['status' => $statusKembali]);
+
+                $assetName = $website->nama_website;
+                $assetType = 'Website';
+            }
+
+            // Update status pemeliharaan
+            $pemeliharaan->update([
+                'status_pemeliharaan' => 'selesai',
+                'tanggal_selesai_aktual' => now()
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', "Pemeliharaan {$assetType} \"{$assetName}\" telah selesai. Status dikembalikan ke semula.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal menyelesaikan pemeliharaan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Batalkan pemeliharaan
+     */
+    public function cancel($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pemeliharaan = Pemeliharaan::findOrFail($id);
+
+            // Validasi
+            if (!$pemeliharaan->canCancel()) {
+                return redirect()->back()
+                    ->with('error', 'Pemeliharaan ini tidak dapat dibatalkan');
+            }
+
+            // Jika sedang berlangsung, kembalikan status aset dulu
+            if ($pemeliharaan->status_pemeliharaan === 'berlangsung') {
+                if ($pemeliharaan->server_id) {
+                    $server = Server::findOrFail($pemeliharaan->server_id);
+                    $statusKembali = $pemeliharaan->status_sebelumnya ?? 'ON';
+                    $server->update(['power_status' => $statusKembali]);
+                } else {
+                    $website = Website::findOrFail($pemeliharaan->website_id);
+                    $statusKembali = $pemeliharaan->status_sebelumnya ?? 'active';
+                    $website->update(['status' => $statusKembali]);
+                }
+            }
+
+            // Update status pemeliharaan
+            $pemeliharaan->update([
+                'status_pemeliharaan' => 'dibatalkan'
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Pemeliharaan berhasil dibatalkan');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal membatalkan pemeliharaan: ' . $e->getMessage());
         }
     }
 
@@ -123,6 +327,12 @@ class PemeliharaanController extends Controller
             DB::beginTransaction();
 
             $pemeliharaan = Pemeliharaan::findOrFail($id);
+
+            // Tidak bisa edit jika sedang berlangsung atau sudah selesai
+            if (in_array($pemeliharaan->status_pemeliharaan, ['berlangsung', 'selesai'])) {
+                return redirect()->back()
+                    ->with('error', 'Tidak dapat mengedit pemeliharaan yang sedang berlangsung atau sudah selesai');
+            }
 
             $pemeliharaan->update([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
@@ -148,6 +358,13 @@ class PemeliharaanController extends Controller
             DB::beginTransaction();
 
             $pemeliharaan = Pemeliharaan::findOrFail($id);
+
+            // Tidak bisa hapus jika sedang berlangsung
+            if ($pemeliharaan->status_pemeliharaan === 'berlangsung') {
+                return redirect()->back()
+                    ->with('error', 'Tidak dapat menghapus pemeliharaan yang sedang berlangsung');
+            }
+
             $pemeliharaan->delete();
 
             DB::commit();
