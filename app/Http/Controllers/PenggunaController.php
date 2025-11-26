@@ -283,7 +283,7 @@ class PenggunaController extends Controller
             );
 
             return redirect()->route('superadmin.pengguna.index')
-                ->with('success', 'Pengguna berhasil dihapus dan dipindahkan ke arsip!');
+                ->with('success', 'Pengguna berhasil dihapus secara permanen!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

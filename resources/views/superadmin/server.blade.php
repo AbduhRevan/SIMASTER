@@ -130,23 +130,23 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
+                                <div class="d-flex gap-2 justify-content-center">
                                     {{-- Detail --}}
-                                    <button class="btn btn-outline-info btn-detail-server" 
+                                    <button class="btn btn-outline-info btn-sm btn-detail-server" 
                                         data-id="{{ $server->server_id }}" 
                                         title="Detail">
                                         <i class="fa fa-eye"></i>
                                     </button>
                                     
                                     {{-- Edit --}}
-                                    <button class="btn btn-outline-warning btn-edit-server" 
+                                    <button class="btn btn-outline-warning btn-sm btn-edit-server" 
                                         data-id="{{ $server->server_id }}" 
                                         title="Edit">
                                         <i class="fa fa-edit"></i>
                                     </button>
                                     
                                     {{-- Delete --}}
-                                    <button class="btn btn-outline-danger btn-hapus" 
+                                    <button class="btn btn-outline-danger btn-sm btn-hapus" 
                                         data-id="{{ $server->server_id }}" 
                                         data-nama="{{ $server->nama_server }}"
                                         title="Hapus">
@@ -156,13 +156,13 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                Belum ada data server
-                            </td>
-                        </tr>
-                        @endforelse
+<tr>
+    <td colspan="8" class="text-center text-muted py-4">
+        <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+        Belum ada data server
+    </td>
+</tr>
+@endforelse
                     </tbody>
                 </table>
             </div>
@@ -612,6 +612,16 @@
     padding: 1.5rem;
 }
 
+/* Empty State Styling */
+tbody tr td.text-center.text-muted {
+    background-color: #f8f9fa !important;
+}
+
+tbody tr td.text-muted i.fa-inbox {
+    color: #6c757d !important;
+    opacity: 0.6 !important;
+}
+
 /* Filter Bar */
 .filter-bar {
     background: #f8f9fa;
@@ -633,6 +643,46 @@
     padding: 0.35rem 0.65rem;
     font-weight: 500;
     font-size: 0.75rem;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.btn-outline-info {
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #fff;
+}
+
+.btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
 }
 
 /* Button Group */
