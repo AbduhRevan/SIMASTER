@@ -86,88 +86,108 @@
                 </div>
             </div>
 
-            {{-- Table --}}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="5%">No</th>
-                            <th width="15%">Nama Server</th>
-                            <th width="12%">Rak / Slot</th>
-                            <th width="15%">Bidang</th>
-                            <th width="15%">Satker</th>
-                            <th width="10%" class="text-center">Website</th>
-                            <th width="10%" class="text-center">Status</th>
-                            <th width="18%" class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($servers as $index => $server)
-                        <tr class="server-row">
-                            <td>{{ $index + 1 }}</td>
-                            <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
-                            <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
-                            <td class="server-bidang">
-                                {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
-                            </td>
-                            <td class="server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
-                            <td class="text-center">
-                                <span class="badge bg-info">{{ $server->websites->count() }}</span>
-                            </td>
-                            <td class="text-center">
-                                @if($server->power_status==='ON')
-                                    <span class="badge bg-success">
-                                        <i class="fa fa-check-circle me-1"></i>Aktif
-                                    </span>
-                                @elseif($server->power_status==='STANDBY')
-                                    <span class="badge bg-warning">
-                                        <i class="fa fa-wrench me-1"></i>Maintenance
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger">
-                                        <i class="fa fa-times-circle me-1"></i>Tidak Aktif
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    {{-- Detail --}}
-                                    <button class="btn btn-outline-info btn-detail-server" 
-                                        data-id="{{ $server->server_id }}" 
-                                        title="Detail">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
-                                    
-                                    {{-- Edit --}}
-                                    <button class="btn btn-outline-warning btn-edit-server" 
-                                        data-id="{{ $server->server_id }}" 
-                                        title="Edit">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
-                                    
-                                    {{-- Delete --}}
-                                    <button class="btn btn-outline-danger btn-hapus" 
-                                        data-id="{{ $server->server_id }}" 
-                                        data-nama="{{ $server->nama_server }}"
-                                        title="Hapus">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                Belum ada data server
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+           {{-- Table --}}
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th width="5%">No</th>
+                <th width="20%">Nama Server</th>
+                <th width="12%">Rak / Slot</th>
+                <th width="18%">Bidang</th>
+                <th width="18%">Satker</th>
+                <th width="8%" class="text-center">Website</th>
+                <th width="10%" class="text-center">Status</th>
+                <th width="9%" class="text-center">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($servers as $index => $server)
+            @php
+            $canModify = false;
+            $user = auth()->user();
+
+            if($user->role === 'superadmin') {
+                $canModify = true;
+            } elseif($user->role === 'tatausaha') {
+                // Cek ownership
+                if ($user->bidang_id && $server->bidang_id) {
+                    $canModify = $user->bidang_id === $server->bidang_id; 
+                } elseif ($user->satker_id && $server->satker_id) {
+                    $canModify = $user->satker_id === $server->satker_id;   
+                }
+            }
+            @endphp     
+            <tr class="server-row {{ $canModify ? '' : 'bg-light' }}"
+                style="{{ $canModify ? '' : 'opacity: 0.5;' }}">
+                <td class=>{{ $index + 1 }}</td>
+                <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
+                <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
+                <td class="server-bidang">
+                    {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
+                </td>
+                <td class="server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
+                <td class="text-center">
+                    <span class="badge bg-info">{{ $server->websites->count() }}</span>
+                </td>
+                <td class="text-center">
+                    @if($server->power_status==='ON')
+                        <span class="badge bg-success">
+                            <i class="fa fa-check-circle me-1"></i>Aktif
+                        </span>
+                    @elseif($server->power_status==='STANDBY')
+                        <span class="badge bg-warning">
+                            <i class="fa fa-wrench me-1"></i>Maintenance
+                        </span>
+                    @else
+                        <span class="badge bg-danger">
+                            <i class="fa fa-times-circle me-1"></i>Tidak Aktif
+                        </span>
+                    @endif
+                </td>
+                <td class="text-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                        {{-- Detail --}}
+                        <button class="btn btn-outline-info btn-detail-server" 
+                            data-id="{{ $server->server_id }}" 
+                            title="Detail">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        
+                        @if($canModify)
+                        {{-- Edit --}}
+                        <button class="btn btn-outline-warning btn-edit-server" 
+                            data-id="{{ $server->server_id }}" 
+                            title="Edit">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        
+                        {{-- Delete --}}
+                        <button class="btn btn-outline-danger btn-hapus" 
+                            data-id="{{ $server->server_id }}" 
+                            data-nama="{{ $server->nama_server }}"
+                            title="Hapus">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                        @else
+                        {{-- Icon locked untuk yang bukan owner --}}
+                        <span class="text-muted" style="font-size: 0.75rem; padding: 0 5px;">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        @endif  
+                    </div>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">
+                    <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                    Belum ada data server
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 
 {{-- Modal Detail Server --}}
@@ -753,7 +773,7 @@ $(document).ready(function() {
         $('#slotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke banglola
+            url: `/tatausaha/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke tatausaha
             type: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -793,7 +813,7 @@ $(document).ready(function() {
         $('#editSlotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke banglola
+            url: `/tatausaha/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke tatausaha
             type: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -893,7 +913,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-detail-server', function () {
         let id = $(this).data('id');
         $.ajax({
-            url: `/banglola/server/${id}/detail`,
+            url: `/tatausaha/server/${id}/detail`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -934,7 +954,7 @@ $(document).ready(function() {
         let id = $(this).data('id');
         currentServerId = id;
         $.ajax({
-            url: `/banglola/server/${id}/edit`,
+            url: `/tatausaha/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -973,7 +993,7 @@ $(document).ready(function() {
                     }, 500);
                 }
 
-                $('#editServerForm').attr('action', `/banglola/server/update/${s.server_id}`);
+                $('#editServerForm').attr('action', `/tatausaha/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
             },
             error: function(xhr) {
@@ -1038,11 +1058,13 @@ $(document).ready(function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         $('#namaServerHapus').text(nama);
-        $('#formHapusServer').attr('action', `/banglola/server/${id}`);
+        $('#formHapusServer').attr('action', `/tatausaha/server/${id}`);
         const modal = new bootstrap.Modal(document.getElementById('hapusServerModal'));
         modal.show();
     });
 });
+
 </script>
 @endpush
+
 @endsection

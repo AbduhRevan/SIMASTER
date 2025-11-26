@@ -15,39 +15,10 @@ use Illuminate\Support\Facades\Auth;
 class ServerController extends Controller
 {
     /**
-     * Helper method untuk cek apakah user bisa modify server
-     */
-    private function canModifyServer($server)
-    {
-        $user = Auth::user();
-        
-        // Superadmin bisa edit/hapus semua
-        if ($user->role === 'superadmin') {
-            return true;
-        }
-        
-        // Banglola cek ownership berdasarkan bidang/satker
-        if ($user->role === 'banglola') {
-            // Cek bidang (jika user dan server punya bidang)
-            if ($user->bidang_id && $server->bidang_id) {
-                return $user->bidang_id === $server->bidang_id;
-            }
-            
-            // Cek satker (jika user dan server punya satker)
-            if ($user->satker_id && $server->satker_id) {
-                return $user->satker_id === $server->satker_id;
-            }
-        }
-        
-        return false;
-    }
-
-    /**
      * Display a listing of servers
      */
     public function index()
     {
-        // Semua role bisa lihat semua server (READ access untuk semua)
         $servers = Server::with(['rak', 'bidang', 'satker', 'websites'])->get();
         $raks = RakServer::all();
         $bidangs = Bidang::all();
@@ -106,14 +77,6 @@ class ServerController extends Controller
             'keterangan' => 'nullable|string',
             'power_status' => 'nullable|in:ON,OFF,STANDBY',
         ]);
-
-        // AUTO SET BIDANG/SATKER sesuai user yang login (untuk role banglola)
-        $user = Auth::user();
-        if ($user->role === 'banglola') {
-            // Override dengan bidang/satker user yang login
-            $validated['bidang_id'] = $user->bidang_id;
-            $validated['satker_id'] = $user->satker_id;
-        }
 
         // VALIDASI SLOT
         if ($request->rak_id && $request->u_slot) {
@@ -205,7 +168,6 @@ class ServerController extends Controller
 
     /**
      * Display the specified server detail
-     * Semua role bisa lihat detail
      */
     public function detail($id)
     {
@@ -219,19 +181,10 @@ class ServerController extends Controller
 
     /**
      * Show the form for editing the specified server (untuk AJAX)
-     * CEK OWNERSHIP DULU
      */
     public function edit($id)
     {
         $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
-
-        // Cek apakah user boleh edit server ini
-        if (!$this->canModifyServer($server)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Anda tidak memiliki akses untuk mengedit server ini. Hanya server dari bidang/satker Anda yang bisa diedit.'
-            ], 403);
-        }
 
         return response()->json([
             'status' => 'success',
@@ -241,17 +194,10 @@ class ServerController extends Controller
 
     /**
      * Update the specified server
-     * CEK OWNERSHIP DULU
      */
     public function update(Request $request, $id)
     {
         $server = Server::findOrFail($id);
-
-        // CEK APAKAH USER BOLEH UPDATE SERVER INI
-        if (!$this->canModifyServer($server)) {
-            return redirect()->back()
-                ->with('error', 'Anda tidak memiliki akses untuk mengedit server ini. Hanya server dari bidang/satker Anda yang bisa diedit.');
-        }
 
         // Simpan data lama untuk log
         $namaLama = $server->nama_server;
@@ -274,13 +220,6 @@ class ServerController extends Controller
             'power_status' => 'required|in:ON,OFF,STANDBY',
             'keterangan' => 'nullable|string',
         ]);
-
-        // UNTUK ROLE BANGLOLA: pastikan bidang/satker tidak berubah dari miliknya
-        $user = Auth::user();
-        if ($user->role === 'banglola') {
-            $validated['bidang_id'] = $user->bidang_id;
-            $validated['satker_id'] = $user->satker_id;
-        }
 
         // VALIDASI SLOT (exclude server yang sedang diedit)
         if ($request->rak_id && $request->u_slot) {
@@ -400,24 +339,16 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('banglola.server.index')
+        return redirect()->route('banglola.server.detail', $id)
             ->with('success', 'Server berhasil diperbarui!');
     }
 
     /**
      * Remove the specified server
-     * CEK OWNERSHIP DULU
      */
     public function destroy($id)
     {
         $server = Server::findOrFail($id);
-
-        // CEK APAKAH USER BOLEH HAPUS SERVER INI
-        if (!$this->canModifyServer($server)) {
-            return redirect()->back()
-                ->with('error', 'Anda tidak memiliki akses untuk menghapus server ini. Hanya server dari bidang/satker Anda yang bisa dihapus.');
-        }
-
         $serverName = $server->nama_server;
 
         // Ambil detail untuk log
