@@ -1,4 +1,4 @@
-@extends('layouts.banglola')
+@extends('layouts.tatausaha')
 
 @section('title', 'Kelola Server')
 
@@ -243,7 +243,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="serverForm" action="{{ route('banglola.server.store') }}" method="POST">
+            <form id="serverForm" action="{{ route('tatausaha.server.store') }}" method="POST">
                 @csrf
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -843,7 +843,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-detail-server', function () {
         let id = $(this).data('id');
         $.ajax({
-            url: `/banglola/server/${id}/detail`,
+            url: `/tatausaha/server/${id}/detail`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -880,7 +880,7 @@ $(document).ready(function() {
         let id = $(this).data('id');
         currentServerId = id;
         $.ajax({
-            url: `/banglola/server/${id}/edit`,
+            url: `/tatausaha/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -919,7 +919,7 @@ $(document).ready(function() {
                     }, 500);
                 }
 
-                $('#editServerForm').attr('action', `/banglola/server/update/${s.server_id}`);
+                $('#editServerForm').attr('action', `/tatausaha/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
             }
         });
@@ -976,7 +976,7 @@ $(document).ready(function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         $('#namaServerHapus').text(nama);
-        $('#formHapusServer').attr('action', `/banglola/server/${id}`);
+        $('#formHapusServer').attr('action', `/tatausaha/server/${id}`);
         const modal = new bootstrap.Modal(document.getElementById('hapusServerModal'));
         modal.show();
     });

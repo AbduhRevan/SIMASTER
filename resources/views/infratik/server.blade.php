@@ -1,287 +1,187 @@
 @extends('layouts.infratik')
+
 @section('title', 'Kelola Server')
 
 @section('content')
-<style>
-/* Modal Header Maroon */
-.modal-header.maroon-header {
-    background-color: #800000;
-    color: white;
-}
+<div class="container-fluid py-4">
 
-/* Tombol Maroon */
-.btn-maroon {
-    background-color: #800000;
-    color: white;
-    border: none;
-}
-
-.btn-maroon:hover {
-    background-color: #660000;
-    color: white;
-}
-
-/* Card Summary Style */
-.card-summary {
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.table-card {
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Search Box dengan Icon */
-.search-wrapper {
-    position: relative;
-    width: 280px;
-}
-
-.search-wrapper .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6c757d;
-    pointer-events: none;
-}
-
-.search-wrapper input {
-    padding-left: 38px;
-}
-
-/* Tombol Aksi */
-.action-buttons {
-    display: inline-flex;
-    gap: 5px;
-}
-
-.btn-action {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-action i {
-    font-size: 14px;
-}
-
-.btn-detail {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.btn-detail:hover {
-    background-color: #138496;
-    color: white;
-}
-
-.btn-edit {
-    background-color: #ffc107;
-    color: white;
-}
-
-.btn-edit:hover {
-    background-color: #e0a800;
-    color: white;
-}
-
-.btn-delete {
-    background-color: #dc3545;
-    color: white;
-}
-
-.btn-delete:hover {
-    background-color: #c82333;
-    color: white;
-}
-
-/* Slot Info Badge */
-.slot-info {
-    font-size: 0.85rem;
-    margin-top: 5px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-
-.slot-available {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.slot-occupied {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-/* Loading Indicator */
-.loading-slots {
-    display: none;
-    text-align: center;
-    padding: 10px;
-    color: #6c757d;
-}
-</style>
-
-<div class="container-fluid">
-    <!-- Alert Messages -->
+    {{-- Alert Messages --}}
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
+        <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
     @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
-    <!-- Ringkasan Server -->
-    <div class="row mb-4 text-center">
-        <div class="col-6 col-md-3 mb-3">
-            <div class="card-summary">
-                <h5>Total</h5>
-                <h2>{{ $total }}</h2>
+    {{-- ======= RINGKASAN SERVER ======= --}}
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-server me-1"></i>Total Server
+                </div>
+                <h2 class="stat-value mb-0">{{ $total }}</h2>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
-            <div class="card-summary">
-                <h5>Aktif</h5>
-                <h2>{{ $aktif }}</h2>
+
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-check-circle me-1 text-success"></i>Aktif
+                </div>
+                <h2 class="stat-value mb-0 text-success">{{ $aktif }}</h2>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
-            <div class="card-summary">
-                <h5>Maintenance</h5>
-                <h2>{{ $maintenance }}</h2>
+
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-wrench me-1 text-warning"></i>Maintenance
+                </div>
+                <h2 class="stat-value mb-0 text-warning">{{ $maintenance }}</h2>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
-            <div class="card-summary">
-                <h5>Tidak Aktif</h5>
-                <h2>{{ $tidakAktif }}</h2>
+
+        <div class="col-md-3">
+            <div class="card-stat text-center py-3">
+                <div class="stat-label text-uppercase small text-muted mb-2">
+                    <i class="fa fa-times-circle me-1 text-danger"></i>Tidak Aktif
+                </div>
+                <h2 class="stat-value mb-0 text-danger">{{ $tidakAktif }}</h2>
             </div>
         </div>
     </div>
 
-    <!-- Daftar Server -->
-    <div class="table-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <!-- Search dengan Icon -->
-            <div class="search-wrapper">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control" placeholder="Cari nama/server/rak">
-            </div>
-            
-            <!-- Tombol Tambah Maroon -->
-            <button class="btn btn-maroon" data-bs-toggle="modal" data-bs-target="#tambahModal">
-                <i class="fa fa-plus"></i> Tambah Server
+    {{-- ======= DAFTAR SERVER ======= --}}
+    <div class="card-content">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="fa fa-list me-2"></i> Daftar Server
+            </h6>
+            <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
+                <i class="fa fa-plus me-1"></i> Tambah Server
             </button>
         </div>
 
-        <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th class="text-center">No.</th>
-                    <th class="text-center">Nama Server</th>
-                    <th class="text-center">Rak / Slot</th>
-                    <th class="text-center">Bidang</th>
-                    <th class="text-center">Satker</th>
-                    <th class="text-center">Jumlah Website</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($servers as $index => $server)
-                <tr class="server-row">
-                    <td class="text-center">{{ $index + 1 }}.</td>
-                    <td class="text-center server-nama">{{ $server->nama_server }}</td>
-                    <td class="text-center server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
-                    <td class="text-center server-bidang">
-                        {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
-                    </td>
-                    <td class="text-center server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
-                    <td class="text-center">
-                        <span class="badge bg-info">{{ $server->websites->count() }} Website</span>
-                    </td>
-                    <td class="text-center">
-                        @if($server->power_status==='ON')
-                            <span class="badge bg-success">Aktif</span>
-                        @elseif($server->power_status==='STANDBY')
-                            <span class="badge bg-warning text-dark">Maintenance</span>
-                        @else
-                            <span class="badge bg-danger">Tidak Aktif</span>
-                        @endif
-                    </td>
-                    <td class="text-center">
-                        <div class="action-buttons">
-                            <!-- Tombol Detail -->
-                            <button class="btn-action btn-detail btn-detail-server" 
-                                    data-id="{{ $server->server_id }}" 
-                                    title="Detail">
-                                <i class="fa fa-eye"></i>
-                            </button>
-                            
-                            <!-- Tombol Edit -->
-                            <button class="btn-action btn-edit btn-edit-server" 
-                                    data-id="{{ $server->server_id }}" 
-                                    title="Edit">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                            
-                            <!-- Tombol Delete -->
-                            <button class="btn-action btn-delete btn-hapus" 
-                                    data-id="{{ $server->server_id }}" 
-                                    data-nama="{{ $server->nama_server }}"
-                                    title="Delete">
-                                <i class="fa fa-trash"></i>
-                            </button>
+        <div class="card-body-custom">
+            {{-- Search Bar --}}
+            <div class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control" 
+                                placeholder="Cari nama/server/rak/bidang/satker...">
                         </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="15%">Nama Server</th>
+                            <th width="12%">Rak / Slot</th>
+                            <th width="15%">Bidang</th>
+                            <th width="15%">Satker</th>
+                            <th width="10%" class="text-center">Website</th>
+                            <th width="10%" class="text-center">Status</th>
+                            <th width="18%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($servers as $index => $server)
+                        <tr class="server-row">
+                            <td>{{ $index + 1 }}</td>
+                            <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
+                            <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
+                            <td class="server-bidang">
+                                {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
+                            </td>
+                            <td class="server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-info">{{ $server->websites->count() }}</span>
+                            </td>
+                            <td class="text-center">
+                                @if($server->power_status==='ON')
+                                    <span class="badge bg-success">
+                                        <i class="fa fa-check-circle me-1"></i>Aktif
+                                    </span>
+                                @elseif($server->power_status==='STANDBY')
+                                    <span class="badge bg-warning">
+                                        <i class="fa fa-wrench me-1"></i>Maintenance
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger">
+                                        <i class="fa fa-times-circle me-1"></i>Tidak Aktif
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {{-- Detail --}}
+                                    <button class="btn btn-outline-info btn-detail-server" 
+                                        data-id="{{ $server->server_id }}" 
+                                        title="Detail">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                    
+                                    {{-- Edit --}}
+                                    <button class="btn btn-outline-warning btn-edit-server" 
+                                        data-id="{{ $server->server_id }}" 
+                                        title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    
+                                    {{-- Delete --}}
+                                    <button class="btn btn-outline-danger btn-hapus" 
+                                        data-id="{{ $server->server_id }}" 
+                                        data-nama="{{ $server->nama_server }}"
+                                        title="Hapus">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                Belum ada data server
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Modal Detail Server -->
-<div class="modal fade" id="modalDetailServer" tabindex="-1" aria-hidden="true">
+{{-- Modal Detail Server --}}
+<div class="modal fade" id="modalDetailServer" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            
-            <div class="modal-header maroon-header">
-                <h5 class="modal-title">Detail Server</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-info-circle me-2"></i> Detail Server
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
-            <div class="modal-body">
-                <table class="table table-bordered">
+            <div class="modal-body p-4">
+                <table class="table table-bordered mb-0">
                     <tr>
                         <th width="200">Nama Server</th>
                         <td id="detailNamaServer"></td>
@@ -324,32 +224,47 @@
                     </tr>
                 </table>
             </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa fa-times me-1"></i> Tutup
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Tambah Server -->
-<div class="modal fade" id="tambahModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
-        <div class="modal-content border-0 rounded-4 shadow">
-            
-            <div class="modal-header bg-maroon text-white border-0 rounded-top-4">
-                <h5 class="modal-title fw-bold">Tambah Server Baru</h5>
+{{-- Modal Tambah Server --}}
+<div class="modal fade" id="tambahModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-plus-circle me-2"></i> Tambah Server Baru
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
             <form id="serverForm" action="{{ route('infratik.server.store') }}" method="POST">
                 @csrf
-                <div class="modal-body px-4 pb-4">
-                    
+                <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Server <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama_server" placeholder="Contoh: Server-01" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Brand</label>
-                        <input type="text" class="form-control" name="brand" placeholder="Contoh: DELL, HP, IBM">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Brand</label>
+                            <input type="text" class="form-control" name="brand" placeholder="Contoh: DELL, HP, IBM">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" name="power_status" required>
+                                <option value="">Pilih Status</option>
+                                <option value="ON" selected>Aktif</option>
+                                <option value="STANDBY">Maintenance</option>
+                                <option value="OFF">Tidak Aktif</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -372,11 +287,11 @@
                                 @endforeach
                             </select>
                             <div id="rakInfo" class="slot-info" style="display:none;">
-                                <small>
+                                <small class="text-muted">
                                     <i class="fas fa-info-circle"></i> 
                                     Kapasitas: <span id="rakKapasitas"></span>U | 
                                     Terpakai: <span id="rakTerpakai"></span>U | 
-                                    <span class="slot-available">Tersedia: <span id="rakSisa"></span>U</span>
+                                    <span class="text-success fw-semibold">Tersedia: <span id="rakSisa"></span>U</span>
                                 </small>
                             </div>
                         </div>
@@ -384,28 +299,26 @@
                         <div class="col-md-12 mb-3" id="slotWrapper" style="display:none;">
                             <label class="form-label fw-semibold">U-Slot <span class="text-danger">*</span></label>
                             
-                            <div class="loading-slots" id="loadingSlots">
+                            <div class="loading-slots text-center py-2" id="loadingSlots" style="display:none;">
                                 <i class="fas fa-spinner fa-spin"></i> Memuat slot...
                             </div>
                             
                             <div id="slotSelectWrapper" style="display:none;">
                                 <div class="mb-2">
-                                    <label class="form-check-label small">
+                                    <label class="form-check-label small me-3">
                                         <input type="radio" name="slot_type" value="single" class="form-check-input" checked> Single Slot
                                     </label>
-                                    <label class="form-check-label small ms-3">
+                                    <label class="form-check-label small">
                                         <input type="radio" name="slot_type" value="range" class="form-check-input"> Range Slot
                                     </label>
                                 </div>
 
-                                <!-- Single Slot -->
                                 <div id="singleSlotDiv">
                                     <select class="form-select" name="u_slot_single" id="singleSlotSelect">
                                         <option value="">Pilih Slot</option>
                                     </select>
                                 </div>
 
-                                <!-- Range Slot -->
                                 <div id="rangeSlotDiv" style="display:none;">
                                     <div class="row">
                                         <div class="col-6">
@@ -454,64 +367,68 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                        <select class="form-select" name="power_status" required>
-                            <option value="">Pilih Status</option>
-                            <option value="ON" selected>Aktif</option>
-                            <option value="STANDBY">Maintenance</option>
-                            <option value="OFF">Tidak Aktif</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
                         <textarea class="form-control" name="keterangan" rows="3" placeholder="Tulis keterangan di sini..."></textarea>
                     </div>
                 </div>
                 
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-maroon-gradient">
+                        <i class="fa fa-save me-1"></i> Simpan
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Edit Server -->
-<div class="modal fade" id="modalEditServer" tabindex="-1" aria-hidden="true">
+{{-- Modal Edit Server --}}
+<div class="modal fade" id="modalEditServer" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            
-            <div class="modal-header maroon-header">
-                <h5 class="modal-title">Edit Server</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-edit me-2"></i> Edit Server
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
             <form id="editServerForm" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" id="editServerId" name="server_id">
                     
                     <div class="mb-3">
-                        <label class="form-label">Nama Server <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold">Nama Server <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="editNamaServer" name="nama_server" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label">Brand</label>
-                        <input type="text" class="form-control" id="editBrand" name="brand">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Brand</label>
+                            <input type="text" class="form-control" id="editBrand" name="brand">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editPowerStatus" name="power_status" required>
+                                <option value="ON">Aktif</option>
+                                <option value="STANDBY">Maintenance</option>
+                                <option value="OFF">Tidak Aktif</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Spesifikasi</label>
+                        <label class="form-label fw-semibold">Spesifikasi</label>
                         <textarea class="form-control" id="editSpesifikasi" name="spesifikasi" rows="3"></textarea>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Rak Server</label>
+                            <label class="form-label fw-semibold">Rak Server</label>
                             <select class="form-select" id="editRakId" name="rak_id">
                                 <option value="">Pilih Rak</option>
                                 @foreach($raks as $rak)
@@ -524,40 +441,38 @@
                                 @endforeach
                             </select>
                             <div id="editRakInfo" class="slot-info" style="display:none;">
-                                <small>
+                                <small class="text-muted">
                                     <i class="fas fa-info-circle"></i> 
                                     Kapasitas: <span id="editRakKapasitas"></span>U | 
                                     Terpakai: <span id="editRakTerpakai"></span>U | 
-                                    <span class="slot-available">Tersedia: <span id="editRakSisa"></span>U</span>
+                                    <span class="text-success fw-semibold">Tersedia: <span id="editRakSisa"></span>U</span>
                                 </small>
                             </div>
                         </div>
 
                         <div class="col-md-12 mb-3" id="editSlotWrapper" style="display:none;">
-                            <label class="form-label">U-Slot</label>
+                            <label class="form-label fw-semibold">U-Slot</label>
                             
-                            <div class="loading-slots" id="editLoadingSlots">
+                            <div class="loading-slots text-center py-2" id="editLoadingSlots" style="display:none;">
                                 <i class="fas fa-spinner fa-spin"></i> Memuat slot...
                             </div>
                             
                             <div id="editSlotSelectWrapper" style="display:none;">
                                 <div class="mb-2">
-                                    <label class="form-check-label small">
+                                    <label class="form-check-label small me-3">
                                         <input type="radio" name="edit_slot_type" value="single" class="form-check-input" checked> Single Slot
                                     </label>
-                                    <label class="form-check-label small ms-3">
+                                    <label class="form-check-label small">
                                         <input type="radio" name="edit_slot_type" value="range" class="form-check-input"> Range Slot
                                     </label>
                                 </div>
 
-                                <!-- Single Slot -->
                                 <div id="editSingleSlotDiv">
                                     <select class="form-select" name="u_slot_single" id="editSingleSlotSelect">
                                         <option value="">Pilih Slot</option>
                                     </select>
                                 </div>
 
-                                <!-- Range Slot -->
                                 <div id="editRangeSlotDiv" style="display:none;">
                                     <div class="row">
                                         <div class="col-6">
@@ -577,91 +492,205 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Satuan Kerja</label>
-                        <select class="form-select" id="editSatkerId" name="satker_id">
-                            <option value="">Pilih Satker</option>
-                            @foreach($satkers as $satker)
-                                <option value="{{ $satker->satker_id }}" data-name="{{ $satker->nama_satker }}">
-                                    {{ $satker->nama_satker }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Satuan Kerja</label>
+                            <select class="form-select" id="editSatkerId" name="satker_id">
+                                <option value="">Pilih Satker</option>
+                                @foreach($satkers as $satker)
+                                    <option value="{{ $satker->satker_id }}" data-name="{{ $satker->nama_satker }}">
+                                        {{ $satker->nama_satker }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div class="mb-3" id="editBidangWrapper" style="display: none;">
-                        <label class="form-label">Bidang</label>
-                        <select class="form-select" id="editBidangId" name="bidang_id">
-                            <option value="">Pilih Bidang</option>
-                            @foreach($bidangs as $bidang)
-                                <option value="{{ $bidang->bidang_id }}">{{ $bidang->nama_bidang }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Status <span class="text-danger">*</span></label>
-                        <select class="form-select" id="editPowerStatus" name="power_status" required>
-                            <option value="ON">Aktif</option>
-                            <option value="STANDBY">Maintenance</option>
-                            <option value="OFF">Tidak Aktif</option>
-                        </select>
+                        <div class="col-md-6 mb-3" id="editBidangWrapper" style="display: none;">
+                            <label class="form-label fw-semibold">Bidang</label>
+                            <select class="form-select" id="editBidangId" name="bidang_id">
+                                <option value="">Pilih Bidang</option>
+                                @foreach($bidangs as $bidang)
+                                    <option value="{{ $bidang->bidang_id }}">{{ $bidang->nama_bidang }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Keterangan</label>
+                        <label class="form-label fw-semibold">Keterangan</label>
                         <textarea class="form-control" id="editKeterangan" name="keterangan" rows="3"></textarea>
                     </div>
                 </div>
                 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-warning text-white">
+                        <i class="fa fa-save me-1"></i> Simpan Perubahan
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="hapusServerModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Konfirmasi Hapus --}}
+<div class="modal fade" id="hapusServerModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formHapusServer" method="POST">
                 @csrf
                 @method('DELETE')
-                <div class="modal-body text-center py-4">
-                    <div class="mb-3">
-                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
-                    </div>
-                    
+                <div class="modal-body p-4 text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <p class="mb-3">Apakah Anda yakin ingin menghapus server <strong id="namaServerHapus"></strong>?</p>
-                    
                     <div class="alert alert-warning small mb-0">
+                        <i class="fa fa-info-circle me-1"></i>
                         Data akan dihapus permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4">Hapus</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<style>
+/* Card Statistics */
+.card-stat {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Card Content */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+/* Table Styles */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Button Group */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
+}
+
+/* Slot Info */
+.slot-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+
 @push('scripts')
 <script>
 $(document).ready(function() {
     let availableSlots = [];
-    let occupiedSlots = [];
-    let currentServerId = null; // untuk edit
+    let currentServerId = null;
 
-    // === FORM TAMBAH: Slot Type Toggle ===
+    // === SLOT TYPE TOGGLE ===
     $('input[name="slot_type"]').change(function() {
         if($(this).val() === 'single') {
             $('#singleSlotDiv').show();
@@ -672,7 +701,6 @@ $(document).ready(function() {
         }
     });
 
-    // === FORM EDIT: Slot Type Toggle ===
     $('input[name="edit_slot_type"]').change(function() {
         if($(this).val() === 'single') {
             $('#editSingleSlotDiv').show();
@@ -683,23 +711,16 @@ $(document).ready(function() {
         }
     });
 
-    // === FORM TAMBAH: Rak Selected ===
+    // === RAK SELECTED ===
     $('#rakSelect').change(function() {
         const rakId = $(this).val();
         
         if(rakId) {
             const selectedOption = $(this).find('option:selected');
-            const kapasitas = selectedOption.data('kapasitas');
-            const terpakai = selectedOption.data('terpakai');
-            const sisa = selectedOption.data('sisa');
-
-            // Show info
-            $('#rakKapasitas').text(kapasitas);
-            $('#rakTerpakai').text(terpakai);
-            $('#rakSisa').text(sisa);
+            $('#rakKapasitas').text(selectedOption.data('kapasitas'));
+            $('#rakTerpakai').text(selectedOption.data('terpakai'));
+            $('#rakSisa').text(selectedOption.data('sisa'));
             $('#rakInfo').show();
-
-            // Load available slots
             loadAvailableSlots(rakId);
         } else {
             $('#rakInfo').hide();
@@ -707,21 +728,15 @@ $(document).ready(function() {
         }
     });
 
-    // === FORM EDIT: Rak Selected ===
     $('#editRakId').change(function() {
         const rakId = $(this).val();
         
         if(rakId) {
             const selectedOption = $(this).find('option:selected');
-            const kapasitas = selectedOption.data('kapasitas');
-            const terpakai = selectedOption.data('terpakai');
-            const sisa = selectedOption.data('sisa');
-
-            $('#editRakKapasitas').text(kapasitas);
-            $('#editRakTerpakai').text(terpakai);
-            $('#editRakSisa').text(sisa);
+            $('#editRakKapasitas').text(selectedOption.data('kapasitas'));
+            $('#editRakTerpakai').text(selectedOption.data('terpakai'));
+            $('#editRakSisa').text(selectedOption.data('sisa'));
             $('#editRakInfo').show();
-
             loadAvailableSlotsForEdit(rakId, currentServerId);
         } else {
             $('#editRakInfo').hide();
@@ -729,230 +744,109 @@ $(document).ready(function() {
         }
     });
 
-    // === Function: Load Available Slots (TAMBAH) ===
+    // === LOAD AVAILABLE SLOTS ===
     function loadAvailableSlots(rakId) {
-        console.log('🔍 Loading slots for rak_id:', rakId); // Debug
-        
         $('#loadingSlots').show();
         $('#slotSelectWrapper').hide();
         $('#slotWrapper').show();
 
         $.ajax({
-            url: `/infratik/server/rak/${rakId}/available-slots`,
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
             type: 'GET',
-            dataType: 'json',
             success: function(response) {
-                console.log('✅ Response received:', response); // Debug
-                
-                if(response.success && response.available_slots) {
-                    availableSlots = response.available_slots;
-                    occupiedSlots = response.occupied_slots || [];
-                    
-                    console.log('Available slots:', availableSlots); // Debug
-                    console.log('Occupied slots:', occupiedSlots); // Debug
-                    
-                    populateSlotDropdowns(availableSlots);
-                    
-                    $('#loadingSlots').hide();
-                    $('#slotSelectWrapper').show();
-                } else {
-                    console.error('❌ Invalid response format:', response);
-                    alert('Format response tidak valid');
-                    $('#loadingSlots').hide();
-                }
+                availableSlots = response.available_slots;
+                populateSlotDropdowns(availableSlots);
+                $('#loadingSlots').hide();
+                $('#slotSelectWrapper').show();
             },
-            error: function(xhr, status, error) {
-                console.error('❌ AJAX Error:');
-                console.error('Status:', status);
-                console.error('Error:', error);
-                console.error('Response:', xhr.responseText);
-                console.error('Status Code:', xhr.status);
-                
-                let errorMsg = 'Gagal memuat data slot';
-                
-                if(xhr.status === 404) {
-                    errorMsg = 'Route tidak ditemukan (404). Periksa URL.';
-                } else if(xhr.status === 500) {
-                    errorMsg = 'Server error (500). Cek log Laravel.';
-                    try {
-                        const errorData = JSON.parse(xhr.responseText);
-                        if(errorData.message) {
-                            errorMsg += '\n' + errorData.message;
-                        }
-                    } catch(e) {}
-                } else if(xhr.status === 0) {
-                    errorMsg = 'Tidak dapat terhubung ke server. Periksa koneksi.';
-                }
-                
-                alert(errorMsg);
+            error: function() {
+                alert('Gagal memuat data slot');
                 $('#loadingSlots').hide();
             }
         });
     }
 
-    // === Function: Load Available Slots (EDIT) ===
     function loadAvailableSlotsForEdit(rakId, serverId) {
-        console.log('🔍 Loading slots for edit - rak_id:', rakId, 'server_id:', serverId); // Debug
-        
         $('#editLoadingSlots').show();
         $('#editSlotSelectWrapper').hide();
         $('#editSlotWrapper').show();
 
         $.ajax({
-            url: `/infratik/server/rak/${rakId}/available-slots`,
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
             type: 'GET',
-            dataType: 'json',
             success: function(response) {
-                console.log('✅ Edit Response received:', response); // Debug
-                
-                if(response.success && response.available_slots) {
-                    availableSlots = response.available_slots;
-                    occupiedSlots = response.occupied_slots || [];
-                    
-                    populateEditSlotDropdowns(availableSlots);
-                    
-                    $('#editLoadingSlots').hide();
-                    $('#editSlotSelectWrapper').show();
-                } else {
-                    console.error('❌ Invalid response format:', response);
-                    alert('Format response tidak valid');
-                    $('#editLoadingSlots').hide();
-                }
+                availableSlots = response.available_slots;
+                populateEditSlotDropdowns(availableSlots);
+                $('#editLoadingSlots').hide();
+                $('#editSlotSelectWrapper').show();
             },
-            error: function(xhr, status, error) {
-                console.error('❌ Edit AJAX Error:');
-                console.error('Status:', status);
-                console.error('Error:', error);
-                console.error('Response:', xhr.responseText);
-                console.error('Status Code:', xhr.status);
-                
-                let errorMsg = 'Gagal memuat data slot';
-                
-                if(xhr.status === 404) {
-                    errorMsg = 'Route tidak ditemukan (404)';
-                } else if(xhr.status === 500) {
-                    errorMsg = 'Server error (500). Cek log Laravel.';
-                }
-                
-                alert(errorMsg);
+            error: function() {
+                alert('Gagal memuat data slot');
                 $('#editLoadingSlots').hide();
             }
         });
     }
 
-    // === Function: Populate Slot Dropdowns (TAMBAH) ===
     function populateSlotDropdowns(slots) {
-        console.log('📋 Populating dropdowns with slots:', slots); // Debug
-        
-        // Single slot
-        $('#singleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        $('#singleSlotSelect, #slotStart, #slotEnd').empty().append('<option value="">Pilih Slot</option>');
         slots.forEach(slot => {
             $('#singleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
+            $('#slotStart, #slotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
-
-        // Range slot (start & end)
-        $('#slotStart, #slotEnd').empty().append('<option value="">Pilih</option>');
-        slots.forEach(slot => {
-            $('#slotStart').append(`<option value="${slot}">${slot}U</option>`);
-            $('#slotEnd').append(`<option value="${slot}">${slot}U</option>`);
-        });
-        
-        console.log('✅ Dropdowns populated'); // Debug
     }
 
-    // === Function: Populate Slot Dropdowns (EDIT) ===
     function populateEditSlotDropdowns(slots) {
-        console.log('📋 Populating edit dropdowns with slots:', slots); // Debug
-        
-        // Single slot
-        $('#editSingleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        $('#editSingleSlotSelect, #editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih Slot</option>');
         slots.forEach(slot => {
             $('#editSingleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
+            $('#editSlotStart, #editSlotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
-
-        // Range slot
-        $('#editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih</option>');
-        slots.forEach(slot => {
-            $('#editSlotStart').append(`<option value="${slot}">${slot}U</option>`);
-            $('#editSlotEnd').append(`<option value="${slot}">${slot}U</option>`);
-        });
-        
-        console.log('✅ Edit dropdowns populated'); // Debug
     }
 
-    // === Handle Range Slot Change (TAMBAH) ===
+    // === RANGE SLOT CHANGE ===
     $('#slotStart, #slotEnd').change(function() {
         const start = $('#slotStart').val();
         const end = $('#slotEnd').val();
-        
         if(start && end) {
             $('#slotRangeValue').val(`${start}-${end}`);
-        } else {
-            $('#slotRangeValue').val('');
         }
     });
 
-    // === Handle Range Slot Change (EDIT) ===
     $('#editSlotStart, #editSlotEnd').change(function() {
         const start = $('#editSlotStart').val();
         const end = $('#editSlotEnd').val();
-        
         if(start && end) {
             $('#editSlotRangeValue').val(`${start}-${end}`);
-        } else {
-            $('#editSlotRangeValue').val('');
         }
     });
 
-    // === Form Submit: Set correct u_slot value ===
+    // === FORM SUBMIT ===
     $('#serverForm').submit(function(e) {
         const slotType = $('input[name="slot_type"]:checked').val();
-        
         if($('#rakSelect').val()) {
-            let slotValue = '';
-            
-            if(slotType === 'single') {
-                slotValue = $('#singleSlotSelect').val();
-            } else {
-                slotValue = $('#slotRangeValue').val();
-            }
-            
-            // Remove existing hidden input
+            let slotValue = slotType === 'single' ? $('#singleSlotSelect').val() : $('#slotRangeValue').val();
             $('input[name="u_slot"]').remove();
-            
-            // Add hidden input with correct value
             $(this).append(`<input type="hidden" name="u_slot" value="${slotValue}">`);
         }
     });
 
-    // === Edit Form Submit ===
     $('#editServerForm').submit(function(e) {
         const slotType = $('input[name="edit_slot_type"]:checked').val();
-        
         if($('#editRakId').val()) {
-            let slotValue = '';
-            
-            if(slotType === 'single') {
-                slotValue = $('#editSingleSlotSelect').val();
-            } else {
-                slotValue = $('#editSlotRangeValue').val();
-            }
-            
+            let slotValue = slotType === 'single' ? $('#editSingleSlotSelect').val() : $('#editSlotRangeValue').val();
             $('input[name="u_slot"]').remove();
             $(this).append(`<input type="hidden" name="u_slot" value="${slotValue}">`);
         }
     });
 
-    // === Detail Server AJAX ===
+    // === DETAIL SERVER ===
     $(document).on('click', '.btn-detail-server', function () {
         let id = $(this).data('id');
-
         $.ajax({
             url: `/infratik/server/${id}/detail`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
-
                 $('#detailNamaServer').text(s.nama_server ?? '-');
                 $('#detailBrand').text(s.brand ?? '-');
                 $('#detailSpesifikasi').html(s.spesifikasi ?? '-');
@@ -961,7 +855,6 @@ $(document).ready(function() {
                 $('#detailBidang').text(s.bidang ? s.bidang.nama_bidang : '-');
                 $('#detailSatker').text(s.satker ? s.satker.nama_satker : '-');
                 
-                // Tampilkan daftar website
                 let websitesHtml = '-';
                 if(s.websites && s.websites.length > 0) {
                     websitesHtml = '<ul class="mb-0">';
@@ -972,38 +865,25 @@ $(document).ready(function() {
                 }
                 $('#detailWebsites').html(websitesHtml);
                 
-                // Status
-                let statusBadge = '';
-                if(s.power_status === 'ON') {
-                    statusBadge = '<span class="badge bg-success">Aktif</span>';
-                } else if(s.power_status === 'STANDBY') {
-                    statusBadge = '<span class="badge bg-warning text-dark">Maintenance</span>';
-                } else {
-                    statusBadge = '<span class="badge bg-danger">Tidak Aktif</span>';
-                }
+                let statusBadge = s.power_status === 'ON' ? '<span class="badge bg-success">Aktif</span>' :
+                                  s.power_status === 'STANDBY' ? '<span class="badge bg-warning">Maintenance</span>' :
+                                  '<span class="badge bg-danger">Tidak Aktif</span>';
                 $('#detailStatus').html(statusBadge);
-                
                 $('#detailKeterangan').html(s.keterangan ?? '-');
                 $('#modalDetailServer').modal('show');
-            },
-            error: function(xhr) {
-                alert('Gagal memuat data server');
-                console.error(xhr);
             }
         });
     });
 
-    // === Edit Server - Load Data ===
+    // === EDIT SERVER ===
     $(document).on('click', '.btn-edit-server', function () {
         let id = $(this).data('id');
         currentServerId = id;
-
         $.ajax({
             url: `/infratik/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
-
                 $('#editServerId').val(s.server_id);
                 $('#editNamaServer').val(s.nama_server);
                 $('#editBrand').val(s.brand);
@@ -1014,7 +894,6 @@ $(document).ready(function() {
                 $('#editPowerStatus').val(s.power_status);
                 $('#editKeterangan').val(s.keterangan || '');
 
-                // Cek bidang visibility
                 const selectedSatker = $('#editSatkerId option:selected').data('name');
                 if (selectedSatker === 'Pusat Data dan Informasi Kemhan') {
                     $('#editBidangWrapper').show();
@@ -1022,22 +901,17 @@ $(document).ready(function() {
                     $('#editBidangWrapper').hide();
                 }
 
-                // Trigger rak change untuk load slots
                 if(s.rak_id) {
                     $('#editRakId').trigger('change');
-                    
-                    // Set slot value after slots loaded
                     setTimeout(() => {
                         if(s.u_slot) {
                             if(s.u_slot.includes('-')) {
-                                // Range slot
                                 $('input[name="edit_slot_type"][value="range"]').prop('checked', true).trigger('change');
                                 const parts = s.u_slot.split('-');
                                 $('#editSlotStart').val(parts[0]);
                                 $('#editSlotEnd').val(parts[1]);
                                 $('#editSlotRangeValue').val(s.u_slot);
                             } else {
-                                // Single slot
                                 $('input[name="edit_slot_type"][value="single"]').prop('checked', true).trigger('change');
                                 $('#editSingleSlotSelect').val(s.u_slot);
                             }
@@ -1047,27 +921,26 @@ $(document).ready(function() {
 
                 $('#editServerForm').attr('action', `/infratik/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
-            },
-            error: function(xhr) {
-                alert('Gagal memuat data server');
-                console.error(xhr);
             }
         });
     });
 
-    // Show/hide bidang saat satker berubah di form edit
-    $('#editSatkerId').change(function(){
-        const selectedName = $('#editSatkerId option:selected').data('name');
+    // === BIDANG VISIBILITY ===
+    $('#satkerSelect, #editSatkerId').change(function(){
+        const selectedName = $(this).find('option:selected').data('name');
+        const isEdit = $(this).attr('id') === 'editSatkerId';
+        const bidangWrapper = isEdit ? '#editBidangWrapper' : '#bidangWrapper';
+        const bidangSelect = isEdit ? '#editBidangId' : '#bidangSelect';
         
-        if(selectedName === 'Pusat Data dan Informasi Kemhan'){
-            $('#editBidangWrapper').show();
+        if(selectedName && selectedName.includes('Pusat Data dan Informasi')){
+            $(bidangWrapper).show();
         } else {
-            $('#editBidangWrapper').hide();
-            $('#editBidangId').val('');
+            $(bidangWrapper).hide();
+            $(bidangSelect).val('');
         }
     });
 
-    // === Search Functionality ===
+    // === SEARCH ===
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
         let visibleRows = 0;
@@ -1090,7 +963,7 @@ $(document).ready(function() {
         if (visibleRows === 0 && $('.server-row').length > 0) {
             if ($('#noResultRow').length === 0) {
                 $('table tbody').append(
-                    '<tr id="noResultRow"><td colspan="8" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                    '<tr id="noResultRow"><td colspan="8" class="text-center text-muted py-4"><i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>Tidak ada data yang sesuai dengan pencarian</td></tr>'
                 );
             }
         } else {
@@ -1098,28 +971,14 @@ $(document).ready(function() {
         }
     });
 
-    // === Modal Hapus Handler ===
+    // === MODAL HAPUS ===
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
-        
         $('#namaServerHapus').text(nama);
         $('#formHapusServer').attr('action', `/infratik/server/${id}`);
-        
         const modal = new bootstrap.Modal(document.getElementById('hapusServerModal'));
         modal.show();
-    });
-
-    // Bidang visibility untuk form tambah
-    $('#satkerSelect').change(function(){
-        const selectedName = $('#satkerSelect option:selected').data('name');
-        
-        if(selectedName && selectedName.includes('Pusat Data dan Informasi')) {
-            $('#bidangWrapper').show();
-        } else {
-            $('#bidangWrapper').hide();
-            $('#bidangSelect').val('');
-        }
     });
 });
 </script>

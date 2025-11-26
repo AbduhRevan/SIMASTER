@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\infratik;
+namespace App\Models\tatausaha;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\superadmin\RakServer;
 use App\Models\superadmin\Bidang;
 use App\Models\superadmin\Satker;
-use App\Models\pamsis\Website;
+use App\Models\tatausaha\Website;
 
 class Server extends Model
 {

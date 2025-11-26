@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\infratik;
+namespace App\Models\tatausaha;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -8,49 +8,44 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\superadmin\RakServer;
 use App\Models\superadmin\Bidang;
 use App\Models\superadmin\Satker;
-use App\Models\pamsis\Website;
+use App\Models\tatausaha\Website;
 
-class Server extends Model
+class Website extends Model
 {
     use HasFactory;
 
-    protected $table = 'server';
-    protected $primaryKey = 'server_id';
+    protected $table = 'website';
+    protected $primaryKey = 'website_id';
     public $timestamps = true;
 
     protected $fillable = [
-        'nama_server',
-        'brand',
-        'spesifikasi',
-        'power_status',
-        'rak_id',
-        'u_slot',
+        'nama_website',
+        'url',
         'bidang_id',
         'satker_id',
-        'keterangan'
+        'server_id', // TAMBAHKAN INI
+        'status',
+        'tahun_pengadaan',
+        'keterangan',
     ];
 
-    // Relasi join tabel lain
-    public function rak()
-    {
-        return $this->belongsTo(RakServer::class, 'rak_id', 'rak_id');
-    }
-
+    // Relasi ke Bidang
     public function bidang()
     {
         return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
     }
 
+    // Relasi ke Satker
     public function satker()
     {
         return $this->belongsTo(Satker::class, 'satker_id', 'satker_id');
     }
 
     /**
-     * RELASI: 1 server bisa punya banyak website
+     * RELASI DIUBAH: Website belongs to Server
      */
-    public function websites()
+    public function server()
     {
-        return $this->hasMany(Website::class, 'server_id', 'server_id');
+        return $this->belongsTo(Server::class, 'server_id', 'server_id');
     }
 }

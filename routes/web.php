@@ -30,6 +30,12 @@ use App\Http\Controllers\pamsis\WebsiteController as PamsisWebsite;
 use App\Http\Controllers\pamsis\DashboardController as PamsisDashboard;
 use App\Http\Controllers\pamsis\ServerController as PamsisServer;
 
+// Tata Usaha
+use App\Http\Controllers\tatausaha\WebsiteController as TataUsahaWebsite;
+use App\Http\Controllers\tatausaha\DashboardController as TataUsahaDashboard;
+use App\Http\Controllers\tatausaha\ServerController as TataUsahaServer;
+use App\Http\Controllers\tatausaha\PemeliharaanController as TataUsahaPemeliharaan;
+
 // Redirect root ke login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -240,10 +246,38 @@ Route::middleware(['auth'])->group(function () {
     // ====================================================================
     // TATAUSAHA ROLE
     // ====================================================================
-    Route::middleware(['role:tatausaha'])->prefix('tatausaha')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('tatausaha.dashboard');
-        })->name('tatausaha.dashboard');
+     Route::middleware(['role:tatausaha'])->prefix('tatausaha')->group(function () {
+        Route::get('/dashboard', [tatausahaDashboard::class, 'index'])->name('tatausaha.dashboard');
+
+        // tatausaha - Server
+        Route::get('/server', [tatausahaServer::class, 'index'])->name('tatausaha.server.index');
+        Route::get('/server/rak/{rakId}/available-slots', [tatausahaServer::class, 'getAvailableSlots'])->name('tatausaha.server.availableSlots');
+        Route::post('/server/store', [tatausahaServer::class, 'store'])->name('tatausaha.server.store');
+        Route::get('/server/{id}/detail', [tatausahaServer::class, 'detail'])->name('tatausaha.server.detail');
+        Route::get('/server/{id}/edit', [tatausahaServer::class, 'edit'])->name('tatausaha.server.edit');
+        Route::put('/server/update/{id}', [tatausahaServer::class, 'update'])->name('tatausaha.server.update');
+        Route::delete('/server/{id}', [tatausahaServer::class, 'destroy'])->name('tatausaha.server.destroy');
+
+        // tatausaha - Website
+        Route::get('/website', [tatausahaWebsite::class, 'index'])->name('tatausaha.website.index');
+        Route::post('/website/store', [tatausahaWebsite::class, 'store'])->name('tatausaha.website.store');
+        Route::get('/website/{id}/detail', [tatausahaWebsite::class, 'detail'])->name('tatausaha.website.detail');
+        Route::put('/website/update/{id}', [tatausahaWebsite::class, 'update'])->name('tatausaha.website.update');
+        Route::delete('/website/delete/{id}', [tatausahaWebsite::class, 'destroy'])->name('tatausaha.website.destroy');
+
+        // tatausaha - Pemeliharaan
+        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('tatausaha.pemeliharaan');
+        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('tatausaha.pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('tatausaha.pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('tatausaha.pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('tatausaha.pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('tatausaha.pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('tatausaha.pemeliharaan.cancel');
+
+        // tatausaha - Log Aktivitas
+        Route::get('/log-aktivitas', function () {
+            return view('tatausaha.logAktivitas');
+        })->name('tatausaha.logAktivitas');
     });
 
     // ====================================================================
