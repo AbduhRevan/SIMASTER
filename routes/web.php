@@ -19,22 +19,26 @@ use App\Http\Controllers\superadmin\LogAktivitasController;
 use App\Http\Controllers\banglola\WebsiteController as BanglolaWebsite;
 use App\Http\Controllers\banglola\DashboardController as BanglolaDashboard;
 use App\Http\Controllers\banglola\ServerController as BanglolaServer;
+use App\Http\Controllers\banglola\LogAktivitasController as BanglolaLogAktivitas;
 
 // Infratik
 use App\Http\Controllers\infratik\WebsiteController as InfratikWebsite;
 use App\Http\Controllers\infratik\DashboardController as InfratikDashboard;
 use App\Http\Controllers\infratik\ServerController as InfratikServer;
+use App\Http\Controllers\infratik\LogAktivitasController as InfratikLogAktivitas;
 
 // Pamsis
 use App\Http\Controllers\pamsis\WebsiteController as PamsisWebsite;
 use App\Http\Controllers\pamsis\DashboardController as PamsisDashboard;
 use App\Http\Controllers\pamsis\ServerController as PamsisServer;
+use App\Http\Controllers\pamsis\LogAktivitasController as PamsisLogAktivitas;
 
 // Tata Usaha
 use App\Http\Controllers\tatausaha\WebsiteController as TataUsahaWebsite;
 use App\Http\Controllers\tatausaha\DashboardController as TataUsahaDashboard;
 use App\Http\Controllers\tatausaha\ServerController as TataUsahaServer;
 use App\Http\Controllers\tatausaha\PemeliharaanController as TataUsahaPemeliharaan;
+use App\Http\Controllers\tatausaha\LogAktivitasController as TataUsahaLogAktivitas;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -164,9 +168,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('banglola.pemeliharaan.cancel');
 
         // Banglola - Log Aktivitas
-        Route::get('/log-aktivitas', function () {
-            return view('banglola.logAktivitas');
-        })->name('banglola.logAktivitas');
+        Route::get('/banglola/log-aktivitas', [\App\Http\Controllers\banglola\LogAktivitasController::class, 'index'])->name('banglola.logAktivitas');
     });
 
     // ====================================================================
@@ -201,9 +203,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('pamsis.pemeliharaan.cancel');
 
         // Pamsis - Log Aktivitas
-        Route::get('/log-aktivitas', function () {
-            return view('pamsis.logAktivitas');
-        })->name('pamsis.logAktivitas');
+        Route::get('/pamsis/log-aktivitas', [\App\Http\Controllers\pamsis\LogAktivitasController::class, 'index'])->name('pamsis.logAktivitas');
     });
 
     // ====================================================================
@@ -238,9 +238,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('infratik.pemeliharaan.cancel');
 
         // Infratik - Log Aktivitas
-        Route::get('/log-aktivitas', function () {
-            return view('infratik.logAktivitas');
-        })->name('infratik.logAktivitas');
+        Route::get('/infratik/log-aktivitas', [\App\Http\Controllers\infratik\LogAktivitasController::class, 'index'])->name('infratik.logAktivitas');
     });
 
     // ====================================================================
@@ -275,9 +273,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('tatausaha.pemeliharaan.cancel');
 
         // tatausaha - Log Aktivitas
-        Route::get('/log-aktivitas', function () {
-            return view('tatausaha.logAktivitas');
-        })->name('tatausaha.logAktivitas');
+        Route::get('/tatausaha/log-aktivitas', [\App\Http\Controllers\tatausaha\LogAktivitasController::class, 'index'])->name('tatausaha.logAktivitas');
     });
 
     // ====================================================================
