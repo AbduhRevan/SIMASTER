@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\superadmin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PanduanController extends Controller
 {
@@ -11,6 +13,18 @@ class PanduanController extends Controller
      */
     public function index($category = 'informasi-umum')
     {
+        $user = Auth::user();
+
+        // Tentukan layout berdasarkan role user
+        $layout = match ($user->role) {
+            'superadmin' => 'layouts.app',
+            'banglola'   => 'layouts.banglola',
+            'pamsis'     => 'layouts.pamsis',
+            'infratik'   => 'layouts.infratik',
+            'tatausaha'  => 'layouts.tatausaha',
+            default      => 'layouts.app',
+        };
+
         // daftar kategori valid
         $allowedCategories = [
             'informasi-umum',
@@ -26,7 +40,8 @@ class PanduanController extends Controller
         }
 
         return view('profil.panduan_pengguna', [
-            'activeCategory' => $category
+            'activeCategory' => $category,
+            'layout' => $layout
         ]);
     }
 }

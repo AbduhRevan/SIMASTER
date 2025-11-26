@@ -148,9 +148,5 @@ public function updatePassword(Request $request)
      *
      * @return \Illuminate\View\View
      */
-    public function panduanPengguna()
-    {
-        // Asumsi view ada di 'profile/panduanPengguna.blade.php'
-        return view('profil.panduan_pengguna');
-    }
+   
 }
