@@ -3,25 +3,26 @@
 @section('title', 'Rak Server')
 
 @section('content')
-<div class="container-fluid py-3">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<div class="container-fluid py-4">
 
-@if(session('success'))
+    {{-- Alert Messages --}}
+    @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
+        <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if(session('error'))
+    @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if($errors->any())
+    @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
         <strong>Error!</strong>
         <ul class="mb-0">
             @foreach($errors->all() as $error)
@@ -30,171 +31,246 @@
         </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-<div class="card table-card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <!-- Search -->
-        <div class="col-md-4">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari Nomor Rak/Ruangan/Keterangan...">
-            </div>
+    {{-- ======= DATA RAK SERVER ======= --}}
+    <div class="card-content">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="fa fa-server me-2"></i> Data Rak Server
+            </h6>
+            <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahRakModal">
+                <i class="fa fa-plus me-1"></i> Tambah Rak Server
+            </button>
         </div>
 
-        <!-- Tombol Tambah -->
-        <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahRakModal">
-            <i class="fa-solid fa-plus me-2"></i> Tambah Rak Server
-        </button>
-    </div>
-
-    <!-- TABLE -->
-    <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>No</th>
-                <th>Nomor Rak</th>
-                <th>Ruangan</th>
-                <th>Kapasitas Total (U)</th>
-                <th>Terpakai (U)</th>
-                <th>Sisa (U)</th>
-                <th>Keterangan</th>
-                <th class="text-center" style="width: 100px;">Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="rakTableBody">
-            @forelse ($rak as $index => $item)
-                @php
-                    // Hitung total U terpakai dari semua server di rak ini
-                    $terpakai = 0;
-                    foreach($item->servers as $server) {
-                        // u_slot bisa berisi nilai seperti "1-4" atau "5-8" 
-                        if($server->u_slot) {
-                            $slots = explode('-', $server->u_slot);
-                            if(count($slots) == 2) {
-                                $terpakai += (int)$slots[1] - (int)$slots[0] + 1;
-                            } else {
-                                $terpakai += 1; // jika format tidak sesuai, hitung 1U
-                            }
-                        }
-                    }
-                    $sisa = $item->kapasitas_u_slot - $terpakai;
-                @endphp
-                <tr class="rak-row" data-index="{{ $index }}">
-                    <td class="row-number">{{ $index + 1 }}</td>
-                    <td class="rak-nomor">{{ $item->nomor_rak }}</td>
-                    <td class="rak-ruangan">{{ $item->ruangan }}</td>
-                    <td class="text-center">{{ $item->kapasitas_u_slot }}U</td>
-                    <td class="text-center">
-                        <span class="badge bg-primary">{{ $terpakai }}U</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge {{ $sisa > 0 ? 'bg-success' : 'bg-danger' }}">{{ $sisa }}U</span>
-                    </td>
-                    <td class="rak-keterangan">{{ $item->keterangan ?? '-' }}</td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <!-- Edit -->
-                            <button class="btn btn-warning btn-sm text-white" data-bs-toggle="modal"
-                                data-bs-target="#editRakModal{{ $item->rak_id }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-
-                            <!-- Hapus -->
-                            <button class="btn btn-danger btn-sm btn-hapus"
-                                data-id="{{ $item->rak_id }}"
-                                data-nama="{{ $item->nomor_rak }}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- MODAL EDIT -->
-                <div class="modal fade" id="editRakModal{{ $item->rak_id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0 rounded-3 overflow-hidden">
-                            <div class="modal-header bg-maroon text-white">
-                                <h5 class="modal-title">Edit Rak Server</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form action="{{ route('superadmin.rakserver.update', $item->rak_id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Nomor Rak <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="nomor_rak" value="{{ $item->nomor_rak }}" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Ruangan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="ruangan" value="{{ $item->ruangan }}" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Kapasitas U Slot <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" name="kapasitas_u_slot" value="{{ $item->kapasitas_u_slot }}" min="1" max="50" required>
-                                        <small class="text-muted">Maksimal 50U</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Keterangan</label>
-                                        <textarea class="form-control" name="keterangan" rows="3">{{ $item->keterangan }}</textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
-                                </div>
-                            </form>
+        <div class="card-body-custom">
+            {{-- Search Bar --}}
+            <div class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control" 
+                                placeholder="Cari Nomor Rak/Ruangan/Keterangan...">
                         </div>
                     </div>
                 </div>
-            @empty
-                <tr id="emptyRow">
-                    <td colspan="8" class="text-center text-muted">Belum ada data rak server</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </div>
+
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="12%">Nomor Rak</th>
+                            <th width="15%">Ruangan</th>
+                            <th width="12%" class="text-center">Kapasitas Total</th>
+                            <th width="10%" class="text-center">Terpakai</th>
+                            <th width="10%" class="text-center">Sisa</th>
+                            <th width="26%">Keterangan</th>
+                            <th width="10%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rakTableBody">
+                        @forelse ($rak as $index => $item)
+                            @php
+                                $terpakai = 0;
+                                foreach($item->servers as $server) {
+                                    if($server->u_slot) {
+                                        $slots = explode('-', $server->u_slot);
+                                        if(count($slots) == 2) {
+                                            $terpakai += (int)$slots[1] - (int)$slots[0] + 1;
+                                        } else {
+                                            $terpakai += 1;
+                                        }
+                                    }
+                                }
+                                $sisa = $item->kapasitas_u_slot - $terpakai;
+                            @endphp
+                            <tr class="rak-row">
+                                <td>{{ $loop->iteration }}</td>
+                                <td class="rak-nomor"><strong>{{ $item->nomor_rak }}</strong></td>
+                                <td class="rak-ruangan">{{ $item->ruangan }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{{ $item->kapasitas_u_slot }}U</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">{{ $terpakai }}U</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {{ $sisa > 0 ? 'bg-success' : 'bg-danger' }}">{{ $sisa }}U</span>
+                                </td>
+                                <td class="rak-keterangan">
+                                    <small>{{ $item->keterangan ?? '-' }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {{-- Edit --}}
+                                        <button class="btn btn-outline-warning" 
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editRakModal{{ $item->rak_id }}"
+                                            title="Edit">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+
+                                        {{-- Hapus --}}
+                                        <button class="btn btn-outline-danger btn-hapus"
+                                            data-id="{{ $item->rak_id }}"
+                                            data-nama="{{ $item->nomor_rak }}"
+                                            title="Hapus">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {{-- Modal Edit --}}
+                            <div class="modal fade" id="editRakModal{{ $item->rak_id }}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header modal-header-gradient text-white border-0">
+                                            <h5 class="modal-title fw-bold">
+                                                <i class="fa fa-edit me-2"></i> Edit Rak Server
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="{{ route('superadmin.rakserver.update', $item->rak_id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-body p-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Nomor Rak <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="nomor_rak" 
+                                                        value="{{ $item->nomor_rak }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Ruangan <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="ruangan" 
+                                                        value="{{ $item->ruangan }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Kapasitas U Slot <span class="text-danger">*</span></label>
+                                                    <input type="number" class="form-control" name="kapasitas_u_slot" 
+                                                        value="{{ $item->kapasitas_u_slot }}" min="1" max="50" required>
+                                                    <small class="text-muted">Maksimal 50U</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Keterangan</label>
+                                                    <textarea class="form-control" name="keterangan" rows="3">{{ $item->keterangan }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0 bg-light">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fa fa-times me-1"></i> Batal
+                                                </button>
+                                                <button type="submit" class="btn btn-warning text-white">
+                                                    <i class="fa fa-save me-1"></i> Simpan
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        @empty
+                        <tr id="emptyRow">
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                Belum ada data rak server
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Pagination --}}
+        @if(method_exists($rak, 'hasPages') && $rak->hasPages())
+        <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3 flex-wrap gap-3" id="paginationWrapper">
+            <p class="mb-0 text-secondary small">
+                Menampilkan {{ $rak->firstItem() }}–{{ $rak->lastItem() }} dari {{ $rak->total() }} data
+            </p>
+            <div class="custom-pagination">
+                {{-- Previous Button --}}
+                @if ($rak->onFirstPage())
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-left"></i>
+                    </span>
+                @else
+                    <a href="{{ $rak->previousPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                @endif
+
+                {{-- Page Numbers with sliding window --}}
+                @php
+                    $currentPage = $rak->currentPage();
+                    $lastPage = $rak->lastPage();
+                    $maxVisible = 2; // Tampilkan 2 angka
+                    
+                    // Hitung range yang akan ditampilkan
+                    if ($currentPage == 1) {
+                        $start = 1;
+                        $end = min($maxVisible, $lastPage);
+                    } elseif ($currentPage == $lastPage) {
+                        $start = max(1, $lastPage - $maxVisible + 1);
+                        $end = $lastPage;
+                    } else {
+                        $start = $currentPage;
+                        $end = min($currentPage + $maxVisible - 1, $lastPage);
+                    }
+                @endphp
+
+                @for($page = $start; $page <= $end; $page++)
+                    @if($page == $currentPage)
+                        <span class="pagination-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $rak->url($page) }}" class="pagination-btn">{{ $page }}</a>
+                    @endif
+                @endfor
+
+                {{-- Next Button --}}
+                @if ($rak->hasMorePages())
+                    <a href="{{ $rak->nextPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
+                @else
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-right"></i>
+                    </span>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 
-    <!-- PAGINATION -->
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted small" id="paginationInfo">
-            Menampilkan <span id="startItem">1</span> - <span id="endItem">6</span> dari <span id="totalItems">{{ $rak->count() }}</span> data
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary btn-sm" id="prevBtn" disabled>
-                <i class="fa-solid fa-chevron-left"></i> Sebelumnya
-            </button>
-            <div class="d-flex gap-1" id="pageNumbers"></div>
-            <button class="btn btn-outline-secondary btn-sm" id="nextBtn">
-                Berikutnya <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
 </div>
 
-<!-- MODAL TAMBAH -->
-<div class="modal fade" id="tambahRakModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Tambah --}}
+<div class="modal fade" id="tambahRakModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Tambah Rak Server</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-plus-circle me-2"></i> Tambah Rak Server
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('superadmin.rakserver.store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nomor Rak <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('nomor_rak') is-invalid @enderror" 
-                               name="nomor_rak" 
-                               placeholder="Contoh: R16" 
-                               value="{{ old('nomor_rak') }}"
-                               required>
+                            name="nomor_rak" 
+                            placeholder="Contoh: R16" 
+                            value="{{ old('nomor_rak') }}"
+                            required>
                         @error('nomor_rak')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -202,10 +278,10 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Ruangan <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('ruangan') is-invalid @enderror" 
-                               name="ruangan" 
-                               placeholder="Contoh: Pusdatin DC" 
-                               value="{{ old('ruangan') }}"
-                               required>
+                            name="ruangan" 
+                            placeholder="Contoh: Pusdatin DC" 
+                            value="{{ old('ruangan') }}"
+                            required>
                         @error('ruangan')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -213,12 +289,12 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Kapasitas U Slot <span class="text-danger">*</span></label>
                         <input type="number" class="form-control @error('kapasitas_u_slot') is-invalid @enderror" 
-                               name="kapasitas_u_slot" 
-                               placeholder="Contoh: 42" 
-                               min="1"
-                               max="50"
-                               value="{{ old('kapasitas_u_slot') }}"
-                               required>
+                            name="kapasitas_u_slot" 
+                            placeholder="Contoh: 42" 
+                            min="1"
+                            max="50"
+                            value="{{ old('kapasitas_u_slot') }}"
+                            required>
                         <small class="text-muted">Maksimal 50U</small>
                         @error('kapasitas_u_slot')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -227,44 +303,55 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
                         <textarea class="form-control @error('keterangan') is-invalid @enderror" 
-                                  name="keterangan" 
-                                  rows="3" 
-                                  placeholder="Opsional">{{ old('keterangan') }}</textarea>
+                            name="keterangan" 
+                            rows="3" 
+                            placeholder="Opsional">{{ old('keterangan') }}</textarea>
                         @error('keterangan')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-maroon-gradient">
+                        <i class="fa fa-save me-1"></i> Simpan
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- MODAL HAPUS -->
-<div class="modal fade" id="hapusRakModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Hapus --}}
+<div class="modal fade" id="hapusRakModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formHapusRak" method="POST">
                 @csrf
                 @method('DELETE')
-                <div class="modal-body text-center">
+                <div class="modal-body p-4 text-center">
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
-                    <p>Apakah Anda yakin ingin menghapus rak server <strong id="namaRakHapus"></strong>?</p>
+                    <p class="mb-3">Apakah Anda yakin ingin menghapus rak server <strong id="namaRakHapus"></strong>?</p>
                     <div class="alert alert-warning small mb-0">
+                        <i class="fa fa-info-circle me-1"></i>
                         Data akan dihapus secara permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
                 </div>
             </form>
         </div>
@@ -272,179 +359,242 @@
 </div>
 
 <style>
-.table-card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    padding: 25px;
+/* Card Content */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
 }
-.bg-maroon, .btn-maroon {
-    background-color: #7b0000 !important;
+
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+/* Table Styles */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Button Group */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
     border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
-.btn-maroon:hover {
-    background-color: #5a0000 !important;
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
 }
-.btn-warning {
-    background-color: #ffc107;
-    border: none;
+
+/* Modal Shadow */
+.modal-content {
+    border-radius: 8px;
 }
-.btn-warning:hover {
-    background-color: #ffcd39;
+
+/* Input Group */
+.input-group-text {
+    border-right: 0;
 }
-.page-btn {
-    width: 32px;
-    height: 32px;
+
+/* Alert with Icon */
+.alert i {
+    font-size: 1rem;
+}
+
+/* Custom Pagination Styling */
+.custom-pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
     border: 1px solid #dee2e6;
-    background: white;
-    cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
+    background-color: white;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
     font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
-.page-btn:hover {
-    background: #f8f9fa;
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    color: #7b0000;
 }
-.page-btn.active {
-    background: #7b0000;
-    color: white;
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
     border-color: #7b0000;
+    color: white;
+    font-weight: 600;
+    cursor: default;
+}
+
+.pagination-btn.disabled {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination-btn i {
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-bar .col-md-6 {
+        width: 100%;
+    }
+
+    #paginationWrapper {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    #paginationWrapper > div {
+        width: 100%;
+    }
+
+    .custom-pagination {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
 }
 </style>
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    const itemsPerPage = 6;
-    let currentPage = 1;
-    let allRows = $('.rak-row');
-    let filteredRows = allRows;
-    
-    function updateRowNumbers() {
-        filteredRows.each(function(index) {
-            const rowPage = Math.floor(index / itemsPerPage) + 1;
-            if (rowPage === currentPage) {
-                $(this).find('.row-number').text(index + 1);
-            }
-        });
-    }
-    
-    function updatePagination() {
-        const totalItems = filteredRows.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-        
-        // Update info
-        const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-        
-        $('#startItem').text(startItem);
-        $('#endItem').text(endItem);
-        $('#totalItems').text(totalItems);
-        
-        // Show/hide rows
-        allRows.hide();
-        filteredRows.each(function(index) {
-            const rowPage = Math.floor(index / itemsPerPage) + 1;
-            if (rowPage === currentPage) {
-                $(this).show();
-            }
-        });
-        
-        // Update row numbers
-        updateRowNumbers();
-        
-        // Update buttons
-        $('#prevBtn').prop('disabled', currentPage === 1 || totalPages === 0);
-        $('#nextBtn').prop('disabled', currentPage === totalPages || totalPages === 0);
-        
-        // Update page numbers
-        renderPageNumbers(totalPages);
-        
-        // Hide empty/no result rows
-        $('#emptyRow, #noResultRow').remove();
-        if (totalItems === 0) {
-            const message = allRows.length === 0 
-                ? 'Belum ada data rak server' 
-                : 'Tidak ada data yang sesuai dengan pencarian';
-            $('#rakTableBody').append(
-                `<tr id="noResultRow"><td colspan="8" class="text-center text-muted">${message}</td></tr>`
-            );
-        }
-    }
-    
-    function renderPageNumbers(totalPages) {
-        const pageNumbersContainer = $('#pageNumbers');
-        pageNumbersContainer.empty();
-        
-        if (totalPages <= 1) return;
-        
-        let startPage = Math.max(1, currentPage - 1);
-        let endPage = Math.min(totalPages, currentPage + 1);
-        
-        if (currentPage === 1) {
-            endPage = Math.min(3, totalPages);
-        } else if (currentPage === totalPages) {
-            startPage = Math.max(1, totalPages - 2);
-        }
-        
-        for (let i = startPage; i <= endPage; i++) {
-            const pageBtn = $('<button>')
-                .addClass('page-btn')
-                .text(i)
-                .toggleClass('active', i === currentPage)
-                .on('click', function() {
-                    currentPage = i;
-                    updatePagination();
-                });
-            pageNumbersContainer.append(pageBtn);
-        }
-    }
-    
-    // Initialize
-    updatePagination();
-    
-    // Search functionality
+    // Search Functionality
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
-        
-        if (searchValue === '') {
-            filteredRows = allRows;
+        let visibleRows = 0;
+
+        $('.rak-row').each(function() {
+            const nomor = $(this).find('.rak-nomor').text().toLowerCase();
+            const ruangan = $(this).find('.rak-ruangan').text().toLowerCase();
+            const keterangan = $(this).find('.rak-keterangan').text().toLowerCase();
+            
+            if (nomor.includes(searchValue) || ruangan.includes(searchValue) || keterangan.includes(searchValue)) {
+                $(this).show();
+                visibleRows++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // Hide/show pagination when searching
+        if (searchValue.length > 0) {
+            $('#paginationWrapper').hide();
+            
+            if (visibleRows > 0) {
+                if ($('#searchResultInfo').length === 0) {
+                    $('.table-responsive').after(
+                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small">
+                            Menampilkan ${visibleRows} hasil pencarian
+                        </div>`
+                    );
+                } else {
+                    $('#searchResultInfo').html(`Menampilkan ${visibleRows} hasil pencarian`);
+                }
+            }
         } else {
-            filteredRows = allRows.filter(function() {
-                const nomor = $(this).find('.rak-nomor').text().toLowerCase();
-                const ruangan = $(this).find('.rak-ruangan').text().toLowerCase();
-                const keterangan = $(this).find('.rak-keterangan').text().toLowerCase();
-                
-                return nomor.includes(searchValue) || 
-                       ruangan.includes(searchValue) || 
-                       keterangan.includes(searchValue);
-            });
+            $('#paginationWrapper').show();
+            $('#searchResultInfo').remove();
         }
-        
-        currentPage = 1;
-        updatePagination();
-    });
-    
-    // Pagination buttons
-    $('#prevBtn').on('click', function() {
-        if (currentPage > 1) {
-            currentPage--;
-            updatePagination();
+
+        // Show "no results" message
+        if (visibleRows === 0 && $('.rak-row').length > 0) {
+            if ($('#noResultRow').length === 0) {
+                $('#rakTableBody').append(
+                    `<tr id="noResultRow">
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            Tidak ada data yang sesuai dengan pencarian
+                        </td>
+                    </tr>`
+                );
+            }
+        } else {
+            $('#noResultRow').remove();
         }
     });
-    
-    $('#nextBtn').on('click', function() {
-        const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            updatePagination();
+
+    // Clear search on ESC
+    $('#searchInput').on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+            $(this).trigger('keyup');
         }
     });
-    
-    // Modal hapus handler
-    $(document).on('click', '.btn-hapus', function() {
+
+    // Modal Hapus Handler
+    $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         
@@ -454,12 +604,19 @@ $(document).ready(function() {
         const modal = new bootstrap.Modal(document.getElementById('hapusRakModal'));
         modal.show();
     });
-    
+
     // Auto show modal if validation errors
     @if($errors->any())
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahRakModal'));
         tambahModal.show();
     @endif
+
+    // Smooth scroll to top on pagination click
+    $('.pagination-btn').on('click', function() {
+        $('html, body').animate({
+            scrollTop: $('.card-content').offset().top - 100
+        }, 400);
+    });
 });
 </script>
 @endpush

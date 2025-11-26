@@ -3,25 +3,26 @@
 @section('title', 'Bidang')
 
 @section('content')
-<div class="container-fluid py-3">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<div class="container-fluid py-4">
 
-@if(session('success'))
+    {{-- Alert Messages --}}
+    @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
+        <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if(session('error'))
+    @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if($errors->any())
+    @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
         <strong>Error!</strong>
         <ul class="mb-0">
             @foreach($errors->all() as $error)
@@ -30,116 +31,206 @@
         </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-<div class="card table-card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <!-- Search -->
-        <div class="col-md-4">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari Nama/Singkatan Bidang...">
-            </div>
+    {{-- ======= DATA BIDANG ======= --}}
+    <div class="card-content">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="fa fa-building me-2"></i> Data Bidang
+            </h6>
+            <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahBidangModal">
+                <i class="fa fa-plus me-1"></i> Tambah Bidang
+            </button>
         </div>
 
-        <!-- Tombol Tambah -->
-        <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahBidangModal">
-            <i class="fa-solid fa-plus me-2"></i> Tambah Bidang
-        </button>
-    </div>
-
-    <!-- TABLE -->
-    <table class="table table-bordered align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>No</th>
-                <th>Nama Bidang</th>
-                <th>Singkatan</th>
-                <th class="text-center" style="width: 100px;">Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="bidangTableBody">
-            @forelse ($bidang as $index => $item)
-                <tr class="bidang-row">
-                    <td>{{ $index + 1 }}</td>
-                    <td class="bidang-nama">{{ $item->nama_bidang }}</td>
-                    <td class="bidang-singkatan">{{ $item->singkatan_bidang }}</td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <!-- Edit -->
-                            <button class="btn btn-warning btn-sm text-white" data-bs-toggle="modal"
-                                data-bs-target="#editBidangModal{{ $item->bidang_id }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-
-                            <!-- Hapus -->
-                            <button class="btn btn-danger btn-sm btn-hapus"
-                                data-id="{{ $item->bidang_id }}"
-                                data-nama="{{ $item->nama_bidang }}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- MODAL EDIT -->
-                <div class="modal fade" id="editBidangModal{{ $item->bidang_id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0 rounded-3 overflow-hidden">
-                            <div class="modal-header bg-maroon text-white">
-                                <h5 class="modal-title">Edit Bidang</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form action="{{ route('superadmin.bidang.update', $item->bidang_id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="nama_bidang" value="{{ $item->nama_bidang }}" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="singkatan_bidang" value="{{ $item->singkatan_bidang }}" required>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
-                                </div>
-                            </form>
+        <div class="card-body-custom">
+            {{-- Search Bar --}}
+            <div class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control" 
+                                placeholder="Cari Nama/Singkatan Bidang...">
                         </div>
                     </div>
                 </div>
-            @empty
-                <tr id="emptyRow">
-                    <td colspan="4" class="text-center text-muted">Belum ada data bidang</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </div>
+
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="45%">Nama Bidang</th>
+                            <th width="30%">Singkatan</th>
+                            <th width="20%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bidangTableBody">
+                        @forelse ($bidang as $index => $item)
+                        <tr class="bidang-row">
+                            <td>{{ $loop->iteration }}</td>
+                            <td class="bidang-nama">{{ $item->nama_bidang }}</td>
+                            <td class="bidang-singkatan">{{ $item->singkatan_bidang }}</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {{-- Edit --}}
+                                    <button class="btn btn-outline-warning " 
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editBidangModal{{ $item->bidang_id }}"
+                                        title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+
+                                    {{-- Hapus --}}
+                                    <button class="btn btn-outline-danger btn-hapus"
+                                        data-id="{{ $item->bidang_id }}"
+                                        data-nama="{{ $item->nama_bidang }}"
+                                        title="Hapus">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{-- Modal Edit --}}
+                        <div class="modal fade" id="editBidangModal{{ $item->bidang_id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header modal-header-gradient text-white border-0">
+                                        <h5 class="modal-title fw-bold">
+                                            <i class="fa fa-edit me-2"></i> Edit Bidang
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ route('superadmin.bidang.update', $item->bidang_id) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-body p-4">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="nama_bidang" 
+                                                    value="{{ $item->nama_bidang }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="singkatan_bidang" 
+                                                    value="{{ $item->singkatan_bidang }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="fa fa-times me-1"></i> Batal
+                                            </button>
+                                            <button type="submit" class="btn btn-warning text-white">
+                                                <i class="fa fa-save me-1"></i> Simpan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        @empty
+                        <tr id="emptyRow">
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                Belum ada data bidang
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Pagination --}}
+        @if(method_exists($bidang, 'hasPages') && $bidang->hasPages())
+        <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3 flex-wrap gap-3" id="paginationWrapper">
+            <p class="mb-0 text-secondary small">
+                Menampilkan {{ $bidang->firstItem() }}–{{ $bidang->lastItem() }} dari {{ $bidang->total() }} data
+            </p>
+            <div class="custom-pagination">
+                {{-- Previous Button --}}
+                @if ($bidang->onFirstPage())
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-left"></i>
+                    </span>
+                @else
+                    <a href="{{ $bidang->previousPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                @endif
+
+                {{-- Page Numbers with sliding window --}}
+                @php
+                    $currentPage = $bidang->currentPage();
+                    $lastPage = $bidang->lastPage();
+                    $maxVisible = 2; // Tampilkan 2 angka
+                    
+                    // Hitung range yang akan ditampilkan
+                    if ($currentPage == 1) {
+                        $start = 1;
+                        $end = min($maxVisible, $lastPage);
+                    } elseif ($currentPage == $lastPage) {
+                        $start = max(1, $lastPage - $maxVisible + 1);
+                        $end = $lastPage;
+                    } else {
+                        $start = $currentPage;
+                        $end = min($currentPage + $maxVisible - 1, $lastPage);
+                    }
+                @endphp
+
+                @for($page = $start; $page <= $end; $page++)
+                    @if($page == $currentPage)
+                        <span class="pagination-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $bidang->url($page) }}" class="pagination-btn">{{ $page }}</a>
+                    @endif
+                @endfor
+
+                {{-- Next Button --}}
+                @if ($bidang->hasMorePages())
+                    <a href="{{ $bidang->nextPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
+                @else
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-right"></i>
+                    </span>
+                @endif
+            </div>
+        </div>
+        @endif
+    </div>
+
 </div>
 
-<!-- MODAL TAMBAH -->
-<div class="modal fade" id="tambahBidangModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Tambah --}}
+<div class="modal fade" id="tambahBidangModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Tambah Bidang</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-plus-circle me-2"></i> Tambah Bidang
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('superadmin.bidang.store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('nama_bidang') is-invalid @enderror" 
-                               name="nama_bidang" 
-                               placeholder="Contoh: Bidang Infrastruktur" 
-                               value="{{ old('nama_bidang') }}"
-                               required>
+                            name="nama_bidang" 
+                            placeholder="Contoh: Bidang Infrastruktur" 
+                            value="{{ old('nama_bidang') }}"
+                            required>
                         @error('nama_bidang')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -147,45 +238,56 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('singkatan_bidang') is-invalid @enderror" 
-                               name="singkatan_bidang" 
-                               placeholder="Contoh: BI" 
-                               value="{{ old('singkatan_bidang') }}"
-                               required>
+                            name="singkatan_bidang" 
+                            placeholder="Contoh: BI" 
+                            value="{{ old('singkatan_bidang') }}"
+                            required>
                         @error('singkatan_bidang')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-maroon-gradient">
+                        <i class="fa fa-save me-1"></i> Simpan
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- MODAL HAPUS -->
-<div class="modal fade" id="hapusBidangModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Hapus --}}
+<div class="modal fade" id="hapusBidangModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formHapusBidang" method="POST">
                 @csrf
                 @method('DELETE')
-                <div class="modal-body text-center">
+                <div class="modal-body p-4 text-center">
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
-                    <p>Apakah Anda yakin ingin menghapus bidang <strong id="namaBidangHapus"></strong>?</p>
+                    <p class="mb-3">Apakah Anda yakin ingin menghapus bidang <strong id="namaBidangHapus"></strong>?</p>
                     <div class="alert alert-warning small mb-0">
+                        <i class="fa fa-info-circle me-1"></i>
                         Data akan dihapus secara permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
                 </div>
             </form>
         </div>
@@ -193,32 +295,178 @@
 </div>
 
 <style>
-.table-card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    padding: 25px;
+/* Card Content */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
 }
-.bg-maroon, .btn-maroon {
-    background-color: #7b0000 !important;
+
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+/* Table Styles */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Button Group */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
     border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
-.btn-maroon:hover {
-    background-color: #5a0000 !important;
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
 }
-.btn-warning {
-    background-color: #ffc107;
-    border: none;
+
+/* Modal Shadow */
+.modal-content {
+    border-radius: 8px;
 }
-.btn-warning:hover {
-    background-color: #ffcd39;
+
+/* Input Group */
+.input-group-text {
+    border-right: 0;
+}
+
+/* Alert with Icon */
+.alert i {
+    font-size: 1rem;
+}
+
+/* Custom Pagination Styling */
+.custom-pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: white;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    color: #7b0000;
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border-color: #7b0000;
+    color: white;
+    font-weight: 600;
+    cursor: default;
+}
+
+.pagination-btn.disabled {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination-btn i {
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .filter-bar .col-md-6 {
+        width: 100%;
+    }
+
+    #paginationWrapper {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    #paginationWrapper > div {
+        width: 100%;
+    }
+
+    .custom-pagination {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
 }
 </style>
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ✅ SEARCH FUNCTIONALITY
+    // Search Functionality
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
         let visibleRows = 0;
@@ -235,11 +483,36 @@ $(document).ready(function() {
             }
         });
 
-        // Tampilkan pesan jika tidak ada hasil
+        // Hide/show pagination when searching
+        if (searchValue.length > 0) {
+            $('#paginationWrapper').hide();
+            
+            if (visibleRows > 0) {
+                if ($('#searchResultInfo').length === 0) {
+                    $('.table-responsive').after(
+                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small">
+                            Menampilkan ${visibleRows} hasil pencarian
+                        </div>`
+                    );
+                } else {
+                    $('#searchResultInfo').html(`Menampilkan ${visibleRows} hasil pencarian`);
+                }
+            }
+        } else {
+            $('#paginationWrapper').show();
+            $('#searchResultInfo').remove();
+        }
+
+        // Show "no results" message
         if (visibleRows === 0 && $('.bidang-row').length > 0) {
             if ($('#noResultRow').length === 0) {
                 $('#bidangTableBody').append(
-                    '<tr id="noResultRow"><td colspan="4" class="text-center text-muted">Tidak ada data yang sesuai dengan pencarian</td></tr>'
+                    `<tr id="noResultRow">
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            Tidak ada data yang sesuai dengan pencarian
+                        </td>
+                    </tr>`
                 );
             }
         } else {
@@ -247,7 +520,15 @@ $(document).ready(function() {
         }
     });
 
-    // ✅ MODAL HAPUS HANDLER
+    // Clear search on ESC
+    $('#searchInput').on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+            $(this).trigger('keyup');
+        }
+    });
+
+    // Modal Hapus Handler
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
@@ -259,11 +540,18 @@ $(document).ready(function() {
         modal.show();
     });
 
-    // ✅ AUTO SHOW MODAL JIKA ADA ERROR VALIDASI
+    // Auto show modal if validation errors
     @if($errors->any())
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahBidangModal'));
         tambahModal.show();
     @endif
+
+    // Smooth scroll to top on pagination click
+    $('.pagination-btn').on('click', function() {
+        $('html, body').animate({
+            scrollTop: $('.card-content').offset().top - 100
+        }, 400);
+    });
 });
 </script>
 @endpush

@@ -67,7 +67,7 @@
                 <i class="fa fa-history me-2"></i> Riwayat Pemeliharaan
             </h6>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tambahPemeliharaanModal">
+                <button type="button" class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahPemeliharaanModal">
                     <i class="fa fa-plus me-1"></i> Tambah Jadwal
                 </button>
             </div>

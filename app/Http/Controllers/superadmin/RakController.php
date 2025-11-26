@@ -16,8 +16,11 @@ class RakController extends Controller
      */
     public function index()
     {
-        // Ambil semua rak beserta relasi server untuk hitung terpakai
-        $rak = RakServer::with('servers')->orderBy('rak_id', 'asc')->get();
+        // UBAH BARIS INI - Ganti dari ::get() ke ::paginate(10)
+        $rak = RakServer::with('servers')
+            ->orderBy('rak_id', 'asc')
+            ->paginate(10); // Tampilkan 10 data per halaman
+
         return view('superadmin.rakserver', compact('rak'));
     }
 

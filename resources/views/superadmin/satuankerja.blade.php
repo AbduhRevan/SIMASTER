@@ -3,25 +3,26 @@
 @section('title', 'Satuan Kerja')
 
 @section('content')
-<div class="container-fluid py-3">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<div class="container-fluid py-4">
 
-@if(session('success'))
+    {{-- Alert Messages --}}
+    @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
+        <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if(session('error'))
+    @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-@if($errors->any())
+    @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
         <strong>Error!</strong>
         <ul class="mb-0">
             @foreach($errors->all() as $error)
@@ -30,132 +31,206 @@
         </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-@endif
+    @endif
 
-<div class="card table-card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <!-- Search -->
-        <div class="col-md-4">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari Nama/Singkatan Satker...">
-            </div>
+    {{-- ======= DATA SATUAN KERJA ======= --}}
+    <div class="card-content">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="fa fa-sitemap me-2"></i> Data Satuan Kerja
+            </h6>
+            <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahSatkerModal">
+                <i class="fa fa-plus me-1"></i> Tambah Satuan Kerja
+            </button>
         </div>
 
-        <!-- Tombol Tambah -->
-        <button class="btn btn-maroon px-4 text-white" data-bs-toggle="modal" data-bs-target="#tambahSatkerModal">
-            <i class="fa-solid fa-plus me-2"></i> Tambah Satuan Kerja
-        </button>
-    </div>
-
-    <!-- WRAPPER TABLE -->
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle mb-0 table-fixed">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 60px;">No</th>
-                    <th style="width: 45%;">Nama Satuan Kerja</th>
-                    <th style="width: 35%;">Singkatan</th>
-                    <th class="text-center" style="width: 120px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="satkerTableBody">
-                @forelse ($satker as $index => $item)
-                    <tr class="satker-row">
-                        <td>{{ $satker->firstItem() + $index }}</td>
-                        <td class="satker-nama">{{ $item->nama_satker }}</td>
-                        <td class="satker-singkatan">{{ $item->singkatan_satker }}</td>
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-2">
-                                <!-- Edit -->
-                                <button class="btn btn-warning btn-sm text-white" data-bs-toggle="modal"
-                                    data-bs-target="#editSatkerModal{{ $item->satker_id }}">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-
-                                <!-- Hapus -->
-                                <button class="btn btn-danger btn-sm btn-hapus"
-                                    data-id="{{ $item->satker_id }}"
-                                    data-nama="{{ $item->nama_satker }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- MODAL EDIT -->
-                    <div class="modal fade" id="editSatkerModal{{ $item->satker_id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 rounded-3 overflow-hidden">
-                                <div class="modal-header bg-maroon text-white">
-                                    <h5 class="modal-title">Edit Satuan Kerja</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form action="{{ route('superadmin.satker.update', $item->satker_id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" name="nama_satker"
-                                                   value="{{ $item->nama_satker }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" name="singkatan_satker"
-                                                   value="{{ $item->singkatan_satker }}" required>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-maroon text-white">Simpan</button>
-                                    </div>
-                                </form>
-                            </div>
+        <div class="card-body-custom">
+            {{-- Search Bar --}}
+            <div class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control" 
+                                placeholder="Cari Nama/Singkatan Satker...">
                         </div>
                     </div>
-                @empty
-                    <tr id="emptyRow">
-                        <td colspan="4" class="text-center text-muted">Belum ada data satuan kerja</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </div>
+            </div>
 
-    <!-- Pagination Info & Links -->
-    @if ($satker->count() > 0)
-        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3" id="paginationWrapper">
-            <p class="mb-0 text-secondary small" id="paginationInfo">
-                Menampilkan {{ $satker->firstItem() }}–{{ $satker->lastItem() }} dari {{ $satker->total() }} data
-            </p>
-            <div class="pagination-custom">
-                {{ $satker->links('pagination::bootstrap-5') }}
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="45%">Nama Satuan Kerja</th>
+                            <th width="30%">Singkatan</th>
+                            <th width="20%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="satkerTableBody">
+                        @forelse ($satker as $index => $item)
+                        <tr class="satker-row">
+                            <td>{{ $satker->firstItem() + $index }}</td>
+                            <td class="satker-nama">{{ $item->nama_satker }}</td>
+                            <td class="satker-singkatan">{{ $item->singkatan_satker }}</td>
+                            <td class="text-center">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    {{-- Edit --}}
+                                    <button class="btn btn-outline-warning btn-sm" 
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editSatkerModal{{ $item->satker_id }}"
+                                        title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+
+                                    {{-- Hapus --}}
+                                    <button class="btn btn-outline-danger btn-sm btn-hapus"
+                                        data-id="{{ $item->satker_id }}"
+                                        data-nama="{{ $item->nama_satker }}"
+                                        title="Hapus">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{-- Modal Edit --}}
+                        <div class="modal fade" id="editSatkerModal{{ $item->satker_id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header modal-header-gradient text-white border-0">
+                                        <h5 class="modal-title fw-bold">
+                                            <i class="fa fa-edit me-2"></i> Edit Satuan Kerja
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ route('superadmin.satker.update', $item->satker_id) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-body p-4">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="nama_satker"
+                                                    value="{{ $item->nama_satker }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="singkatan_satker"
+                                                    value="{{ $item->singkatan_satker }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="fa fa-times me-1"></i> Batal
+                                            </button>
+                                            <button type="submit" class="btn btn-warning text-white">
+                                                <i class="fa fa-save me-1"></i> Simpan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        @empty
+                        <tr id="emptyRow">
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                Belum ada data satuan kerja
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-    @endif
+
+        {{-- Pagination --}}
+        @if($satker->hasPages())
+        <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3 flex-wrap gap-3" id="paginationWrapper">
+            <p class="mb-0 text-secondary small">
+                Menampilkan {{ $satker->firstItem() }}–{{ $satker->lastItem() }} dari {{ $satker->total() }} data
+            </p>
+            <div class="custom-pagination">
+                {{-- Previous Button --}}
+                @if ($satker->onFirstPage())
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-left"></i>
+                    </span>
+                @else
+                    <a href="{{ $satker->previousPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                @endif
+
+                {{-- Page Numbers with sliding window --}}
+                @php
+                    $currentPage = $satker->currentPage();
+                    $lastPage = $satker->lastPage();
+                    $maxVisible = 2; // Tampilkan 2 angka
+                    
+                    // Hitung range yang akan ditampilkan
+                    if ($currentPage == 1) {
+                        $start = 1;
+                        $end = min($maxVisible, $lastPage);
+                    } elseif ($currentPage == $lastPage) {
+                        $start = max(1, $lastPage - $maxVisible + 1);
+                        $end = $lastPage;
+                    } else {
+                        $start = $currentPage;
+                        $end = min($currentPage + $maxVisible - 1, $lastPage);
+                    }
+                @endphp
+
+                @for($page = $start; $page <= $end; $page++)
+                    @if($page == $currentPage)
+                        <span class="pagination-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $satker->url($page) }}" class="pagination-btn">{{ $page }}</a>
+                    @endif
+                @endfor
+
+                {{-- Next Button --}}
+                @if ($satker->hasMorePages())
+                    <a href="{{ $satker->nextPageUrl() }}" class="pagination-btn">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
+                @else
+                    <span class="pagination-btn disabled">
+                        <i class="fa fa-chevron-right"></i>
+                    </span>
+                @endif
+            </div>
+        </div>
+        @endif
+    </div>
+
 </div>
 
-<!-- MODAL TAMBAH -->
-<div class="modal fade" id="tambahSatkerModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Tambah --}}
+<div class="modal fade" id="tambahSatkerModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Tambah Satuan Kerja</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-plus-circle me-2"></i> Tambah Satuan Kerja
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('superadmin.satker.store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('nama_satker') is-invalid @enderror" 
-                               name="nama_satker" 
-                               placeholder="Contoh: Pusat Data dan Informasi"
-                               value="{{ old('nama_satker') }}"
-                               required>
+                            name="nama_satker" 
+                            placeholder="Contoh: Pusat Data dan Informasi"
+                            value="{{ old('nama_satker') }}"
+                            required>
                         @error('nama_satker')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -163,45 +238,56 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('singkatan_satker') is-invalid @enderror" 
-                               name="singkatan_satker" 
-                               placeholder="Contoh: PUSDATIN"
-                               value="{{ old('singkatan_satker') }}"
-                               required>
+                            name="singkatan_satker" 
+                            placeholder="Contoh: PUSDATIN"
+                            value="{{ old('singkatan_satker') }}"
+                            required>
                         @error('singkatan_satker')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-maroon-gradient">
+                        <i class="fa fa-save me-1"></i> Simpan
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- MODAL HAPUS -->
-<div class="modal fade" id="hapusSatkerModal" tabindex="-1" aria-hidden="true">
+{{-- Modal Hapus --}}
+<div class="modal fade" id="hapusSatkerModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-3 overflow-hidden">
-            <div class="modal-header bg-maroon text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header modal-header-gradient text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formHapusSatker" method="POST">
                 @csrf
                 @method('DELETE')
-                <div class="modal-body text-center">
+                <div class="modal-body p-4 text-center">
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
-                    <p>Apakah Anda yakin ingin menghapus satuan kerja <strong id="namaSatkerHapus"></strong>?</p>
+                    <p class="mb-3">Apakah Anda yakin ingin menghapus satuan kerja <strong id="namaSatkerHapus"></strong>?</p>
                     <div class="alert alert-warning small mb-0">
+                        <i class="fa fa-info-circle me-1"></i>
                         Data akan dihapus secara permanen dan tidak dapat dipulihkan.
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
                 </div>
             </form>
         </div>
@@ -209,161 +295,199 @@
 </div>
 
 <style>
-.table-card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    padding: 25px;
-}
-.bg-maroon, .btn-maroon {
-    background-color: #7b0000 !important;
-    border: none;
-}
-.btn-maroon:hover {
-    background-color: #5a0000 !important;
-}
-.btn-warning {
-    background-color: #ffc107;
-    border: none;
-}
-.btn-warning:hover {
-    background-color: #ffcd39;
-}
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* ✅ FIXED TABLE LAYOUT - KOLOM KONSISTEN */
-.table-fixed {
-    table-layout: fixed;
-    width: 100%;
-}
-
-.table-fixed th,
-.table-fixed td {
+/* Card Content */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
-    word-wrap: break-word;
 }
 
-.table-fixed th:nth-child(1),
-.table-fixed td:nth-child(1) {
-    width: 60px;
-    text-align: center;
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
 }
 
-.table-fixed th:nth-child(2),
-.table-fixed td:nth-child(2) {
-    width: 45%;
+.card-body-custom {
+    padding: 1.5rem;
 }
 
-.table-fixed th:nth-child(3),
-.table-fixed td:nth-child(3) {
-    width: 35%;
+/* Filter Bar */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
 }
 
-.table-fixed th:nth-child(4),
-.table-fixed td:nth-child(4) {
-    width: 120px;
-    text-align: center;
+/* Table Styles */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
 }
 
-/* ✅ IMPROVED PAGINATION STYLING */
-.pagination-custom {
-    display: flex;
-    align-items: center;
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
 }
 
-.pagination {
-    margin: 0;
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* Button Group */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
+}
+
+/* Modal Shadow */
+.modal-content {
+    border-radius: 8px;
+}
+
+/* Input Group */
+.input-group-text {
+    border-right: 0;
+}
+
+/* Alert with Icon */
+.alert i {
+    font-size: 1rem;
+}
+
+/* Custom Pagination Styling */
+.custom-pagination {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    align-items: center;
 }
 
-.pagination .page-item {
-    margin: 0;
-}
-
-.pagination .page-link {
-    color: #555;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    min-width: 36px;
-    height: 36px;
-    text-align: center;
-    display: flex;
+.pagination-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: #fff;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: white;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.pagination .page-item.active .page-link {
-    background-color: #7b0000;
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    color: #7b0000;
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
     border-color: #7b0000;
     color: white;
     font-weight: 600;
+    cursor: default;
 }
 
-.pagination .page-link:hover:not(.page-item.disabled .page-link) {
-    background-color: #7b0000;
-    border-color: #7b0000;
-    color: white;
-}
-
-.pagination .page-item.disabled .page-link {
-    color: #999;
-    background-color: #f5f5f5;
-    border-color: #ddd;
+.pagination-btn.disabled {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #adb5bd;
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.pagination .page-item.disabled .page-link:hover {
-    background-color: #f5f5f5;
-    color: #999;
-    border-color: #ddd;
-}
-
-/* Pagination Info Text */
-#paginationInfo {
-    font-size: 14px;
-    color: #6c757d;
-    font-weight: 500;
+.pagination-btn i {
+    font-size: 12px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .filter-bar .col-md-6 {
+        width: 100%;
+    }
+    
     #paginationWrapper {
         flex-direction: column;
         align-items: flex-start !important;
     }
     
-    .pagination-custom {
+    #paginationWrapper > div {
+        width: 100%;
+    }
+
+    .custom-pagination {
         width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
     }
-    
-    #paginationInfo {
-        width: 100%;
-        text-align: center;
-    }
-    
-    /* Responsive table columns */
-    .table-fixed th:nth-child(2),
-    .table-fixed td:nth-child(2) {
-        width: 50%;
-    }
-    
-    .table-fixed th:nth-child(3),
-    .table-fixed td:nth-child(3) {
-        width: 30%;
+
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
     }
 }
 </style>
@@ -371,7 +495,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ✅ IMPROVED SEARCH FUNCTIONALITY WITH PAGINATION CONTROL
+    // Search Functionality
     $('#searchInput').on('keyup', function() {
         const searchValue = $(this).val().toLowerCase();
         let visibleRows = 0;
@@ -388,15 +512,14 @@ $(document).ready(function() {
             }
         });
 
-        // ✅ HIDE/SHOW PAGINATION SAAT SEARCH AKTIF
+        // Hide/show pagination when searching
         if (searchValue.length > 0) {
             $('#paginationWrapper').hide();
             
-            // Tampilkan jumlah hasil pencarian
             if (visibleRows > 0) {
                 if ($('#searchResultInfo').length === 0) {
                     $('.table-responsive').after(
-                        `<div id="searchResultInfo" class="mt-3 text-secondary small">
+                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small">
                             Menampilkan ${visibleRows} hasil pencarian
                         </div>`
                     );
@@ -409,14 +532,14 @@ $(document).ready(function() {
             $('#searchResultInfo').remove();
         }
 
-        // ✅ TAMPILKAN PESAN JIKA TIDAK ADA HASIL
+        // Show "no results" message
         if (visibleRows === 0 && $('.satker-row').length > 0) {
             if ($('#noResultRow').length === 0) {
                 $('#satkerTableBody').append(
                     `<tr id="noResultRow">
                         <td colspan="4" class="text-center text-muted py-4">
-                            <i class="fa-solid fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
-                            Tidak ada data yang sesuai dengan pencarian "${searchValue}"
+                            <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            Tidak ada data yang sesuai dengan pencarian
                         </td>
                     </tr>`
                 );
@@ -426,7 +549,7 @@ $(document).ready(function() {
         }
     });
 
-    // ✅ CLEAR SEARCH ON ESC KEY
+    // Clear search on ESC
     $('#searchInput').on('keydown', function(e) {
         if (e.key === 'Escape') {
             $(this).val('');
@@ -434,7 +557,7 @@ $(document).ready(function() {
         }
     });
 
-    // ✅ MODAL HAPUS HANDLER
+    // Modal Hapus Handler
     $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
@@ -446,16 +569,16 @@ $(document).ready(function() {
         modal.show();
     });
 
-    // ✅ AUTO SHOW MODAL JIKA ADA ERROR VALIDASI
+    // Auto show modal if validation errors
     @if($errors->any())
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahSatkerModal'));
         tambahModal.show();
     @endif
 
-    // ✅ SMOOTH SCROLL TO TOP ON PAGINATION CLICK
-    $('.pagination a').on('click', function() {
+    // Smooth scroll to top on pagination click
+    $('.pagination-btn').on('click', function() {
         $('html, body').animate({
-            scrollTop: $('.table-card').offset().top - 100
+            scrollTop: $('.card-content').offset().top - 100
         }, 400);
     });
 });

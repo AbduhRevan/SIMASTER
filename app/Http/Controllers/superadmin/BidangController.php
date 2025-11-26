@@ -13,7 +13,9 @@ class BidangController extends Controller
     // Menampilkan semua data bidang
     public function index()
     {
-        $bidang = Bidang::all();
+        // UBAH BARIS INI:
+        $bidang = Bidang::paginate(10); // Ganti dari ::all() ke ::paginate(10)
+
         return view('superadmin.bidang', compact('bidang'));
     }
 
@@ -115,10 +117,4 @@ class BidangController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
     }
-
-    // HAPUS METHOD-METHOD INI:
-    // - softDelete()
-    // - arsip()
-    // - restore()
-    // - forceDelete()
 }

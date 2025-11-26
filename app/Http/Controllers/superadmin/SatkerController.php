@@ -13,7 +13,7 @@ class SatkerController extends Controller
     // Menampilkan semua data satker
     public function index()
     {
-        $satker = Satker::orderBy('nama_satker')->paginate(6);
+        $satker = Satker::orderBy('nama_satker')->paginate(10);
         return view('superadmin.satuankerja', compact('satker'));
     }
 

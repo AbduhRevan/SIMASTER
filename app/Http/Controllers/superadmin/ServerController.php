@@ -339,7 +339,8 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.server.detail', $id)
+        // PERBAIKAN: Return redirect ke halaman index, bukan ke detail
+        return redirect()->route('superadmin.server.index')
             ->with('success', 'Server berhasil diperbarui!');
     }
 
@@ -365,7 +366,7 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.server')
+        return redirect()->route('superadmin.server.index')
             ->with('success', "Server '{$serverName}' berhasil dihapus!");
     }
 
