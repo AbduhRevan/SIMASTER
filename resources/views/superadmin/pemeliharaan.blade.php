@@ -384,14 +384,14 @@
                         </div>
                         @endif
 
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                Belum ada data pemeliharaan
-                            </td>
-                        </tr>
-                        @endforelse
+     @empty
+<tr>
+    <td colspan="7" class="text-center text-muted py-4">
+        <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+        Belum ada data pemeliharaan
+    </td>
+</tr>
+@endforelse
                     </tbody>
                 </table>
             </div>
@@ -477,6 +477,15 @@
 .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+}
+
+tbody tr td.text-center.text-muted {
+    background-color: #f8f9fa !important;
+}
+
+tbody tr td.text-muted i.fa-inbox {
+    color: #6c757d !important;
+    opacity: 0.6 !important;
 }
 
 /* Modal Gradient Header */

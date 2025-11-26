@@ -108,9 +108,9 @@
                                     <small>{{ $item->keterangan ?? '-' }}</small>
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <div class="d-flex gap-2 justify-content-center">
                                         {{-- Edit --}}
-                                        <button class="btn btn-outline-warning" 
+                                        <button class="btn btn-outline-warning btn-sm" 
                                             data-bs-toggle="modal"
                                             data-bs-target="#editRakModal{{ $item->rak_id }}"
                                             title="Edit">
@@ -118,7 +118,7 @@
                                         </button>
 
                                         {{-- Hapus --}}
-                                        <button class="btn btn-outline-danger btn-hapus"
+                                        <button class="btn btn-outline-danger btn-sm btn-hapus"
                                             data-id="{{ $item->rak_id }}"
                                             data-nama="{{ $item->nomor_rak }}"
                                             title="Hapus">
@@ -398,6 +398,35 @@
     padding: 0.35rem 0.65rem;
     font-weight: 500;
     font-size: 0.75rem;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
 }
 
 /* Button Group */
