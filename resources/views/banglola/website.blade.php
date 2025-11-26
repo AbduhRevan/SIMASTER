@@ -3,9 +3,9 @@
 @section('title', 'Kelola Website')
 
 @section('content')
-<div class="container-fluid py-3">
+<div class="container-fluid py-4">
 
-  {{-- Alert Success --}}
+  {{-- Alert Messages --}}
   @if(session('success'))
   <div class="alert alert-success alert-dismissible fade show" role="alert">
     <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
@@ -20,91 +20,112 @@
   </div>
   @endif
 
-  {{-- Statistik --}}
-  <div class="row mb-4">
+  {{-- ======= RINGKASAN WEBSITE ======= --}}
+  <div class="row mb-4 g-3">
     <div class="col-md-3">
-      <div class="card text-center shadow-sm border-0 bg-white py-3">
-        <h5 class="fw-bold mb-1">Total</h5>
-        <h4>{{ $total }}</h4>
+      <div class="card-stat text-center py-3">
+        <div class="stat-label text-uppercase small text-muted mb-2">
+          <i class="fa fa-globe me-1"></i>Total Website
+        </div>
+        <h2 class="stat-value mb-0">{{ $total }}</h2>
       </div>
     </div>
+
     <div class="col-md-3">
-      <div class="card text-center shadow-sm border-0 bg-white py-3">
-        <h5 class="fw-bold mb-1">Aktif</h5>
-        <h4>{{ $aktif }}</h4>
+      <div class="card-stat text-center py-3">
+        <div class="stat-label text-uppercase small text-muted mb-2">
+          <i class="fa fa-check-circle me-1 text-success"></i>Aktif
+        </div>
+        <h2 class="stat-value mb-0 text-success">{{ $aktif }}</h2>
       </div>
     </div>
+
     <div class="col-md-3">
-      <div class="card text-center shadow-sm border-0 bg-white py-3">
-        <h5 class="fw-bold mb-1">Maintenance</h5>
-        <h4>{{ $maintenance }}</h4>
+      <div class="card-stat text-center py-3">
+        <div class="stat-label text-uppercase small text-muted mb-2">
+          <i class="fa fa-wrench me-1 text-warning"></i>Maintenance
+        </div>
+        <h2 class="stat-value mb-0 text-warning">{{ $maintenance }}</h2>
       </div>
     </div>
+
     <div class="col-md-3">
-      <div class="card text-center shadow-sm border-0 bg-white py-3">
-        <h5 class="fw-bold mb-1">Tidak Aktif</h5>
-        <h4>{{ $tidakAktif }}</h4>
+      <div class="card-stat text-center py-3">
+        <div class="stat-label text-uppercase small text-muted mb-2">
+          <i class="fa fa-times-circle me-1 text-danger"></i>Tidak Aktif
+        </div>
+        <h2 class="stat-value mb-0 text-danger">{{ $tidakAktif }}</h2>
       </div>
     </div>
   </div>
 
-  {{-- Pencarian dan Tambah --}}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="col-md-4">
-      <div class="input-group">
-        <span class="input-group-text bg-white border-end-0">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </span>
-        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama website atau URL...">
+  {{-- ======= PENCARIAN DAN TAMBAH ======= --}}
+  <div class="card-content mb-4">
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
+          <input type="text" id="searchInput" class="form-control" placeholder="Cari nama website atau URL...">
+        </div>
       </div>
+      <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
+        <i class="fa-solid fa-plus me-1"></i>Tambah Website
+      </button>
     </div>
-    <button class="btn btn-maroon text-white px-4" data-bs-toggle="modal" data-bs-target="#tambahModal">
-      <i class="fa-solid fa-plus me-2"></i>Tambah Website
-    </button>
   </div>
 
-  {{-- Daftar Website --}}
-  <div class="row g-4 mt-2" id="websiteContainer">
+  {{-- ======= DAFTAR WEBSITE (CARD LAYOUT) ======= --}}
+  <div class="row g-4" id="websiteContainer">
     @forelse($websites as $website)
     <div class="col-12 col-sm-6 col-lg-4 website-card">
-      <div class="card shadow-sm border-0 p-3 h-100" style="border-radius: 15px;">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <h5 class="fw-bold mb-0">{{ $website->nama_website }}</h5>
+      <div class="card-website h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="fw-bold mb-0 text-dark">{{ $website->nama_website }}</h5>
           @if($website->status === 'active')
-            <span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>
+            <span class="badge bg-success">
+              <i class="fa fa-check-circle me-1"></i>Aktif
+            </span>
           @elseif($website->status === 'maintenance')
-            <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>
+            <span class="badge bg-warning">
+              <i class="fa fa-wrench me-1"></i>Maintenance
+            </span>
           @else
-            <span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>
+            <span class="badge bg-danger">
+              <i class="fa fa-times-circle me-1"></i>Tidak Aktif
+            </span>
           @endif
         </div>
 
-        <p class="mb-1">
-          <a href="{{ $website->url }}" target="_blank" class="text-decoration-none fw-medium">
+        <p class="mb-2">
+          <a href="{{ $website->url }}" target="_blank" class="text-decoration-none text-primary fw-medium">
             <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ Str::limit($website->url, 40) }}
           </a>
         </p>
 
-        <p class="mb-1 text-muted small">
-          <i class="fa-solid fa-server me-1"></i> 
-          Server: {{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}
-        </p>
+        <div class="website-info mb-3">
+          <p class="mb-1 text-muted small">
+            <i class="fa-solid fa-server me-1"></i> 
+            <strong>Server:</strong> {{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}
+          </p>
 
-        <p class="mb-1 text-muted small">
-          <i class="fa-solid fa-briefcase me-1"></i> 
-          {{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
-        </p>
-        
-        <p class="mb-2 text-muted small">
-          <i class="fa-solid fa-building me-1"></i> 
-          {{ $website->satker ? $website->satker->nama_satker : '-' }}
-        </p>
+          <p class="mb-1 text-muted small">
+            <i class="fa-solid fa-briefcase me-1"></i> 
+            <strong>Bidang:</strong> {{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
+          </p>
+          
+          <p class="mb-0 text-muted small">
+            <i class="fa-solid fa-building me-1"></i> 
+            <strong>Satker:</strong> {{ $website->satker ? $website->satker->nama_satker : '-' }}
+          </p>
+        </div>
 
         <div class="d-flex justify-content-end gap-2 mt-auto">
-          <button class="btn btn-light btn-sm border btn-detail" data-id="{{ $website->website_id }}">
-            <i class="fa-solid fa-eye"></i> Detail
+          <button class="btn btn-outline-info btn-sm btn-detail" data-id="{{ $website->website_id }}" title="Detail">
+            <i class="fa-solid fa-eye"></i>
           </button>
-          <button class="btn btn-light btn-sm border btn-edit" 
+          <button class="btn btn-outline-warning btn-sm btn-edit" 
             data-id="{{ $website->website_id }}"
             data-nama="{{ $website->nama_website }}"
             data-url="{{ $website->url }}"
@@ -113,13 +134,15 @@
             data-server="{{ $website->server_id }}"
             data-status="{{ $website->status }}"
             data-tahun="{{ $website->tahun_pengadaan }}"
-            data-keterangan="{{ $website->keterangan }}">
-            <i class="fa-solid fa-pen-to-square"></i> Edit
+            data-keterangan="{{ $website->keterangan }}"
+            title="Edit">
+            <i class="fa-solid fa-pen-to-square"></i>
           </button>
-          <button class="btn btn-danger btn-sm btn-hapus" 
+          <button class="btn btn-outline-danger btn-sm btn-hapus" 
             data-id="{{ $website->website_id }}"
-            data-nama="{{ $website->nama_website }}">
-            <i class="fa-solid fa-trash"></i> Hapus
+            data-nama="{{ $website->nama_website }}"
+            title="Hapus">
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </div>
@@ -127,7 +150,8 @@
     @empty
     <div class="col-12">
       <div class="alert alert-info text-center">
-        <i class="fa-solid fa-circle-info me-2"></i>Belum ada data website
+        <i class="fa-solid fa-inbox fa-3x mb-3 d-block"></i>
+        <p class="mb-0">Belum ada data website</p>
       </div>
     </div>
     @endforelse
@@ -135,93 +159,105 @@
 </div>
 
 {{-- Modal Detail Website --}}
-<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 rounded-4 shadow">
-      <div class="modal-header bg-maroon text-white border-0 rounded-top-4">
-        <h5 class="modal-title fw-bold" id="detailNamaWebsite">Detail Website</h5>
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-gradient text-white border-0">
+        <h5 class="modal-title fw-bold" id="detailNamaWebsite">
+          <i class="fa fa-info-circle me-2"></i>Detail Website
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body p-4">
         <div class="row">
           <div class="col-md-6 mb-4">
-            <h6 class="text-muted mb-3 fw-semibold">INFORMASI DASAR</h6>
+            <h6 class="text-muted mb-3 fw-semibold text-uppercase">
+              <i class="fa fa-info-circle me-1"></i>Informasi Dasar
+            </h6>
             
             <div class="mb-3">
-              <label class="text-muted small mb-1">Nama Website</label>
-              <p class="fw-semibold mb-0" id="detailNama">-</p>
+              <label class="form-label fw-semibold text-secondary small">Nama Website</label>
+              <p class="form-control-plaintext" id="detailNama">-</p>
             </div>
 
             <div class="mb-3">
-              <label class="text-muted small mb-1">URL</label>
-              <p class="mb-0" id="detailUrlContainer">-</p>
+              <label class="form-label fw-semibold text-secondary small">URL</label>
+              <p class="form-control-plaintext" id="detailUrlContainer">-</p>
             </div>
 
             <div class="mb-3">
-              <label class="text-muted small mb-1">Status</label>
+              <label class="form-label fw-semibold text-secondary small">Status</label>
               <div id="detailStatus">-</div>
             </div>
 
             <div class="mb-3">
-              <label class="text-muted small mb-1">Tahun Pengadaan</label>
-              <p class="fw-semibold mb-0" id="detailTahun">-</p>
+              <label class="form-label fw-semibold text-secondary small">Tahun Pengadaan</label>
+              <p class="form-control-plaintext" id="detailTahun">-</p>
             </div>
           </div>
 
           <div class="col-md-6 mb-4">
-            <h6 class="text-muted mb-3 fw-semibold">ORGANISASI & INFRASTRUKTUR</h6>
+            <h6 class="text-muted mb-3 fw-semibold text-uppercase">
+              <i class="fa fa-building me-1"></i>Organisasi & Infrastruktur
+            </h6>
             
             <div class="mb-3">
-              <label class="text-muted small mb-1">Server</label>
-              <p class="fw-semibold mb-0" id="detailServer">
+              <label class="form-label fw-semibold text-secondary small">Server</label>
+              <p class="form-control-plaintext" id="detailServer">
                 <i class="fa-solid fa-server me-1"></i> -
               </p>
             </div>
 
             <div class="mb-3">
-              <label class="text-muted small mb-1">Satuan Kerja</label>
-              <p class="fw-semibold mb-0" id="detailSatker">
+              <label class="form-label fw-semibold text-secondary small">Satuan Kerja</label>
+              <p class="form-control-plaintext" id="detailSatker">
                 <i class="fa-solid fa-building me-1"></i> -
               </p>
             </div>
 
             <div class="mb-3">
-              <label class="text-muted small mb-1">Bidang</label>
-              <p class="fw-semibold mb-0" id="detailBidang">
+              <label class="form-label fw-semibold text-secondary small">Bidang</label>
+              <p class="form-control-plaintext" id="detailBidang">
                 <i class="fa-solid fa-briefcase me-1"></i> -
               </p>
             </div>
           </div>
 
           <div class="col-12">
-            <h6 class="text-muted mb-3 fw-semibold">KETERANGAN</h6>
-            <div class="p-3 bg-light rounded" id="detailKeterangan">
+            <h6 class="text-muted mb-3 fw-semibold text-uppercase">
+              <i class="fa fa-file-alt me-1"></i>Keterangan
+            </h6>
+            <div class="bg-light p-3 rounded" id="detailKeterangan">
               <p class="text-muted mb-0 fst-italic">Tidak ada keterangan</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      <div class="modal-footer border-0 bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fa fa-times me-1"></i>Tutup
+        </button>
       </div>
     </div>
   </div>
 </div>
 
 {{-- Modal Tambah Website --}}
-<div class="modal fade" id="tambahModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
-    <div class="modal-content border-0 rounded-4 shadow">
-      <div class="modal-header bg-maroon text-white border-0 rounded-top-4">
-        <h5 class="modal-title fw-bold">Tambah Website Baru</h5>
+<div class="modal fade" id="tambahModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-gradient text-white border-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa fa-plus-circle me-2"></i>Tambah Website Baru
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <form action="{{ route('banglola.website.store') }}" method="POST">
         @csrf
-        <div class="modal-body px-4 pb-4">
+        <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label fw-semibold">Nama Website <span class="text-danger">*</span></label>
             <input type="text" name="nama_website" class="form-control" placeholder="Contoh: Portal Kemhan RI" required>
@@ -294,9 +330,13 @@
           </div>
         </div>
 
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-maroon text-white">Simpan</button>
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-times me-1"></i>Batal
+          </button>
+          <button type="submit" class="btn btn-maroon-gradient">
+            <i class="fa fa-save me-1"></i>Simpan
+          </button>
         </div>
       </form>
     </div>
@@ -304,18 +344,20 @@
 </div>
 
 {{-- Modal Edit Website --}}
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
-    <div class="modal-content border-0 rounded-4 shadow">
-      <div class="modal-header bg-maroon text-white border-0 rounded-top-4">
-        <h5 class="modal-title fw-bold">Edit Website</h5>
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-gradient text-white border-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa fa-edit me-2"></i>Edit Website
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <form id="editForm" method="POST">
         @csrf
         @method('PUT')
-        <div class="modal-body px-4 pb-4">
+        <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label fw-semibold">Nama Website <span class="text-danger">*</span></label>
             <input type="text" name="nama_website" id="editNama" class="form-control" required>
@@ -386,9 +428,13 @@
           </div>
         </div>
 
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-maroon text-white">Simpan Perubahan</button>
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-times me-1"></i>Batal
+          </button>
+          <button type="submit" class="btn btn-warning text-white">
+            <i class="fa fa-save me-1"></i>Simpan Perubahan
+          </button>
         </div>
       </form>
     </div>
@@ -396,65 +442,152 @@
 </div>
 
 {{-- Modal Konfirmasi Hapus --}}
-<div class="modal fade" id="hapusModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="hapusModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow">
-      <div class="modal-header bg-danger text-white border-0 rounded-top-4">
-        <h5 class="modal-title fw-bold">Konfirmasi Hapus</h5>
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-gradient text-white border-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa fa-exclamation-triangle me-2"></i>Konfirmasi Hapus
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body text-center p-4">
-        <i class="fa-solid fa-triangle-exclamation text-danger mb-3" style="font-size: 3rem;"></i>
-        <p class="mb-4 fs-6">
+        <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
+        <p class="mb-3">
           Apakah Anda yakin ingin menghapus website<br>
-          <span class="fw-bold" id="hapusNama">""</span>?
+          <strong id="hapusNama">""</strong>?
         </p>
-        <p class="text-muted small">Data yang dihapus tidak dapat dikembalikan.</p>
+        <div class="alert alert-warning small mb-0">
+          <i class="fa fa-info-circle me-1"></i>
+          Data yang dihapus tidak dapat dikembalikan.
+        </div>
       </div>
 
       <form id="hapusForm" method="POST">
         @csrf
         @method('DELETE')
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-times me-1"></i>Batal
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa fa-trash me-1"></i>Ya, Hapus
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-{{-- Style --}}
 <style>
-  .website-card .card {
-    height: 100%;
+/* Card Statistics */
+.card-stat {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Card Content (Search & Button Container) */
+.card-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+}
+
+/* Website Card */
+.card-website {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
 }
-  .bg-maroon {
-    background-color: #7A1313 !important;
-  }
 
-  .btn-maroon {
-    background-color: #7A1313;
-  }
-
-  .btn-maroon:hover {
-    background-color: #5e0e0e;
-  }
-
-  .card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  }
-
-  .card:hover {
+.card-website:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
-  }
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.website-info {
+    flex-grow: 1;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Modal Gradient Header */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+}
+
+/* Button Maroon Gradient */
+.btn-maroon-gradient {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-maroon-gradient:hover {
+    background: linear-gradient(135deg, #5e0000 0%, #8b1515 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(123, 0, 0, 0.3);
+}
+
+/* Input Group */
+.input-group-text {
+    border-right: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .card-header-custom .col-md-4 {
+        width: 100%;
+    }
+}
 </style>
 
-{{-- Scripts --}}
 @push('scripts')
 <script>
 $(document).ready(function() {
@@ -466,6 +599,14 @@ $(document).ready(function() {
     });
   });
 
+  // Clear search on ESC
+  $('#searchInput').on('keydown', function(e) {
+    if (e.key === 'Escape') {
+      $(this).val('');
+      $(this).trigger('keyup');
+    }
+  });
+
   // Detail button handler dengan AJAX
   $('.btn-detail').click(function() {
     const id = $(this).data('id');
@@ -474,7 +615,7 @@ $(document).ready(function() {
       url: `/banglola/website/${id}/detail`,
       type: 'GET',
       success: function(data) {
-        $('#detailNamaWebsite').text(data.nama_website);
+        $('#detailNamaWebsite').html('<i class="fa fa-info-circle me-2"></i>' + data.nama_website);
         $('#detailNama').text(data.nama_website);
         
         $('#detailUrlContainer').html(
@@ -485,11 +626,11 @@ $(document).ready(function() {
         
         let statusBadge = '';
         if(data.status === 'active') {
-          statusBadge = '<span class="badge bg-success px-3 py-2" style="border-radius: 8px;">Aktif</span>';
+          statusBadge = '<span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>';
         } else if(data.status === 'maintenance') {
-          statusBadge = '<span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;">Maintenance</span>';
+          statusBadge = '<span class="badge bg-warning"><i class="fa fa-wrench me-1"></i>Maintenance</span>';
         } else {
-          statusBadge = '<span class="badge bg-danger px-3 py-2" style="border-radius: 8px;">Tidak Aktif</span>';
+          statusBadge = '<span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>';
         }
         $('#detailStatus').html(statusBadge);
         
@@ -546,7 +687,7 @@ $(document).ready(function() {
     }
   });
 
-  // Edit button handler
+   // Edit button handler
   $('.btn-edit').click(function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
@@ -567,7 +708,6 @@ $(document).ready(function() {
     $('#editTahun').val(tahun || '');
     $('#editKeterangan').val(keterangan || '');
 
-    // Check if bidang should be shown
     const selectedName = $('#editSatker option:selected').data('name')?.toLowerCase() || '';
     if(selectedName.includes('pusat data dan informasi')) {
       $('#editBidangWrapper').show();

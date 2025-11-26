@@ -4,7 +4,10 @@ namespace App\Models\superadmin;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\banglola\Server;
+use App\Models\banglola\Server as BanglolaServer;
+use App\Models\tatausaha\Server as TataUsahaServer;
+use App\Models\infratik\Server as InfratikServer;
+use App\Models\pamsis\Server as PamsisServer;
 
 class RakServer extends Model
 {

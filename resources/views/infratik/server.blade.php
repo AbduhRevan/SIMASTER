@@ -744,63 +744,113 @@ $(document).ready(function() {
         }
     });
 
-    // === LOAD AVAILABLE SLOTS ===
+    // === LOAD AVAILABLE SLOTS (TAMBAH) ===
     function loadAvailableSlots(rakId) {
+        console.log('🔍 Loading slots for rak_id:', rakId);
+        
         $('#loadingSlots').show();
         $('#slotSelectWrapper').hide();
         $('#slotWrapper').show();
 
         $.ajax({
-            url: `/superadmin/server/rak/${rakId}/available-slots`,
+            url: `/infratik/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke infratik
             type: 'GET',
+            dataType: 'json',
             success: function(response) {
-                availableSlots = response.available_slots;
-                populateSlotDropdowns(availableSlots);
-                $('#loadingSlots').hide();
-                $('#slotSelectWrapper').show();
+                console.log('✅ Response received:', response);
+                
+                if (response && response.success === true && Array.isArray(response.available_slots)) {
+                    availableSlots = response.available_slots;
+                    console.log('✅ Available slots:', availableSlots);
+                    
+                    populateSlotDropdowns(availableSlots);
+                    
+                    $('#loadingSlots').hide();
+                    $('#slotSelectWrapper').show();
+                } else {
+                    console.error('❌ Invalid response:', response);
+                    alert('Format response tidak valid');
+                    $('#loadingSlots').hide();
+                }
             },
-            error: function() {
-                alert('Gagal memuat data slot');
+            error: function(xhr, status, error) {
+                console.error('❌ AJAX Error:');
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
+                
+                alert('Gagal memuat data slot. Cek console untuk detail.');
                 $('#loadingSlots').hide();
             }
         });
     }
 
+    // === LOAD AVAILABLE SLOTS (EDIT) ===
     function loadAvailableSlotsForEdit(rakId, serverId) {
+        console.log('🔍 Loading slots for edit - rak_id:', rakId);
+        
         $('#editLoadingSlots').show();
         $('#editSlotSelectWrapper').hide();
         $('#editSlotWrapper').show();
 
         $.ajax({
-            url: `/superadmin/server/rak/${rakId}/available-slots`,
+            url: `/infratik/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke infratik
             type: 'GET',
+            dataType: 'json',
             success: function(response) {
-                availableSlots = response.available_slots;
-                populateEditSlotDropdowns(availableSlots);
-                $('#editLoadingSlots').hide();
-                $('#editSlotSelectWrapper').show();
+                console.log('✅ Edit Response received:', response);
+                
+                if (response && response.success === true && Array.isArray(response.available_slots)) {
+                    availableSlots = response.available_slots;
+                    console.log('✅ Edit slots:', availableSlots);
+                    
+                    populateEditSlotDropdowns(availableSlots);
+                    
+                    $('#editLoadingSlots').hide();
+                    $('#editSlotSelectWrapper').show();
+                } else {
+                    console.error('❌ Invalid edit response:', response);
+                    alert('Format response tidak valid');
+                    $('#editLoadingSlots').hide();
+                }
             },
-            error: function() {
-                alert('Gagal memuat data slot');
+            error: function(xhr, status, error) {
+                console.error('❌ Edit AJAX Error:');
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
+                
+                alert('Gagal memuat data slot. Cek console untuk detail.');
                 $('#editLoadingSlots').hide();
             }
         });
     }
 
+    // === POPULATE SLOT DROPDOWNS ===
     function populateSlotDropdowns(slots) {
-        $('#singleSlotSelect, #slotStart, #slotEnd').empty().append('<option value="">Pilih Slot</option>');
+        console.log('📋 Populating dropdowns with:', slots);
+        
+        $('#singleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        $('#slotStart, #slotEnd').empty().append('<option value="">Pilih</option>');
+        
         slots.forEach(slot => {
             $('#singleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
             $('#slotStart, #slotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
+        
+        console.log('✅ Dropdowns populated');
     }
 
     function populateEditSlotDropdowns(slots) {
-        $('#editSingleSlotSelect, #editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih Slot</option>');
+        console.log('📋 Populating edit dropdowns with:', slots);
+        
+        $('#editSingleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
+        $('#editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih</option>');
+        
         slots.forEach(slot => {
             $('#editSingleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
             $('#editSlotStart, #editSlotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
+        
+        console.log('✅ Edit dropdowns populated');
     }
 
     // === RANGE SLOT CHANGE ===
@@ -865,12 +915,16 @@ $(document).ready(function() {
                 }
                 $('#detailWebsites').html(websitesHtml);
                 
-                let statusBadge = s.power_status === 'ON' ? '<span class="badge bg-success">Aktif</span>' :
-                                  s.power_status === 'STANDBY' ? '<span class="badge bg-warning">Maintenance</span>' :
-                                  '<span class="badge bg-danger">Tidak Aktif</span>';
+                let statusBadge = s.power_status === 'ON' ? '<span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>' :
+                                  s.power_status === 'STANDBY' ? '<span class="badge bg-warning"><i class="fa fa-wrench me-1"></i>Maintenance</span>' :
+                                  '<span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>';
                 $('#detailStatus').html(statusBadge);
                 $('#detailKeterangan').html(s.keterangan ?? '-');
                 $('#modalDetailServer').modal('show');
+            },
+            error: function(xhr) {
+                alert('Gagal memuat data server');
+                console.error(xhr);
             }
         });
     });
@@ -921,6 +975,14 @@ $(document).ready(function() {
 
                 $('#editServerForm').attr('action', `/infratik/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
+            },
+            error: function(xhr) {
+                if(xhr.status === 403) {
+                    alert('Anda tidak memiliki akses untuk mengedit server ini.');
+                } else {
+                    alert('Gagal memuat data server');
+                }
+                console.error(xhr);
             }
         });
     });
@@ -972,7 +1034,7 @@ $(document).ready(function() {
     });
 
     // === MODAL HAPUS ===
-    $('.btn-hapus').on('click', function() {
+    $(document).on('click', '.btn-hapus', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         $('#namaServerHapus').text(nama);
