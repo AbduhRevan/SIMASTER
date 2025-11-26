@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(App\Helpers\LayoutHelper::getUserLayout())
 
 @section('title', 'Ganti Password')
 

@@ -1,4 +1,4 @@
-@extends($layout)
+@extends(App\Helpers\LayoutHelper::getUserLayout())
 
 @section('title', 'Panduan Pengguna')
 

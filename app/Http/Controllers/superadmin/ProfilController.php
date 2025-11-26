@@ -19,27 +19,19 @@ class ProfilController extends Controller
      * @return \Illuminate\View\View
      */
     public function profilSaya()
-{
-    try {
-        $user = Auth::user();
+    {
+        try {
+            // Ambil data user yang sedang login
+            $user = Auth::user();
 
-        // Pilih layout bedasarkan role
-        $layout = match ($user->role) {
-            'superadmin' => 'layouts.app',
-            'banglola'   => 'layouts.banglola',
-            'pamsis'     => 'layouts.pamsis',
-            'infratik'   => 'layouts.infratik',
-            'tatausaha'  => 'layouts.tatausaha',
-            default      => 'layouts.app', // fallback
-        };
-
-        return view('profil.profil', compact('user', 'layout'));
-
-    } catch (\Exception $e) {
-        return back()->with('error', 'Gagal memuat profil: ' . $e->getMessage());
+            // Tampilkan view profil dengan data user
+            // Asumsi view ada di 'profile/profil.blade.php'
+            return view('profil.profil', compact('user'));
+        } catch (\Exception $e) {
+            // Handle jika terjadi error saat pengambilan data
+            return redirect()->back()->with('error', 'Gagal memuat profil: ' . $e->getMessage());
+        }
     }
-}
-
 
     /**
      * Menyimpan perubahan data profil (Opsional - Jika ada fungsi Edit).
@@ -148,5 +140,9 @@ public function updatePassword(Request $request)
      *
      * @return \Illuminate\View\View
      */
-   
+    public function panduanPengguna()
+    {
+        // Asumsi view ada di 'profile/panduanPengguna.blade.php'
+        return view('profil.panduan_pengguna');
+    }
 }
