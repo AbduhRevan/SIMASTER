@@ -47,6 +47,27 @@ class SatkerController extends Controller
             ->with('success', 'Satuan Kerja baru berhasil ditambahkan!');
     }
 
+    // Fitur Search
+    public function search(Request $request)
+{
+    $search = $request->get('search');
+    
+    $satker = Satker::where('nama_satker', 'LIKE', "%{$search}%")
+        ->orWhere('singkatan_satker', 'LIKE', "%{$search}%")
+        ->orderBy('nama_satker', 'asc')
+        ->get();
+    
+    $total = Satker::count();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $satker,
+        'total' => $total,
+        'found' => $satker->count()
+    ]);
+}
+
+
     // Mengupdate data satker
     public function update(Request $request, $id)
     {

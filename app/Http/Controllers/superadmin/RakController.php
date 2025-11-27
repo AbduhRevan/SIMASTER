@@ -16,12 +16,70 @@ class RakController extends Controller
      */
     public function index()
     {
-        // UBAH BARIS INI - Ganti dari ::get() ke ::paginate(10)
         $rak = RakServer::with('servers')
             ->orderBy('rak_id', 'asc')
-            ->paginate(10); // Tampilkan 10 data per halaman
+            ->paginate(10);
 
         return view('superadmin.rakserver', compact('rak'));
+    }
+
+    /**
+     * TAMBAHKAN METHOD INI - Search untuk live search
+     */
+    public function search(Request $request)
+    {
+        try {
+            $search = $request->get('search');
+            
+            // Query untuk mencari di semua data dengan relasi servers
+            $rak = RakServer::with('servers')
+                ->where('nomor_rak', 'LIKE', "%{$search}%")
+                ->orWhere('ruangan', 'LIKE', "%{$search}%")
+                ->orWhere('keterangan', 'LIKE', "%{$search}%")
+                ->orderBy('nomor_rak', 'asc')
+                ->get();
+            
+            // Hitung U slot terpakai untuk setiap rak
+            $rakWithCalculation = $rak->map(function($item) {
+                $terpakai = 0;
+                
+                foreach($item->servers as $server) {
+                    if($server->u_slot) {
+                        $slots = explode('-', $server->u_slot);
+                        if(count($slots) == 2) {
+                            $terpakai += (int)$slots[1] - (int)$slots[0] + 1;
+                        } else {
+                            $terpakai += 1;
+                        }
+                    }
+                }
+                
+                return [
+                    'rak_id' => $item->rak_id,
+                    'nomor_rak' => $item->nomor_rak,
+                    'ruangan' => $item->ruangan,
+                    'kapasitas_u_slot' => $item->kapasitas_u_slot,
+                    'terpakai' => $terpakai,
+                    'keterangan' => $item->keterangan
+                ];
+            });
+            
+            // Hitung total data keseluruhan
+            $total = RakServer::count();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $rakWithCalculation,
+                'total' => $total,
+                'found' => $rakWithCalculation->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -54,7 +112,6 @@ class RakController extends Controller
                 'keterangan' => $request->keterangan,
             ]);
 
-            // TAMBAHKAN LOG CREATE
             LogAktivitas::log(
                 'CREATE',
                 'rak_server',
@@ -158,7 +215,6 @@ class RakController extends Controller
 
             $rak->delete();
 
-            // TAMBAHKAN LOG DELETE
             LogAktivitas::log(
                 'DELETE',
                 'rak_server',

@@ -92,7 +92,7 @@
                                 $sisa = $item->kapasitas_u_slot - $terpakai;
                             @endphp
                             <tr class="rak-row">
-                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $rak->firstItem() + $index }}</td>
                                 <td class="rak-nomor"><strong>{{ $item->nomor_rak }}</strong></td>
                                 <td class="rak-ruangan">{{ $item->ruangan }}</td>
                                 <td class="text-center">
@@ -211,9 +211,8 @@
                 @php
                     $currentPage = $rak->currentPage();
                     $lastPage = $rak->lastPage();
-                    $maxVisible = 2; // Tampilkan 2 angka
+                    $maxVisible = 2;
                     
-                    // Hitung range yang akan ditampilkan
                     if ($currentPage == 1) {
                         $start = 1;
                         $end = min($maxVisible, $lastPage);
@@ -559,79 +558,152 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Search Functionality
+    let searchTimeout;
+    
+    // Live Search dengan AJAX
     $('#searchInput').on('keyup', function() {
-        const searchValue = $(this).val().toLowerCase();
-        let visibleRows = 0;
+        clearTimeout(searchTimeout);
+        const searchValue = $(this).val();
 
-        $('.rak-row').each(function() {
-            const nomor = $(this).find('.rak-nomor').text().toLowerCase();
-            const ruangan = $(this).find('.rak-ruangan').text().toLowerCase();
-            const keterangan = $(this).find('.rak-keterangan').text().toLowerCase();
-            
-            if (nomor.includes(searchValue) || ruangan.includes(searchValue) || keterangan.includes(searchValue)) {
-                $(this).show();
-                visibleRows++;
-            } else {
-                $(this).hide();
+        // Jika kosong, reload halaman untuk kembali ke pagination
+        if (searchValue.length === 0) {
+            window.location.href = "{{ route('superadmin.rakserver') }}";
+            return;
+        }
+
+        // Debounce untuk mengurangi request
+        searchTimeout = setTimeout(function() {
+            if (searchValue.length >= 2) {
+                performSearch(searchValue);
             }
-        });
+        }, 300);
+    });
 
-        // Hide/show pagination when searching
-        if (searchValue.length > 0) {
-            $('#paginationWrapper').hide();
-            
-            if (visibleRows > 0) {
+    function performSearch(keyword) {
+        $.ajax({
+            url: "{{ route('superadmin.rakserver.search') }}",
+            method: 'GET',
+            data: { search: keyword },
+            dataType: 'json',
+            success: function(response) {
+                $('#loadingIndicator').hide();
+                renderSearchResults(response.data);
+                
+                // Update info hasil pencarian
                 if ($('#searchResultInfo').length === 0) {
                     $('.table-responsive').after(
-                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small">
-                            Menampilkan ${visibleRows} hasil pencarian
-                        </div>`
+                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small"></div>`
                     );
-                } else {
-                    $('#searchResultInfo').html(`Menampilkan ${visibleRows} hasil pencarian`);
                 }
+                $('#searchResultInfo').html(`Menampilkan ${response.found} hasil pencarian dari ${response.total} total data`);
+            },
+            error: function(xhr, status, error) {
+                $('#loadingIndicator').hide();
+                console.error('Search error:', error);
+                alert('Terjadi kesalahan saat mencari data');
             }
+        });
+    }
+
+    function renderSearchResults(data) {
+        let html = '';
+        
+        if (data.length === 0) {
+            html = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                        Tidak ada data yang sesuai dengan pencarian
+                    </td>
+                </tr>`;
         } else {
-            $('#paginationWrapper').show();
-            $('#searchResultInfo').remove();
+            data.forEach(function(item, index) {
+                const sisa = item.kapasitas_u_slot - item.terpakai;
+                const sisaBadge = sisa > 0 ? 'bg-success' : 'bg-danger';
+                
+                html += `
+                    <tr class="rak-row" data-id="${item.rak_id}">
+                        <td>${item.rak_id}</td>
+                        <td class="rak-nomor"><strong>${escapeHtml(item.nomor_rak)}</strong></td>
+                        <td class="rak-ruangan">${escapeHtml(item.ruangan)}</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">${item.kapasitas_u_slot}U</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">${item.terpakai}U</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge ${sisaBadge}">${sisa}U</span>
+                        </td>
+                        <td class="rak-keterangan">
+                            <small>${item.keterangan ? escapeHtml(item.keterangan) : '-'}</small>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-outline-warning btn-sm btn-edit-search" 
+                                    data-id="${item.rak_id}"
+                                    title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm btn-hapus"
+                                    data-id="${item.rak_id}"
+                                    data-nama="${escapeHtml(item.nomor_rak)}"
+                                    title="Hapus">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
         }
 
-        // Show "no results" message
-        if (visibleRows === 0 && $('.rak-row').length > 0) {
-            if ($('#noResultRow').length === 0) {
-                $('#rakTableBody').append(
-                    `<tr id="noResultRow">
-                        <td colspan="8" class="text-center text-muted py-4">
-                            <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
-                            Tidak ada data yang sesuai dengan pencarian
-                        </td>
-                    </tr>`
-                );
-            }
-        } else {
-            $('#noResultRow').remove();
-        }
+        $('#rakTableBody').html(html);
+        
+        // Re-bind event handler
+        bindDeleteButtons();
+    }
+
+    function bindDeleteButtons() {
+        $('.btn-hapus').off('click').on('click', function() {
+            const id = $(this).data('id');
+            const nama = $(this).data('nama');
+            
+            $('#namaRakHapus').text(nama);
+            $('#formHapusRak').attr('action', `{{ url('superadmin/rakserver/delete') }}/${id}`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('hapusRakModal'));
+            modal.show();
+        });
+    }
+
+    // Escape HTML untuk keamanan
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Handler untuk tombol edit dari hasil search
+    $(document).on('click', '.btn-edit-search', function() {
+        const id = $(this).data('id');
+        window.location.href = `{{ route('superadmin.rakserver') }}?edit=${id}`;
     });
+
+    // Initial bind untuk tombol hapus
+    bindDeleteButtons();
 
     // Clear search on ESC
     $('#searchInput').on('keydown', function(e) {
         if (e.key === 'Escape') {
             $(this).val('');
-            $(this).trigger('keyup');
+            window.location.href = "{{ route('superadmin.rakserver') }}";
         }
-    });
-
-    // Modal Hapus Handler
-    $('.btn-hapus').on('click', function() {
-        const id = $(this).data('id');
-        const nama = $(this).data('nama');
-        
-        $('#namaRakHapus').text(nama);
-        $('#formHapusRak').attr('action', `/superadmin/rakserver/delete/${id}`);
-        
-        const modal = new bootstrap.Modal(document.getElementById('hapusRakModal'));
-        modal.show();
     });
 
     // Auto show modal if validation errors
@@ -639,6 +711,17 @@ $(document).ready(function() {
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahRakModal'));
         tambahModal.show();
     @endif
+
+    // Auto open edit modal if ?edit=id in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+        const editModal = document.getElementById(`editRakModal${editId}`);
+        if (editModal) {
+            const modal = new bootstrap.Modal(editModal);
+            modal.show();
+        }
+    }
 
     // Smooth scroll to top on pagination click
     $('.pagination-btn').on('click', function() {

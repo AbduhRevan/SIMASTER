@@ -60,6 +60,7 @@
                 </div>
             </div>
 
+
             {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -171,9 +172,8 @@
                 @php
                     $currentPage = $satker->currentPage();
                     $lastPage = $satker->lastPage();
-                    $maxVisible = 2; // Tampilkan 2 angka
+                    $maxVisible = 2;
                     
-                    // Hitung range yang akan ditampilkan
                     if ($currentPage == 1) {
                         $start = 1;
                         $end = min($maxVisible, $lastPage);
@@ -495,78 +495,135 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Search Functionality
+    let searchTimeout;
+    
+    // Live Search dengan AJAX
     $('#searchInput').on('keyup', function() {
-        const searchValue = $(this).val().toLowerCase();
-        let visibleRows = 0;
+        clearTimeout(searchTimeout);
+        const searchValue = $(this).val();
 
-        $('.satker-row').each(function() {
-            const nama = $(this).find('.satker-nama').text().toLowerCase();
-            const singkatan = $(this).find('.satker-singkatan').text().toLowerCase();
-            
-            if (nama.includes(searchValue) || singkatan.includes(searchValue)) {
-                $(this).show();
-                visibleRows++;
-            } else {
-                $(this).hide();
+        // Jika kosong, reload halaman untuk kembali ke pagination
+        if (searchValue.length === 0) {
+            window.location.href = "{{ route('superadmin.satuankerja') }}";
+            return;
+        }
+
+        // Debounce untuk mengurangi request
+        searchTimeout = setTimeout(function() {
+            if (searchValue.length >= 2) {
+                performSearch(searchValue);
             }
-        });
+        }, 300);
+    });
 
-        // Hide/show pagination when searching
-        if (searchValue.length > 0) {
-            $('#paginationWrapper').hide();
-            
-            if (visibleRows > 0) {
+    function performSearch(keyword) {
+        $.ajax({
+            url: "{{ route('superadmin.satker.search') }}",
+            method: 'GET',
+            data: { search: keyword },
+            success: function(response) {
+                $('#loadingIndicator').hide();
+                renderSearchResults(response.data);
+                
+                // Update info hasil pencarian
                 if ($('#searchResultInfo').length === 0) {
                     $('.table-responsive').after(
-                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small">
-                            Menampilkan ${visibleRows} hasil pencarian
-                        </div>`
+                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small"></div>`
                     );
-                } else {
-                    $('#searchResultInfo').html(`Menampilkan ${visibleRows} hasil pencarian`);
                 }
+                $('#searchResultInfo').html(`Menampilkan ${response.data.length} hasil pencarian dari ${response.total} total data`);
+            },
+            error: function() {
+                $('#loadingIndicator').hide();
+                alert('Terjadi kesalahan saat mencari data');
             }
+        });
+    }
+
+    function renderSearchResults(data) {
+        let html = '';
+        
+        if (data.length === 0) {
+            html = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                        Tidak ada data yang sesuai dengan pencarian
+                    </td>
+                </tr>`;
         } else {
-            $('#paginationWrapper').show();
-            $('#searchResultInfo').remove();
+            data.forEach(function(item, index) {
+                html += `
+                    <tr class="satker-row" data-id="${item.satker_id}">
+                        <td>${item.satker_id}</td>
+                        <td class="satker-nama">${escapeHtml(item.nama_satker)}</td>
+                        <td class="satker-singkatan">${escapeHtml(item.singkatan_satker)}</td>
+                        <td class="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-outline-warning btn-sm btn-edit-search" 
+                                    data-id="${item.satker_id}"
+                                    title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm btn-hapus"
+                                    data-id="${item.satker_id}"
+                                    data-nama="${escapeHtml(item.nama_satker)}"
+                                    title="Hapus">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
         }
 
-        // Show "no results" message
-        if (visibleRows === 0 && $('.satker-row').length > 0) {
-            if ($('#noResultRow').length === 0) {
-                $('#satkerTableBody').append(
-                    `<tr id="noResultRow">
-                        <td colspan="4" class="text-center text-muted py-4">
-                            <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
-                            Tidak ada data yang sesuai dengan pencarian
-                        </td>
-                    </tr>`
-                );
-            }
-        } else {
-            $('#noResultRow').remove();
-        }
+        $('#satkerTableBody').html(html);
+        
+        // Re-bind event handler untuk tombol hapus
+        bindDeleteButtons();
+    }
+
+    function bindDeleteButtons() {
+        $('.btn-hapus').off('click').on('click', function() {
+            const id = $(this).data('id');
+            const nama = $(this).data('nama');
+            
+            $('#namaSatkerHapus').text(nama);
+            $('#formHapusSatker').attr('action', `{{ url('superadmin/satker/delete') }}/${id}`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
+            modal.show();
+        });
+    }
+
+    // Escape HTML untuk keamanan
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Handler untuk tombol edit dari hasil search
+    $(document).on('click', '.btn-edit-search', function() {
+        const id = $(this).data('id');
+        // Redirect ke halaman index dengan auto-open modal edit
+        window.location.href = `{{ route('superadmin.satuankerja') }}?edit=${id}`;
     });
+
+    // Initial bind untuk tombol hapus
+    bindDeleteButtons();
 
     // Clear search on ESC
     $('#searchInput').on('keydown', function(e) {
         if (e.key === 'Escape') {
             $(this).val('');
-            $(this).trigger('keyup');
+            window.location.href = "{{ route('superadmin.satuankerja') }}";
         }
-    });
-
-    // Modal Hapus Handler
-    $('.btn-hapus').on('click', function() {
-        const id = $(this).data('id');
-        const nama = $(this).data('nama');
-        
-        $('#namaSatkerHapus').text(nama);
-        $('#formHapusSatker').attr('action', `/superadmin/satker/delete/${id}`);
-        
-        const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
-        modal.show();
     });
 
     // Auto show modal if validation errors
@@ -574,6 +631,17 @@ $(document).ready(function() {
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahSatkerModal'));
         tambahModal.show();
     @endif
+
+    // Auto open edit modal if ?edit=id in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+        const editModal = document.getElementById(`editSatkerModal${editId}`);
+        if (editModal) {
+            const modal = new bootstrap.Modal(editModal);
+            modal.show();
+        }
+    }
 
     // Smooth scroll to top on pagination click
     $('.pagination-btn').on('click', function() {

@@ -78,12 +78,14 @@ Route::middleware(['auth'])->group(function () {
 
         // Satuan Kerja (Hard Delete)
         Route::get('/satuankerja', [SatkerController::class, 'index'])->name('superadmin.satuankerja');
+        Route::get('/satuankerja/search', [SatkerController::class, 'search'])->name('superadmin.satker.search');
         Route::post('/satuankerja/store', [SatkerController::class, 'store'])->name('superadmin.satker.store');
         Route::put('/satker/update/{id}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
         Route::delete('/satker/delete/{id}', [SatkerController::class, 'destroy'])->name('superadmin.satker.delete');
 
         // Rak Server (Hard Delete)
         Route::get('/rakserver', [RakController::class, 'index'])->name('superadmin.rakserver');
+        Route::get('/rakserver/search', [RakController::class, 'search'])->name('superadmin.rakserver.search');
         Route::post('/rakserver/store', [RakController::class, 'store'])->name('superadmin.rakserver.store');
         Route::put('/rakserver/update/{id}', [RakController::class, 'update'])->name('superadmin.rakserver.update');
         Route::delete('/rakserver/delete/{id}', [RakController::class, 'destroy'])->name('superadmin.rakserver.delete');
