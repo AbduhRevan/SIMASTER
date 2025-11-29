@@ -324,10 +324,13 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Keterangan</label>
-            <textarea name="keterangan" class="form-control" rows="3" placeholder="Keterangan tambahan..."></textarea>
-          </div>
+           <div class="mb-3">
+              <label class="form-label fw-semibold">Keterangan</label>
+              <textarea class="form-control summernote" 
+              name="keterangan"
+              rows="3"
+              placeholder="Keterangan tambahan..."></textarea>
+             </div>
         </div>
 
         <div class="modal-footer border-0 bg-light">
@@ -422,10 +425,13 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Keterangan</label>
-            <textarea name="keterangan" id="editKeterangan" class="form-control" rows="3"></textarea>
-          </div>
+           <div class="mb-3">
+              <label class="form-label fw-semibold">Keterangan</label>
+              <textarea class="form-control summernote" 
+              name="keterangan"
+              rows="3"
+              placeholder="Keterangan tambahan..."></textarea>
+             </div>
         </div>
 
         <div class="modal-footer border-0 bg-light">
@@ -591,6 +597,28 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+
+  // === SUMMERNOTE INITIALIZATION ===
+    $('.summernote').summernote({
+        height: 120,
+        tabsize: 2,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['font', ['fontsize', 'fontname']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['link', 'table']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+        fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman'],
+        fontSizes: ['8','9','10','11','12','14','16','18','20','24','28','32','36']
+    });
+
+     // Refresh saat modal dibuka
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('.summernote').summernote('refresh');
+    });
+    
   // Search functionality
   $('#searchInput').on('keyup', function() {
     const value = $(this).val().toLowerCase();

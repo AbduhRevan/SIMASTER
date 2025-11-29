@@ -269,7 +269,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Spesifikasi</label>
-                        <textarea class="form-control" name="spesifikasi" rows="2" placeholder="Masukkan spesifikasi server"></textarea>
+                        <textarea class="form-control summernote" name="spesifikasi" rows="2" placeholder="Masukkan spesifikasi server"></textarea>
                     </div>
 
                     <div class="row">
@@ -368,7 +368,10 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
-                        <textarea class="form-control" name="keterangan" rows="3" placeholder="Tulis keterangan di sini..."></textarea>
+                        <textarea class="form-control summernote" 
+                                name="keterangan"
+                                rows="3"
+                                placeholder="Tulis keterangan di sini..."></textarea>
                     </div>
                 </div>
                 
@@ -421,9 +424,9 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
+                     <div class="mb-3">
                         <label class="form-label fw-semibold">Spesifikasi</label>
-                        <textarea class="form-control" id="editSpesifikasi" name="spesifikasi" rows="3"></textarea>
+                        <textarea class="form-control summernote" name="spesifikasi" rows="2" placeholder="Masukkan spesifikasi server"></textarea>
                     </div>
 
                     <div class="row">
@@ -518,7 +521,10 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
-                        <textarea class="form-control" id="editKeterangan" name="keterangan" rows="3"></textarea>
+                        <textarea class="form-control summernote" 
+                                name="keterangan"
+                                rows="3"
+                                placeholder="Tulis keterangan di sini..."></textarea>
                     </div>
                 </div>
                 
@@ -739,6 +745,28 @@ tbody tr td.text-muted i.fa-inbox {
 $(document).ready(function() {
     let availableSlots = [];
     let currentServerId = null;
+
+
+    // === SUMMERNOTE INITIALIZATION ===
+    $('.summernote').summernote({
+        height: 120,
+        tabsize: 2,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['font', ['fontsize', 'fontname']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['link', 'table']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+        fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman'],
+        fontSizes: ['8','9','10','11','12','14','16','18','20','24','28','32','36']
+    });
+
+     // Refresh saat modal dibuka
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('.summernote').summernote('refresh');
+    });
 
     // === SLOT TYPE TOGGLE ===
     $('input[name="slot_type"]').change(function() {

@@ -105,7 +105,7 @@
                                     <span class="badge {{ $sisa > 0 ? 'bg-success' : 'bg-danger' }}">{{ $sisa }}U</span>
                                 </td>
                                 <td class="rak-keterangan">
-                                    <small>{{ $item->keterangan ?? '-' }}</small>
+                                    <small>{!! $item->keterangan ?? '-' !!}</small>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center">
@@ -160,7 +160,8 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Keterangan</label>
-                                                    <textarea class="form-control" name="keterangan" rows="3">{{ $item->keterangan }}</textarea>
+                                                    <textarea class="form-control summernote" 
+                                                        name="keterangan">{{ $item->keterangan }}</textarea>
                                                 </div>
                                             </div>
                                             <div class="modal-footer border-0 bg-light">
@@ -301,9 +302,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Keterangan</label>
-                        <textarea class="form-control @error('keterangan') is-invalid @enderror" 
-                            name="keterangan" 
-                            rows="3" 
+                        <textarea class="form-control summernote @error('keterangan') is-invalid @enderror" 
+                            name="keterangan"
                             placeholder="Opsional">{{ old('keterangan') }}</textarea>
                         @error('keterangan')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -521,6 +521,7 @@
     font-size: 12px;
 }
 
+
 /* Responsive */
 @media (max-width: 768px) {
     .card-header-custom {
@@ -560,6 +561,27 @@
 $(document).ready(function() {
     let searchTimeout;
     
+      // Init Summernote di semua modal
+    $('.summernote').summernote({
+        height: 120,
+        tabsize: 2,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['color', ['color']],
+            ['fontsize', ['fontsize']],
+            ['fontname', ['fontname']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['link', 'table']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ]
+    });
+
+     // Refresh saat modal dibuka
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('.summernote').summernote('refresh');
+    });
+
     // Live Search dengan AJAX
     $('#searchInput').on('keyup', function() {
         clearTimeout(searchTimeout);

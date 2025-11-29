@@ -411,11 +411,14 @@
                                                                     @endforeach
                                                                 </select>
                                                             </div>
-                                                            <div class="col-md-12">
-                                                                <label class="form-label fw-semibold">Keterangan <span
-                                                                        class="text-danger">*</span></label>
-                                                                <textarea name="keterangan" class="form-control" rows="4" required
-                                                                    placeholder="Jelaskan detail pemeliharaan...">{{ $item->keterangan }}</textarea>
+                                                           <div class="col-md-12">
+                                                                <label class="form-label fw-semibold">
+                                                                    Keterangan <span class="text-danger">*</span>
+                                                                </label>
+                                                                <textarea name="keterangan"
+                                                                        class="form-control summernote"
+                                                                        rows="4"
+                                                                        required>{!! $item->keterangan ?? '' !!}</textarea>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -630,12 +633,17 @@
                                 </select>
                                 <small class="text-muted">Hanya menampilkan website yang tidak sedang maintenance</small>
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-semibold">Keterangan <span
-                                        class="text-danger">*</span></label>
-                                <textarea name="keterangan" class="form-control" rows="4" required
+                           <div class="col-md-12">
+                            <label class="form-label fw-semibold">
+                                Keterangan <span class="text-danger">*</span>
+                            </label>
+
+                            <textarea name="keterangan"
+                                    class="form-control summernote"
+                                    rows="4"
+                                    required
                                     placeholder="Jelaskan detail pemeliharaan yang akan dilakukan..."></textarea>
-                            </div>
+                        </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 bg-light">
@@ -651,8 +659,31 @@
         </div>
     </div>
 
+    @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // === SUMMERNOTE INITIALIZATION ===
+            $('.summernote').summernote({
+                height: 120,
+                tabsize: 2,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['font', ['fontsize', 'fontname']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'table']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman'],
+                fontSizes: ['8','9','10','11','12','14','16','18','20','24','28','32','36']
+            });
+
+            // Refresh saat modal dibuka
+            $('.modal').on('shown.bs.modal', function () {
+                $(this).find('.summernote').summernote('refresh');
+            });
+
             // Handle Tambah Modal
             const jenisAsset = document.getElementById('jenisAsset');
             const serverSelect = document.getElementById('serverSelect');
@@ -693,5 +724,5 @@
             });
         });
     </script>
-
+@endpush
 @endsection
