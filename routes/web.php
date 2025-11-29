@@ -11,6 +11,7 @@ use App\Http\Controllers\superadmin\PanduanManagementController;
 
 // Super Admin
 use App\Http\Controllers\superadmin\ProfilController;
+use App\Http\Controllers\superadmin\GantiPasswordController;
 use App\Http\Controllers\superadmin\BidangController;
 use App\Http\Controllers\superadmin\SatkerController;
 use App\Http\Controllers\superadmin\RakController;
@@ -59,8 +60,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Profil, Password
     Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
-    Route::get('/ganti-password', [ProfilController::class, 'gantiPassword'])->name('ganti.password');
-    Route::post('/ganti-password', [ProfilController::class, 'updatePassword'])->name('ganti.password.post');
+    Route::get('/ganti-password', [GantiPasswordController::class, 'index'])->name('ganti.password');
+    Route::post('/ganti-password', [GantiPasswordController::class, 'update'])->name('ganti.password.update');
 
     // Panduan Pengguna (Read-Only untuk semua user)
     Route::get('/panduan-pengguna/{slug?}', [PanduanController::class, 'index'])->name('panduan.pengguna');

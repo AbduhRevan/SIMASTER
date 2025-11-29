@@ -22,7 +22,7 @@
     @endif
 
     <div class="password-card">
-        <form action="{{ route('ganti.password.post') }}" method="POST" id="passwordForm">
+        <form action="{{ route('ganti.password.update') }}" method="POST" id="passwordForm">
             @csrf
 
             {{-- PASSWORD LAMA --}}
