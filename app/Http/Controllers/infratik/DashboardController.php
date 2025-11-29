@@ -6,17 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\infratik\Website;
 use App\Models\infratik\Server;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
         // Ambil parameter filter dan search
         $status = $request->get('status', 'semua');
         $search = $request->get('search');
 
         // ===== QUERY WEBSITE =====
-        $queryWebsite = Website::with('satker');
+        $queryWebsite = Website::with('satker')
+            ->where('bidang_id', $bidang_id); // Filter berdasarkan bidang user
 
         // Filter status untuk website
         if ($status && $status !== 'semua') {
@@ -37,7 +42,8 @@ class DashboardController extends Controller
         $dataWebsite = $queryWebsite->get();
 
         // ===== QUERY SERVER =====
-        $queryServer = Server::with('satker');
+        $queryServer = Server::with('satker')
+            ->where('bidang_id', $bidang_id); // Filter berdasarkan bidang user
 
         // Filter status untuk server (mapping ke power_status)
         if ($status && $status !== 'semua') {
@@ -63,16 +69,16 @@ class DashboardController extends Controller
 
         $dataServer = $queryServer->get();
 
-        // ===== HITUNG RINGKASAN (tanpa filter) =====
-        $totalWebsite = Website::count();
-        $aktifWebsite = Website::where('status', 'active')->count();
-        $maintenanceWebsite = Website::where('status', 'maintenance')->count();
-        $tidakAktifWebsite = Website::where('status', 'inactive')->count();
+        // ===== HITUNG RINGKASAN (hanya milik bidang user) =====
+        $totalWebsite = Website::where('bidang_id', $bidang_id)->count();
+        $aktifWebsite = Website::where('bidang_id', $bidang_id)->where('status', 'active')->count();
+        $maintenanceWebsite = Website::where('bidang_id', $bidang_id)->where('status', 'maintenance')->count();
+        $tidakAktifWebsite = Website::where('bidang_id', $bidang_id)->where('status', 'inactive')->count();
 
-        $totalServer = Server::count();
-        $aktifServer = Server::where('power_status', 'ON')->count();
-        $maintenanceServer = Server::where('power_status', 'STANDBY')->count();
-        $tidakAktifServer = Server::where('power_status', 'OFF')->count();
+        $totalServer = Server::where('bidang_id', $bidang_id)->count();
+        $aktifServer = Server::where('bidang_id', $bidang_id)->where('power_status', 'ON')->count();
+        $maintenanceServer = Server::where('bidang_id', $bidang_id)->where('power_status', 'STANDBY')->count();
+        $tidakAktifServer = Server::where('bidang_id', $bidang_id)->where('power_status', 'OFF')->count();
 
         // ===== GABUNGKAN DATA =====
         $gabunganData = collect();
