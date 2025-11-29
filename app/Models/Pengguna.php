@@ -20,6 +20,7 @@ class Pengguna extends Authenticatable
         'role',
         'bidang_id',
         'status',
+        'foto'
     ];
 
     protected $hidden = [

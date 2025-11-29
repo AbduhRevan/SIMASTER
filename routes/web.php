@@ -60,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Profil, Password
     Route::get('/profil-saya', [ProfilController::class, 'profilSaya'])->name('profil.saya');
+    Route::post('/profil-saya/upload-foto', [ProfilController::class, 'uploadFoto'])->name('profil.upload.foto');
+    Route::delete('/profil-saya/hapus-foto', [ProfilController::class, 'hapusFoto'])->name('profil.hapus.foto');
     Route::get('/ganti-password', [GantiPasswordController::class, 'index'])->name('ganti.password');
     Route::post('/ganti-password', [GantiPasswordController::class, 'update'])->name('ganti.password.update');
 
