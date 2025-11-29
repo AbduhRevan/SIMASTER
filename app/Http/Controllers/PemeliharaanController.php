@@ -107,6 +107,8 @@ class PemeliharaanController extends Controller
         try {
             DB::beginTransaction();
 
+            $bidangId = null; // ← TAMBAHKAN INI
+
             // Validasi: Cek apakah aset sedang dalam pemeliharaan
             if ($request->jenis_asset == 'server') {
                 $existing = Pemeliharaan::where('server_id', $request->server_id)
@@ -118,6 +120,11 @@ class PemeliharaanController extends Controller
                         ->with('error', 'Server ini sedang dalam pemeliharaan yang masih berlangsung')
                         ->withInput();
                 }
+
+                // ← TAMBAHKAN: Ambil bidang_id dari server
+                $server = Server::find($request->server_id);
+                $bidangId = $server->bidang_id;
+
             } else {
                 $existing = Pemeliharaan::where('website_id', $request->website_id)
                     ->where('status_pemeliharaan', 'berlangsung')
@@ -128,6 +135,10 @@ class PemeliharaanController extends Controller
                         ->with('error', 'Website ini sedang dalam pemeliharaan yang masih berlangsung')
                         ->withInput();
                 }
+
+                // ← TAMBAHKAN: Ambil bidang_id dari website
+                $website = Website::find($request->website_id);
+                $bidangId = $website->bidang_id;
             }
 
             Pemeliharaan::create([
@@ -136,6 +147,7 @@ class PemeliharaanController extends Controller
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
                 'status_pemeliharaan' => 'dijadwalkan',
                 'keterangan' => $request->keterangan,
+                'bidang_id' => $bidangId, // ← TAMBAHKAN INI
             ]);
 
             DB::commit();
@@ -334,11 +346,23 @@ class PemeliharaanController extends Controller
                     ->with('error', 'Tidak dapat mengedit pemeliharaan yang sedang berlangsung atau sudah selesai');
             }
 
+            $bidangId = null; // ← TAMBAHKAN INI
+
+            // ← TAMBAHKAN: Ambil bidang_id dari asset yang dipilih
+            if ($request->jenis_asset == 'server') {
+                $server = Server::find($request->server_id);
+                $bidangId = $server->bidang_id;
+            } else {
+                $website = Website::find($request->website_id);
+                $bidangId = $website->bidang_id;
+            }
+
             $pemeliharaan->update([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
                 'keterangan' => $request->keterangan,
+                'bidang_id' => $bidangId, // ← TAMBAHKAN INI
             ]);
 
             DB::commit();

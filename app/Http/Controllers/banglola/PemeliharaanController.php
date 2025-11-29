@@ -1,65 +1,58 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\banglola;
 
+use App\Http\Controllers\Controller;
 use App\Models\Pemeliharaan;
 use App\Models\banglola\Server;
 use App\Models\banglola\Website;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PemeliharaanController extends Controller
 {
+    private $bidangId = 1; // Sesuaikan dengan ID bidang Banglola
+
     public function index(Request $request)
     {
-        $query = Pemeliharaan::with(['server', 'website']);
+        $query = Pemeliharaan::with(['server', 'website'])
+            ->where('bidang_id', $this->bidangId);
 
-        // Filter berdasarkan pencarian
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('keterangan', 'like', "%{$search}%")
-                    ->orWhereHas('server', function ($q) use ($search) {
-                        $q->where('nama_server', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('website', function ($q) use ($search) {
-                        $q->where('nama_website', 'like', "%{$search}%");
-                    });
-            });
+        // Filter
+        if ($request->search) {
+            $query->where('keterangan', 'like', '%' . $request->search . '%');
         }
-
-        // Filter berdasarkan jenis
-        if ($request->filled('jenis')) {
-            if ($request->jenis == 'server') {
-                $query->whereNotNull('server_id');
-            } elseif ($request->jenis == 'website') {
-                $query->whereNotNull('website_id');
-            }
+        if ($request->jenis == 'server') {
+            $query->whereNotNull('server_id');
+        } elseif ($request->jenis == 'website') {
+            $query->whereNotNull('website_id');
         }
-
-        // Filter berdasarkan tanggal
-        if ($request->filled('tanggal')) {
+        if ($request->status) {
+            $query->where('status_pemeliharaan', $request->status);
+        }
+        if ($request->tanggal) {
             $query->whereDate('tanggal_pemeliharaan', $request->tanggal);
         }
 
-        // Ambil data dengan pagination
         $pemeliharaan = $query->orderBy('tanggal_pemeliharaan', 'desc')->paginate(10);
 
-        // Hitung statistik
-        $totalPemeliharaan = Pemeliharaan::count();
-        $totalServer = Pemeliharaan::whereNotNull('server_id')->count();
-        $totalWebsite = Pemeliharaan::whereNotNull('website_id')->count();
+        // Statistik
+        $totalPemeliharaan = Pemeliharaan::where('bidang_id', $this->bidangId)->count();
+        $totalServer = Pemeliharaan::where('bidang_id', $this->bidangId)->whereNotNull('server_id')->count();
+        $totalWebsite = Pemeliharaan::where('bidang_id', $this->bidangId)->whereNotNull('website_id')->count();
+        $berlangsung = Pemeliharaan::where('bidang_id', $this->bidangId)->where('status_pemeliharaan', 'berlangsung')->count();
 
-        // Ambil data server dan website untuk dropdown
-        // Pilih server yang power_status ON atau STANDBY
-        $servers = Server::whereIn('power_status', ['ON', 'STANDBY'])->orderBy('nama_server')->get();
-        $websites = Website::where('status', 'active')->orderBy('nama_website')->get();
+        // Asset sesuai bidang
+        $servers = Server::where('bidang_id', $this->bidangId)
+            ->whereNotIn('power_status', ['maintenance'])->get();
+        $websites = Website::where('bidang_id', $this->bidangId)
+            ->where('status', '!=', 'maintenance')->get();
 
         return view('banglola.pemeliharaan', compact(
             'pemeliharaan',
             'totalPemeliharaan',
             'totalServer',
             'totalWebsite',
+            'berlangsung',
             'servers',
             'websites'
         ));
@@ -70,94 +63,112 @@ class PemeliharaanController extends Controller
         $request->validate([
             'tanggal_pemeliharaan' => 'required|date',
             'jenis_asset' => 'required|in:server,website',
-            'server_id' => 'required_if:jenis_asset,server|nullable|exists:server,server_id',
-            'website_id' => 'required_if:jenis_asset,website|nullable|exists:website,website_id',
             'keterangan' => 'required|string',
-        ], [
-            'tanggal_pemeliharaan.required' => 'Tanggal pemeliharaan harus diisi',
-            'jenis_asset.required' => 'Jenis asset harus dipilih',
-            'server_id.required_if' => 'Server harus dipilih',
-            'website_id.required_if' => 'Website harus dipilih',
-            'keterangan.required' => 'Keterangan harus diisi',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $data = [
+            'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
+            'keterangan' => $request->keterangan,
+            'status_pemeliharaan' => 'dijadwalkan',
+            'bidang_id' => $this->bidangId,
+        ];
 
-            Pemeliharaan::create([
-                'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
-                'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
-                'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
-                'keterangan' => $request->keterangan,
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('banglola.pemeliharaan')
-                ->with('success', 'Data pemeliharaan berhasil ditambahkan');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal menambahkan data pemeliharaan: ' . $e->getMessage())
-                ->withInput();
+        if ($request->jenis_asset === 'server') {
+            $request->validate(['server_id' => 'required|exists:server,server_id']);
+            $data['server_id'] = $request->server_id;
+        } else {
+            $request->validate(['website_id' => 'required|exists:website,website_id']);
+            $data['website_id'] = $request->website_id;
         }
+
+        Pemeliharaan::create($data);
+
+        return redirect()->back()->with('success', 'Jadwal pemeliharaan berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
     {
+        $pemeliharaan = Pemeliharaan::where('pemeliharaan_id', $id)
+            ->where('bidang_id', $this->bidangId)
+            ->firstOrFail();
+
         $request->validate([
             'tanggal_pemeliharaan' => 'required|date',
             'jenis_asset' => 'required|in:server,website',
-            'server_id' => 'required_if:jenis_asset,server|nullable|exists:server,server_id',
-            'website_id' => 'required_if:jenis_asset,website|nullable|exists:website,website_id',
             'keterangan' => 'required|string',
-        ], [
-            'tanggal_pemeliharaan.required' => 'Tanggal pemeliharaan harus diisi',
-            'jenis_asset.required' => 'Jenis asset harus dipilih',
-            'server_id.required_if' => 'Server harus dipilih',
-            'website_id.required_if' => 'Website harus dipilih',
-            'keterangan.required' => 'Keterangan harus diisi',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $data = [
+            'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
+            'keterangan' => $request->keterangan,
+        ];
 
-            $pemeliharaan = Pemeliharaan::findOrFail($id);
-
-            $pemeliharaan->update([
-                'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
-                'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
-                'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
-                'keterangan' => $request->keterangan,
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('banglola.pemeliharaan')
-                ->with('success', 'Data pemeliharaan berhasil diupdate');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal mengupdate data pemeliharaan: ' . $e->getMessage());
+        if ($request->jenis_asset === 'server') {
+            $data['server_id'] = $request->server_id;
+            $data['website_id'] = null;
+        } else {
+            $data['website_id'] = $request->website_id;
+            $data['server_id'] = null;
         }
+
+        $pemeliharaan->update($data);
+
+        return redirect()->back()->with('success', 'Data pemeliharaan berhasil diupdate!');
     }
 
     public function destroy($id)
     {
-        try {
-            DB::beginTransaction();
+        $pemeliharaan = Pemeliharaan::where('pemeliharaan_id', $id)
+            ->where('bidang_id', $this->bidangId)
+            ->firstOrFail();
 
-            $pemeliharaan = Pemeliharaan::findOrFail($id);
-            $pemeliharaan->delete();
+        $pemeliharaan->delete();
 
-            DB::commit();
+        return redirect()->back()->with('success', 'Data pemeliharaan berhasil dihapus!');
+    }
 
-            return redirect()->route('banglola.pemeliharaan')
-                ->with('success', 'Data pemeliharaan berhasil dihapus');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal menghapus data pemeliharaan: ' . $e->getMessage());
+    public function start($id)
+    {
+        $pemeliharaan = Pemeliharaan::where('pemeliharaan_id', $id)
+            ->where('bidang_id', $this->bidangId)
+            ->firstOrFail();
+
+        if ($pemeliharaan->canStart()) {
+            $pemeliharaan->update(['status_pemeliharaan' => 'berlangsung']);
+            return redirect()->back()->with('success', 'Pemeliharaan dimulai!');
         }
+
+        return redirect()->back()->with('error', 'Tidak dapat memulai pemeliharaan!');
+    }
+
+    public function finish($id)
+    {
+        $pemeliharaan = Pemeliharaan::where('pemeliharaan_id', $id)
+            ->where('bidang_id', $this->bidangId)
+            ->firstOrFail();
+
+        if ($pemeliharaan->canFinish()) {
+            $pemeliharaan->update([
+                'status_pemeliharaan' => 'selesai',
+                'tanggal_selesai_aktual' => now()
+            ]);
+            return redirect()->back()->with('success', 'Pemeliharaan selesai!');
+        }
+
+        return redirect()->back()->with('error', 'Tidak dapat menyelesaikan pemeliharaan!');
+    }
+
+    public function cancel($id)
+    {
+        $pemeliharaan = Pemeliharaan::where('pemeliharaan_id', $id)
+            ->where('bidang_id', $this->bidangId)
+            ->firstOrFail();
+
+        if ($pemeliharaan->canCancel()) {
+            $pemeliharaan->update(['status_pemeliharaan' => 'dibatalkan']);
+            return redirect()->back()->with('success', 'Pemeliharaan dibatalkan!');
+        }
+
+        return redirect()->back()->with('error', 'Tidak dapat membatalkan pemeliharaan!');
     }
 }

@@ -11,13 +11,28 @@ class PenggunaSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat bidang terlebih dahulu
-        $bidangInfratik = Bidang::create([
-            'nama_bidang' => 'Infrastruktur TIK',
-            'singkatan_bidang' => 'INFRATIK',
-        ]);
+        // Pastikan bidang-bidang penting ada (tidak duplikat)
+        $bidangBanglola = Bidang::firstOrCreate(
+            ['singkatan_bidang' => 'BANGLOLA'],
+            ['nama_bidang' => 'Pengembangan dan Pengelolaan Sistem Informasi']
+        );
 
-        // Buat pengguna untuk setiap role
+        $bidangPamsis = Bidang::firstOrCreate(
+            ['singkatan_bidang' => 'PAMSIS'],
+            ['nama_bidang' => 'Pengamanan Sistem Informasi dan Persandian']
+        );
+
+        $bidangInfratik = Bidang::firstOrCreate(
+            ['singkatan_bidang' => 'INFRATIK'],
+            ['nama_bidang' => 'Infrastruktur Teknologi Informasi dan Komunikasi']
+        );
+
+        $bidangBagtu = Bidang::firstOrCreate(
+            ['singkatan_bidang' => 'BAGTU'],
+            ['nama_bidang' => 'Bagian Tata Usaha']
+        );
+
+        // Siapkan array user dengan bidang_id yang sesuai (null bila tidak perlu)
         $users = [
             [
                 'nama_lengkap' => 'Super Administrator',
@@ -32,7 +47,7 @@ class PenggunaSeeder extends Seeder
                 'username_email' => 'banglola',
                 'password' => Hash::make('password'),
                 'role' => 'banglola',
-                'bidang_id' => $bidangInfratik->bidang_id,
+                'bidang_id' => $bidangBanglola->bidang_id,
                 'status' => 'active',
             ],
             [
@@ -40,7 +55,7 @@ class PenggunaSeeder extends Seeder
                 'username_email' => 'pamsis',
                 'password' => Hash::make('password'),
                 'role' => 'pamsis',
-                'bidang_id' => $bidangInfratik->bidang_id,
+                'bidang_id' => $bidangPamsis->bidang_id,
                 'status' => 'active',
             ],
             [
@@ -56,7 +71,7 @@ class PenggunaSeeder extends Seeder
                 'username_email' => 'tatausaha',
                 'password' => Hash::make('password'),
                 'role' => 'tatausaha',
-                'bidang_id' => null,
+                'bidang_id' => $bidangBagtu->bidang_id, // opsional: bisa null juga
                 'status' => 'active',
             ],
             [
@@ -70,7 +85,11 @@ class PenggunaSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
-            Pengguna::create($user);
+            // gunakan updateOrCreate supaya tidak bikin duplikat bila seeder dipanggil ulang
+            Pengguna::updateOrCreate(
+                ['username_email' => $user['username_email']],
+                $user
+            );
         }
     }
 }

@@ -25,18 +25,21 @@ use App\Http\Controllers\banglola\WebsiteController as BanglolaWebsite;
 use App\Http\Controllers\banglola\DashboardController as BanglolaDashboard;
 use App\Http\Controllers\banglola\ServerController as BanglolaServer;
 use App\Http\Controllers\banglola\LogAktivitasController as BanglolaLogAktivitas;
+use App\Http\Controllers\banglola\PemeliharaanController as BanglolaPemeliharaan;
 
 // Infratik
 use App\Http\Controllers\infratik\WebsiteController as InfratikWebsite;
 use App\Http\Controllers\infratik\DashboardController as InfratikDashboard;
 use App\Http\Controllers\infratik\ServerController as InfratikServer;
 use App\Http\Controllers\infratik\LogAktivitasController as InfratikLogAktivitas;
+use App\Http\Controllers\infratik\PemeliharaanController as InfratikPemeliharaan;
 
 // Pamsis
 use App\Http\Controllers\pamsis\WebsiteController as PamsisWebsite;
 use App\Http\Controllers\pamsis\DashboardController as PamsisDashboard;
 use App\Http\Controllers\pamsis\ServerController as PamsisServer;
 use App\Http\Controllers\pamsis\LogAktivitasController as PamsisLogAktivitas;
+use App\Http\Controllers\pamsis\PemeliharaanController as PamsisPemeliharaan;
 
 // Tata Usaha
 use App\Http\Controllers\tatausaha\WebsiteController as TataUsahaWebsite;
@@ -190,13 +193,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/website/delete/{id}', [BanglolaWebsite::class, 'destroy'])->name('website.destroy');
 
         // Banglola - Pemeliharaan
-        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('pemeliharaan');
-        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('pemeliharaan.store');
-        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('pemeliharaan.update');
-        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('pemeliharaan.destroy');
-        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('pemeliharaan.start');
-        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('pemeliharaan.finish');
-        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('pemeliharaan.cancel');
+        Route::get('/pemeliharaan', [BanglolaPemeliharaan::class, 'index'])->name('pemeliharaan');
+        Route::post('/pemeliharaan/store', [BanglolaPemeliharaan::class, 'store'])->name('pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [BanglolaPemeliharaan::class, 'update'])->name('pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [BanglolaPemeliharaan::class, 'destroy'])->name('pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [BanglolaPemeliharaan::class, 'start'])->name('pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [BanglolaPemeliharaan::class, 'finish'])->name('pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [BanglolaPemeliharaan::class, 'cancel'])->name('pemeliharaan.cancel');
+
 
         // Banglola - Log Aktivitas
         Route::get('/log-aktivitas', [BanglolaLogAktivitas::class, 'index'])->name('logAktivitas');
@@ -225,13 +229,13 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/website/delete/{id}', [PamsisWebsite::class, 'destroy'])->name('website.destroy');
 
         // Pamsis - Pemeliharaan
-        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('pemeliharaan');
-        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('pemeliharaan.store');
-        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('pemeliharaan.update');
-        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('pemeliharaan.destroy');
-        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('pemeliharaan.start');
-        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('pemeliharaan.finish');
-        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('pemeliharaan.cancel');
+        Route::get('/pemeliharaan', [PamsisPemeliharaan::class, 'index'])->name('pemeliharaan');
+        Route::post('/pemeliharaan/store', [PamsisPemeliharaan::class, 'store'])->name('pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [PamsisPemeliharaan::class, 'update'])->name('pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [PamsisPemeliharaan::class, 'destroy'])->name('pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [PamsisPemeliharaan::class, 'start'])->name('pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [PamsisPemeliharaan::class, 'finish'])->name('pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [PamsisPemeliharaan::class, 'cancel'])->name('pemeliharaan.cancel');
 
         // Pamsis - Log Aktivitas
         Route::get('/log-aktivitas', [PamsisLogAktivitas::class, 'index'])->name('logAktivitas');
@@ -260,14 +264,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/website/delete/{id}', [InfratikWebsite::class, 'destroy'])->name('website.destroy');
 
         // Infratik - Pemeliharaan
-        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('pemeliharaan');
-        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('pemeliharaan.store');
-        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('pemeliharaan.update');
-        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('pemeliharaan.destroy');
-        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('pemeliharaan.start');
-        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('pemeliharaan.finish');
-        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('pemeliharaan.cancel');
-
+        Route::get('/pemeliharaan', [InfratikPemeliharaan::class, 'index'])->name('pemeliharaan');
+        Route::post('/pemeliharaan/store', [InfratikPemeliharaan::class, 'store'])->name('pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [InfratikPemeliharaan::class, 'update'])->name('pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [InfratikPemeliharaan::class, 'destroy'])->name('pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [InfratikPemeliharaan::class, 'start'])->name('pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [InfratikPemeliharaan::class, 'finish'])->name('pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [InfratikPemeliharaan::class, 'cancel'])->name('pemeliharaan.cancel');
+        
         // Infratik - Log Aktivitas
         Route::get('/log-aktivitas', [InfratikLogAktivitas::class, 'index'])->name('logAktivitas');
     });
@@ -295,14 +299,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/website/delete/{id}', [TataUsahaWebsite::class, 'destroy'])->name('website.destroy');
 
         // tatausaha - Pemeliharaan
-        Route::get('/pemeliharaan', [PemeliharaanController::class, 'index'])->name('pemeliharaan');
-        Route::post('/pemeliharaan/store', [PemeliharaanController::class, 'store'])->name('pemeliharaan.store');
-        Route::put('/pemeliharaan/update/{id}', [PemeliharaanController::class, 'update'])->name('pemeliharaan.update');
-        Route::delete('/pemeliharaan/delete/{id}', [PemeliharaanController::class, 'destroy'])->name('pemeliharaan.destroy');
-        Route::post('/pemeliharaan/{id}/start', [PemeliharaanController::class, 'start'])->name('pemeliharaan.start');
-        Route::post('/pemeliharaan/{id}/finish', [PemeliharaanController::class, 'finish'])->name('pemeliharaan.finish');
-        Route::post('/pemeliharaan/{id}/cancel', [PemeliharaanController::class, 'cancel'])->name('pemeliharaan.cancel');
-
+        Route::get('/pemeliharaan', [TatausahaPemeliharaan::class, 'index'])->name('pemeliharaan');
+        Route::post('/pemeliharaan/store', [TatausahaPemeliharaan::class, 'store'])->name('pemeliharaan.store');
+        Route::put('/pemeliharaan/update/{id}', [TatausahaPemeliharaan::class, 'update'])->name('pemeliharaan.update');
+        Route::delete('/pemeliharaan/delete/{id}', [TatausahaPemeliharaan::class, 'destroy'])->name('pemeliharaan.destroy');
+        Route::post('/pemeliharaan/{id}/start', [TatausahaPemeliharaan::class, 'start'])->name('pemeliharaan.start');
+        Route::post('/pemeliharaan/{id}/finish', [TatausahaPemeliharaan::class, 'finish'])->name('pemeliharaan.finish');
+        Route::post('/pemeliharaan/{id}/cancel', [TatausahaPemeliharaan::class, 'cancel'])->name('pemeliharaan.cancel');
+        
         // tatausaha - Log Aktivitas
         Route::get('/log-aktivitas', [TataUsahaLogAktivitas::class, 'index'])->name('logAktivitas');
     });

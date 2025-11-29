@@ -35,6 +35,11 @@ class Website extends Model
         return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
     }
 
+     public function pemeliharaan()
+    {
+        return $this->hasMany(Pemeliharaan::class, 'website_id', 'website_id');
+    }
+    
     // Relasi ke Satker
     public function satker()
     {

@@ -9,6 +9,7 @@ use App\Models\superadmin\RakServer;
 use App\Models\superadmin\Bidang;
 use App\Models\superadmin\Satker;
 use App\Models\banglola\Website;
+use App\Models\banglola\Pemeliharaan;
 
 class Server extends Model
 {
@@ -39,6 +40,11 @@ class Server extends Model
     public function bidang()
     {
         return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
+    }
+
+     public function pemeliharaan()
+    {
+        return $this->hasMany(Pemeliharaan::class, 'server_id', 'server_id');
     }
 
     public function satker()

@@ -18,6 +18,7 @@ class Pemeliharaan extends Model
     protected $fillable = [
         'server_id',
         'website_id',
+        'bidang_id',
         'tanggal_pemeliharaan',
         'status_pemeliharaan',
         'status_sebelumnya',
@@ -38,6 +39,13 @@ class Pemeliharaan extends Model
         return $this->belongsTo(Server::class, 'server_id', 'server_id');
     }
 
+    // Relasi ke bidang
+     public function bidang()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id', 'bidang_id');
+    }
+
+
     /**
      * Relasi ke tabel Website
      */
@@ -45,6 +53,13 @@ class Pemeliharaan extends Model
     {
         return $this->belongsTo(Website::class, 'website_id', 'website_id');
     }
+
+    // Scope untuk filter berdasarkan bidang (TAMBAHKAN INI)
+    public function scopeByBidang($query, $bidangId)
+    {
+        return $query->where('bidang_id', $bidangId);
+    }
+
 
     /**
      * Accessor untuk mendapatkan nama asset
