@@ -148,13 +148,13 @@
       </div>
     </div>
     @empty
-    <div class="col-12">
-      <div class="alert alert-info text-center">
-        <i class="fa-solid fa-inbox fa-3x mb-3 d-block"></i>
-        <p class="mb-0">Belum ada data website</p>
-      </div>
-    </div>
-    @endforelse
+<div class="col-12">
+  <div class="alert alert-light text-center border-0" style="background-color: #f8f9fa;">
+    <i class="fa-solid fa-inbox fa-3x mb-3 d-block" style="color: #6c757d; opacity: 0.6;"></i>
+    <p class="mb-0" style="color: #6c757d;">Belum ada data website</p>
+  </div>
+</div>
+@endforelse
   </div>
 </div>
 

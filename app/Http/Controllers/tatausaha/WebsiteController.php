@@ -15,7 +15,17 @@ class WebsiteController extends Controller
 {
     public function index()
     {
-        $websites = Website::with(['bidang', 'satker', 'server'])->get();
+        $user = Auth::user();
+        
+        // Jika superadmin, tampilkan semua website
+        // Jika bukan, hanya tampilkan website dari bidang user
+        if ($user->role === 'superadmin') {
+            $websites = Website::with(['bidang', 'satker', 'server'])->get();
+        } else {
+            $websites = Website::with(['bidang', 'satker', 'server'])
+                ->where('bidang_id', $user->bidang_id)
+                ->get();
+        }
 
         // Hitung statistik
         $total = $websites->count();
@@ -42,16 +52,23 @@ class WebsiteController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $validated = $request->validate([
             'nama_website' => 'required|string|max:150',
             'url' => 'required|url|max:255|unique:website,url',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
-            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
+            'server_id' => 'nullable|exists:server,server_id',
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
         ]);
+
+        // Jika bukan superadmin, paksa bidang_id sesuai bidang user
+        if ($user->role !== 'superadmin') {
+            $validated['bidang_id'] = $user->bidang_id;
+        }
 
         $website = Website::create($validated);
 
@@ -90,7 +107,13 @@ class WebsiteController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user = Auth::user();
         $website = Website::findOrFail($id);
+
+        // Cek authorization: jika bukan superadmin, hanya bisa edit website bidangnya sendiri
+        if ($user->role !== 'superadmin' && $website->bidang_id !== $user->bidang_id) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah website ini.');
+        }
 
         // Simpan data lama untuk log
         $namaLama = $website->nama_website;
@@ -106,11 +129,16 @@ class WebsiteController extends Controller
             'url' => 'required|url|max:255|unique:website,url,' . $id . ',website_id',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
-            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
+            'server_id' => 'nullable|exists:server,server_id',
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
         ]);
+
+        // Jika bukan superadmin, tidak boleh mengubah bidang_id
+        if ($user->role !== 'superadmin') {
+            $validated['bidang_id'] = $user->bidang_id;
+        }
 
         $website->update($validated);
 
@@ -166,7 +194,13 @@ class WebsiteController extends Controller
 
     public function destroy($id)
     {
+        $user = Auth::user();
         $website = Website::findOrFail($id);
+
+        // Cek authorization: jika bukan superadmin, hanya bisa hapus website bidangnya sendiri
+        if ($user->role !== 'superadmin' && $website->bidang_id !== $user->bidang_id) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus website ini.');
+        }
 
         // Simpan data untuk log
         $namaWebsite = $website->nama_website;
@@ -189,7 +223,13 @@ class WebsiteController extends Controller
 
     public function detail(Request $request, $id)
     {
+        $user = Auth::user();
         $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
+
+        // Cek authorization: jika bukan superadmin, hanya bisa lihat detail website bidangnya sendiri
+        if ($user->role !== 'superadmin' && $website->bidang_id !== $user->bidang_id) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat website ini.');
+        }
 
         // Jika request dari AJAX, return JSON
         if ($request->ajax()) {

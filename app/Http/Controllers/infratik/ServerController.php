@@ -19,12 +19,19 @@ class ServerController extends Controller
      */
     public function index()
     {
-        $servers = Server::with(['rak', 'bidang', 'satker', 'websites'])->get();
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
+        // Filter server hanya untuk bidang user
+        $servers = Server::with(['rak', 'bidang', 'satker', 'websites'])
+            ->where('bidang_id', $bidang_id)
+            ->get();
+
         $raks = RakServer::all();
         $bidangs = Bidang::all();
         $satkers = Satker::all();
 
-        // Hitung statistik
+        // Hitung statistik (hanya untuk bidang user)
         $total = $servers->count();
         $aktif = $servers->where('power_status', 'ON')->count();
         $maintenance = $servers->where('power_status', 'STANDBY')->count();
@@ -66,6 +73,9 @@ class ServerController extends Controller
      */
     public function store(Request $request)
     {
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
         $validated = $request->validate([
             'nama_server' => 'required|string|max:150|unique:server,nama_server',
             'brand' => 'nullable|string|max:100',
@@ -77,6 +87,9 @@ class ServerController extends Controller
             'keterangan' => 'nullable|string',
             'power_status' => 'nullable|in:ON,OFF,STANDBY',
         ]);
+
+        // Force bidang_id dari user yang login
+        $validated['bidang_id'] = $bidang_id;
 
         // VALIDASI SLOT
         if ($request->rak_id && $request->u_slot) {
@@ -171,7 +184,14 @@ class ServerController extends Controller
      */
     public function detail($id)
     {
-        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
+        // Cek apakah server milik bidang user
+        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])
+            ->where('server_id', $id)
+            ->where('bidang_id', $bidang_id)
+            ->firstOrFail();
 
         return response()->json([
             'status' => 'success',
@@ -184,7 +204,14 @@ class ServerController extends Controller
      */
     public function edit($id)
     {
-        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
+        // Cek apakah server milik bidang user
+        $server = Server::with(['rak', 'bidang', 'satker', 'websites'])
+            ->where('server_id', $id)
+            ->where('bidang_id', $bidang_id)
+            ->firstOrFail();
 
         return response()->json([
             'status' => 'success',
@@ -197,7 +224,13 @@ class ServerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $server = Server::findOrFail($id);
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
+        // Cek apakah server milik bidang user
+        $server = Server::where('server_id', $id)
+            ->where('bidang_id', $bidang_id)
+            ->firstOrFail();
 
         // Simpan data lama untuk log
         $namaLama = $server->nama_server;
@@ -220,6 +253,9 @@ class ServerController extends Controller
             'power_status' => 'required|in:ON,OFF,STANDBY',
             'keterangan' => 'nullable|string',
         ]);
+
+        // Force bidang_id tetap milik user yang login (tidak boleh diubah)
+        $validated['bidang_id'] = $bidang_id;
 
         // VALIDASI SLOT (exclude server yang sedang diedit)
         if ($request->rak_id && $request->u_slot) {
@@ -348,7 +384,14 @@ class ServerController extends Controller
      */
     public function destroy($id)
     {
-        $server = Server::findOrFail($id);
+        // Ambil bidang_id dari user yang sedang login
+        $bidang_id = Auth::user()->bidang_id;
+
+        // Cek apakah server milik bidang user
+        $server = Server::where('server_id', $id)
+            ->where('bidang_id', $bidang_id)
+            ->firstOrFail();
+
         $serverName = $server->nama_server;
 
         // Ambil detail untuk log

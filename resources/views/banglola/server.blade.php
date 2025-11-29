@@ -86,108 +86,88 @@
                 </div>
             </div>
 
-           {{-- Table --}}
-<div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-            <tr>
-                <th width="5%">No</th>
-                <th width="20%">Nama Server</th>
-                <th width="12%">Rak / Slot</th>
-                <th width="18%">Bidang</th>
-                <th width="18%">Satker</th>
-                <th width="8%" class="text-center">Website</th>
-                <th width="10%" class="text-center">Status</th>
-                <th width="9%" class="text-center">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($servers as $index => $server)
-            @php
-            $canModify = false;
-            $user = auth()->user();
-
-            if($user->role === 'superadmin') {
-                $canModify = true;
-            } elseif($user->role === 'banglola') {
-                // Cek ownership
-                if ($user->bidang_id && $server->bidang_id) {
-                    $canModify = $user->bidang_id === $server->bidang_id; 
-                } elseif ($user->satker_id && $server->satker_id) {
-                    $canModify = $user->satker_id === $server->satker_id;   
-                }
-            }
-            @endphp     
-            <tr class="server-row {{ $canModify ? '' : 'bg-light' }}"
-                style="{{ $canModify ? '' : 'opacity: 0.5;' }}">
-                <td class=>{{ $index + 1 }}</td>
-                <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
-                <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
-                <td class="server-bidang">
-                    {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
-                </td>
-                <td class="server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
-                <td class="text-center">
-                    <span class="badge bg-info">{{ $server->websites->count() }}</span>
-                </td>
-                <td class="text-center">
-                    @if($server->power_status==='ON')
-                        <span class="badge bg-success">
-                            <i class="fa fa-check-circle me-1"></i>Aktif
-                        </span>
-                    @elseif($server->power_status==='STANDBY')
-                        <span class="badge bg-warning">
-                            <i class="fa fa-wrench me-1"></i>Maintenance
-                        </span>
-                    @else
-                        <span class="badge bg-danger">
-                            <i class="fa fa-times-circle me-1"></i>Tidak Aktif
-                        </span>
-                    @endif
-                </td>
-                <td class="text-center">
-                    <div class="btn-group btn-group-sm" role="group">
-                        {{-- Detail --}}
-                        <button class="btn btn-outline-info btn-detail-server" 
-                            data-id="{{ $server->server_id }}" 
-                            title="Detail">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                        
-                        @if($canModify)
-                        {{-- Edit --}}
-                        <button class="btn btn-outline-warning btn-edit-server" 
-                            data-id="{{ $server->server_id }}" 
-                            title="Edit">
-                            <i class="fa fa-edit"></i>
-                        </button>
-                        
-                        {{-- Delete --}}
-                        <button class="btn btn-outline-danger btn-hapus" 
-                            data-id="{{ $server->server_id }}" 
-                            data-nama="{{ $server->nama_server }}"
-                            title="Hapus">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                        @else
-                        {{-- Icon locked untuk yang bukan owner --}}
-                        <span class="text-muted" style="font-size: 0.75rem; padding: 0 5px;">
-                            <i class="fa fa-lock"></i>
-                        </span>
-                        @endif  
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="text-center text-muted py-4">
-                    <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                    Belum ada data server
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="15%">Nama Server</th>
+                            <th width="12%">Rak / Slot</th>
+                            <th width="15%">Bidang</th>
+                            <th width="15%">Satker</th>
+                            <th width="10%" class="text-center">Website</th>
+                            <th width="10%" class="text-center">Status</th>
+                            <th width="18%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($servers as $index => $server)
+                        <tr class="server-row">
+                            <td>{{ $index + 1 }}</td>
+                            <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
+                            <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
+                            <td class="server-bidang">
+                                {{ $server->bidang ? $server->bidang->nama_bidang : '-' }}
+                            </td>
+                            <td class="server-satker">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-info">{{ $server->websites->count() }}</span>
+                            </td>
+                            <td class="text-center">
+                                @if($server->power_status==='ON')
+                                    <span class="badge bg-success">
+                                        <i class="fa fa-check-circle me-1"></i>Aktif
+                                    </span>
+                                @elseif($server->power_status==='STANDBY')
+                                    <span class="badge bg-warning">
+                                        <i class="fa fa-wrench me-1"></i>Maintenance
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger">
+                                        <i class="fa fa-times-circle me-1"></i>Tidak Aktif
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    {{-- Detail --}}
+                                    <button class="btn btn-outline-info btn-sm btn-detail-server" 
+                                        data-id="{{ $server->server_id }}" 
+                                        title="Detail">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                    
+                                    {{-- Edit --}}
+                                    <button class="btn btn-outline-warning btn-sm btn-edit-server" 
+                                        data-id="{{ $server->server_id }}" 
+                                        title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    
+                                    {{-- Delete --}}
+                                    <button class="btn btn-outline-danger btn-sm btn-hapus" 
+                                        data-id="{{ $server->server_id }}" 
+                                        data-nama="{{ $server->nama_server }}"
+                                        title="Hapus">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+<tr>
+    <td colspan="8" class="text-center text-muted py-4">
+        <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+        Belum ada data server
+    </td>
+</tr>
+@endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Modal Detail Server --}}
@@ -632,6 +612,16 @@
     padding: 1.5rem;
 }
 
+/* Empty State Styling */
+tbody tr td.text-center.text-muted {
+    background-color: #f8f9fa !important;
+}
+
+tbody tr td.text-muted i.fa-inbox {
+    color: #6c757d !important;
+    opacity: 0.6 !important;
+}
+
 /* Filter Bar */
 .filter-bar {
     background: #f8f9fa;
@@ -653,6 +643,46 @@
     padding: 0.35rem 0.65rem;
     font-weight: 500;
     font-size: 0.75rem;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.btn-outline-info {
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #fff;
+}
+
+.btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
 }
 
 /* Button Group */
@@ -764,113 +794,63 @@ $(document).ready(function() {
         }
     });
 
-    // === LOAD AVAILABLE SLOTS (TAMBAH) ===
+    // === LOAD AVAILABLE SLOTS ===
     function loadAvailableSlots(rakId) {
-        console.log('🔍 Loading slots for rak_id:', rakId);
-        
         $('#loadingSlots').show();
         $('#slotSelectWrapper').hide();
         $('#slotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke banglola
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
             type: 'GET',
-            dataType: 'json',
             success: function(response) {
-                console.log('✅ Response received:', response);
-                
-                if (response && response.success === true && Array.isArray(response.available_slots)) {
-                    availableSlots = response.available_slots;
-                    console.log('✅ Available slots:', availableSlots);
-                    
-                    populateSlotDropdowns(availableSlots);
-                    
-                    $('#loadingSlots').hide();
-                    $('#slotSelectWrapper').show();
-                } else {
-                    console.error('❌ Invalid response:', response);
-                    alert('Format response tidak valid');
-                    $('#loadingSlots').hide();
-                }
+                availableSlots = response.available_slots;
+                populateSlotDropdowns(availableSlots);
+                $('#loadingSlots').hide();
+                $('#slotSelectWrapper').show();
             },
-            error: function(xhr, status, error) {
-                console.error('❌ AJAX Error:');
-                console.error('Status:', xhr.status);
-                console.error('Response:', xhr.responseText);
-                
-                alert('Gagal memuat data slot. Cek console untuk detail.');
+            error: function() {
+                alert('Gagal memuat data slot');
                 $('#loadingSlots').hide();
             }
         });
     }
 
-    // === LOAD AVAILABLE SLOTS (EDIT) ===
     function loadAvailableSlotsForEdit(rakId, serverId) {
-        console.log('🔍 Loading slots for edit - rak_id:', rakId);
-        
         $('#editLoadingSlots').show();
         $('#editSlotSelectWrapper').hide();
         $('#editSlotWrapper').show();
 
         $.ajax({
-            url: `/banglola/server/rak/${rakId}/available-slots`, // ✅ FIX: Ganti ke banglola
+            url: `/superadmin/server/rak/${rakId}/available-slots`,
             type: 'GET',
-            dataType: 'json',
             success: function(response) {
-                console.log('✅ Edit Response received:', response);
-                
-                if (response && response.success === true && Array.isArray(response.available_slots)) {
-                    availableSlots = response.available_slots;
-                    console.log('✅ Edit slots:', availableSlots);
-                    
-                    populateEditSlotDropdowns(availableSlots);
-                    
-                    $('#editLoadingSlots').hide();
-                    $('#editSlotSelectWrapper').show();
-                } else {
-                    console.error('❌ Invalid edit response:', response);
-                    alert('Format response tidak valid');
-                    $('#editLoadingSlots').hide();
-                }
+                availableSlots = response.available_slots;
+                populateEditSlotDropdowns(availableSlots);
+                $('#editLoadingSlots').hide();
+                $('#editSlotSelectWrapper').show();
             },
-            error: function(xhr, status, error) {
-                console.error('❌ Edit AJAX Error:');
-                console.error('Status:', xhr.status);
-                console.error('Response:', xhr.responseText);
-                
-                alert('Gagal memuat data slot. Cek console untuk detail.');
+            error: function() {
+                alert('Gagal memuat data slot');
                 $('#editLoadingSlots').hide();
             }
         });
     }
 
-    // === POPULATE SLOT DROPDOWNS ===
     function populateSlotDropdowns(slots) {
-        console.log('📋 Populating dropdowns with:', slots);
-        
-        $('#singleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
-        $('#slotStart, #slotEnd').empty().append('<option value="">Pilih</option>');
-        
+        $('#singleSlotSelect, #slotStart, #slotEnd').empty().append('<option value="">Pilih Slot</option>');
         slots.forEach(slot => {
             $('#singleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
             $('#slotStart, #slotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
-        
-        console.log('✅ Dropdowns populated');
     }
 
     function populateEditSlotDropdowns(slots) {
-        console.log('📋 Populating edit dropdowns with:', slots);
-        
-        $('#editSingleSlotSelect').empty().append('<option value="">Pilih Slot</option>');
-        $('#editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih</option>');
-        
+        $('#editSingleSlotSelect, #editSlotStart, #editSlotEnd').empty().append('<option value="">Pilih Slot</option>');
         slots.forEach(slot => {
             $('#editSingleSlotSelect').append(`<option value="${slot}">Slot ${slot}U</option>`);
             $('#editSlotStart, #editSlotEnd').append(`<option value="${slot}">${slot}U</option>`);
         });
-        
-        console.log('✅ Edit dropdowns populated');
     }
 
     // === RANGE SLOT CHANGE ===
@@ -935,16 +915,12 @@ $(document).ready(function() {
                 }
                 $('#detailWebsites').html(websitesHtml);
                 
-                let statusBadge = s.power_status === 'ON' ? '<span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>' :
-                                  s.power_status === 'STANDBY' ? '<span class="badge bg-warning"><i class="fa fa-wrench me-1"></i>Maintenance</span>' :
-                                  '<span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>';
+                let statusBadge = s.power_status === 'ON' ? '<span class="badge bg-success">Aktif</span>' :
+                                  s.power_status === 'STANDBY' ? '<span class="badge bg-warning">Maintenance</span>' :
+                                  '<span class="badge bg-danger">Tidak Aktif</span>';
                 $('#detailStatus').html(statusBadge);
                 $('#detailKeterangan').html(s.keterangan ?? '-');
                 $('#modalDetailServer').modal('show');
-            },
-            error: function(xhr) {
-                alert('Gagal memuat data server');
-                console.error(xhr);
             }
         });
     });
@@ -995,14 +971,6 @@ $(document).ready(function() {
 
                 $('#editServerForm').attr('action', `/banglola/server/update/${s.server_id}`);
                 $('#modalEditServer').modal('show');
-            },
-            error: function(xhr) {
-                if(xhr.status === 403) {
-                    alert('Anda tidak memiliki akses untuk mengedit server ini.');
-                } else {
-                    alert('Gagal memuat data server');
-                }
-                console.error(xhr);
             }
         });
     });
@@ -1054,7 +1022,7 @@ $(document).ready(function() {
     });
 
     // === MODAL HAPUS ===
-    $(document).on('click', '.btn-hapus', function() {
+    $('.btn-hapus').on('click', function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         $('#namaServerHapus').text(nama);
@@ -1063,8 +1031,6 @@ $(document).ready(function() {
         modal.show();
     });
 });
-
 </script>
 @endpush
-
 @endsection
