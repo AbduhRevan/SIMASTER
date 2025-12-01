@@ -12,6 +12,10 @@ use App\Models\superadmin\Website;
 use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Auth;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ServerExport;
+
 class ServerController extends Controller
 {
     /**
@@ -40,6 +44,89 @@ class ServerController extends Controller
             'bidangs',
             'satkers'
         ));
+    }
+
+    // Export PDF
+      public function exportPDF(Request $request)
+    {
+        $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
+        
+        // Filter berdasarkan rak (nomor_rak)
+        if ($request->filled('rak')) {
+            $query->whereHas('rak', function($q) use ($request) {
+                $q->where('nomor_rak', $request->rak);
+            });
+        }
+        
+        // Filter berdasarkan bidang (nama_bidang)
+        if ($request->filled('bidang')) {
+            $query->whereHas('bidang', function($q) use ($request) {
+                $q->where('nama_bidang', $request->bidang);
+            });
+        }
+        
+        // Filter berdasarkan satker (nama_satker)
+        if ($request->filled('satker')) {
+            $query->whereHas('satker', function($q) use ($request) {
+                $q->where('nama_satker', $request->satker);
+            });
+        }
+        
+        // Filter berdasarkan status (power_status)
+        if ($request->filled('status')) {
+            $query->where('power_status', $request->status);
+        }
+        
+        $servers = $query->get();
+        
+        // Informasi filter untuk ditampilkan di laporan
+        $filters = [
+            'rak' => $request->rak ?? 'Semua',
+            'bidang' => $request->bidang ?? 'Semua',
+            'satker' => $request->satker ?? 'Semua',
+            'status' => $this->getStatusLabel($request->status) ?? 'Semua',
+        ];
+        
+        // Statistik
+        $stats = [
+            'total' => $servers->count(),
+            'aktif' => $servers->where('power_status', 'ON')->count(),
+            'maintenance' => $servers->where('power_status', 'STANDBY')->count(),
+            'tidak_aktif' => $servers->where('power_status', 'OFF')->count(),
+        ];
+        
+        $pdf = Pdf::loadView('superadmin.server.pdf', compact('servers', 'filters', 'stats'))
+                  ->setPaper('a4', 'landscape');
+        
+        // Log aktivitas
+        LogAktivitas::log(
+            'EXPORT',
+            'server',
+            'Mengexport laporan server ke PDF dengan filter: ' . json_encode($filters),
+            Auth::id()
+        );
+        
+        return $pdf->download('laporan-server-' . date('Y-m-d-His') . '.pdf');
+    }
+    
+
+    /**
+     * Helper function untuk convert status code ke label
+     */
+    private function getStatusLabel($status)
+    {
+        if (!$status) return null;
+        
+        switch($status) {
+            case 'ON':
+                return 'Aktif';
+            case 'STANDBY':
+                return 'Maintenance';
+            case 'OFF':
+                return 'Tidak Aktif';
+            default:
+                return $status;
+        }
     }
 
     /**

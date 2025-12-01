@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('log_aktivitas', function (Blueprint $table) {
             $table->id('log_id');
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->enum('aksi', ['CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'VIEW']);
+            $table->enum('aksi', ['CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'VIEW', 'EXPORT']);
             $table->enum('entitas_diubah', ['server', 'website', 'pengguna', 'bidang', 'satuan_kerja', 'rak_server', 'pemeliharaan']);
             $table->text('deskripsi')->nullable();
             $table->timestamp('waktu_aksi')->useCurrent();

@@ -20,6 +20,7 @@ use App\Http\Controllers\superadmin\DashboardController as SuperAdminDashboard;
 use App\Http\Controllers\superadmin\ServerController as SuperAdminServer;
 use App\Http\Controllers\superadmin\LogAktivitasController;
 
+
 // Banglola
 use App\Http\Controllers\banglola\WebsiteController as BanglolaWebsite;
 use App\Http\Controllers\banglola\DashboardController as BanglolaDashboard;
@@ -111,6 +112,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/server/{id}/edit', [SuperadminServer::class, 'edit'])->name('server.edit');
         Route::put('/server/update/{id}', [SuperadminServer::class, 'update'])->name('server.update');
         Route::delete('/server/{id}', [SuperadminServer::class, 'destroy'])->name('server.destroy');
+        Route::get('/server/export-pdf', [SuperadminServer::class, 'exportPDF'])->name('server.export.pdf');
+        Route::get('/server/export-excel', [SuperadminServer::class, 'exportExcel'])->name('server.export.excel');
+
 
         // ====================================================================
         // MANAJEMEN ASET - WEBSITE

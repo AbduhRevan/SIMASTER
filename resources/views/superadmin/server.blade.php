@@ -60,15 +60,21 @@
     </div>
 
     {{-- ======= DAFTAR SERVER ======= --}}
-    <div class="card-content">
-        <div class="card-header-custom d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold">
-                <i class="fa fa-list me-2"></i> Daftar Server
-            </h6>
-            <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
-                <i class="fa fa-plus me-1"></i> Tambah Server
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+        <i class="fa fa-list me-2"></i> Daftar Server
+    </h6>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-danger btn-sm" onclick="exportServerPDF()">
+                <i class="fa fa-file-pdf me-1"></i> Export PDF
             </button>
         </div>
+        <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
+            <i class="fa fa-plus me-1"></i> Tambah Server
+        </button>
+    </div>
+</div>
 
         <div class="card-body-custom">
             {{-- Search Bar --}}
@@ -85,6 +91,54 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Filter untuk Export --}}
+            <form id="filterServerForm" class="mb-3">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <select name="rak" class="form-select form-select-sm" id="filterRak">
+                            <option value="">Filter Rak</option>
+                            @foreach($raks as $rak)
+                                <option value="{{ $rak->nomor_rak }}">{{ $rak->nomor_rak }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="bidang" class="form-select form-select-sm" id="filterBidang">
+                            <option value="">Filter Bidang</option>
+                            @foreach($bidangs as $bidang)
+                                <option value="{{ $bidang->nama_bidang }}">{{ $bidang->nama_bidang }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="satker" class="form-select form-select-sm" id="filterSatker">
+                            <option value="">Filter Satker</option>
+                            @foreach($satkers as $satker)
+                                <option value="{{ $satker->nama_satker }}">{{ $satker->nama_satker }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status" class="form-select form-select-sm" id="filterStatus">
+                            <option value="">Filter Status</option>
+                            <option value="ON">Aktif</option>
+                            <option value="STANDBY">Maintenance</option>
+                            <option value="OFF">Tidak Aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="applyFilter()">
+                            <i class="fa fa-filter me-1"></i> Terapkan Filter
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="resetFilter()">
+                            <i class="fa fa-redo me-1"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </form>
 
             {{-- Table --}}
             <div class="table-responsive">
@@ -746,6 +800,103 @@ $(document).ready(function() {
     let availableSlots = [];
     let currentServerId = null;
 
+// === EXPORT FUNCTIONS ===
+function exportServerPDF() {
+    const form = document.getElementById('filterServerForm');
+    const url = new URL('{{ route("superadmin.server.export.pdf") }}', window.location.origin);
+    
+    const formData = new FormData(form);
+    for (let [key, value] of formData.entries()) {
+        if (value) url.searchParams.append(key, value);
+    }
+    
+    window.open(url, '_blank');
+}
+
+// === EXPORT FUNCTIONS ===
+window.exportServerPDF = function() {
+    const form = document.getElementById('filterServerForm');
+    const url = new URL('{{ route("superadmin.server.export.pdf") }}', window.location.origin);
+    
+    const formData = new FormData(form);
+    for (let [key, value] of formData.entries()) {
+        if (value) url.searchParams.append(key, value);
+    }
+    
+    window.open(url, '_blank');
+};
+
+
+// === FILTER FUNCTIONS ===
+window.applyFilter = function() {
+    const rak = $('#filterRak').val();
+    const bidang = $('#filterBidang').val();
+    const satker = $('#filterSatker').val();
+    const status = $('#filterStatus').val();
+    
+    let visibleRows = 0;
+    
+    $('.server-row').each(function() {
+        let show = true;
+        
+        // Filter Rak
+        if (rak && !$(this).find('.server-rak').text().includes(rak)) {
+            show = false;
+        }
+        
+        // Filter Bidang
+        if (bidang && !$(this).find('.server-bidang').text().includes(bidang)) {
+            show = false;
+        }
+        
+        // Filter Satker
+        if (satker && !$(this).find('.server-satker').text().includes(satker)) {
+            show = false;
+        }
+        
+        // Filter Status
+        if (status) {
+            const statusCell = $(this).find('td:nth-child(7)');
+            let matchStatus = false;
+            
+            if (status === 'ON' && statusCell.find('.badge.bg-success').length > 0) {
+                matchStatus = true;
+            } else if (status === 'STANDBY' && statusCell.find('.badge.bg-warning').length > 0) {
+                matchStatus = true;
+            } else if (status === 'OFF' && statusCell.find('.badge.bg-danger').length > 0) {
+                matchStatus = true;
+            }
+            
+            if (!matchStatus) {
+                show = false;
+            }
+        }
+        
+        if (show) {
+            $(this).show();
+            visibleRows++;
+        } else {
+            $(this).hide();
+        }
+    });
+    
+    // Show no results message
+    if (visibleRows === 0 && $('.server-row').length > 0) {
+        if ($('#noFilterResultRow').length === 0) {
+            $('table tbody').append(
+                '<tr id="noFilterResultRow"><td colspan="8" class="text-center text-muted py-4"><i class="fa fa-filter fa-2x mb-2 d-block" style="opacity: 0.3;"></i>Tidak ada data yang sesuai dengan filter</td></tr>'
+            );
+        }
+    } else {
+        $('#noFilterResultRow').remove();
+    }
+};
+
+window.resetFilter = function() {
+    $('#filterRak, #filterBidang, #filterSatker, #filterStatus').val('');
+    $('.server-row').show();
+    $('#noFilterResultRow').remove();
+};
 
     // === SUMMERNOTE INITIALIZATION ===
     $('.summernote').summernote({
@@ -954,51 +1105,71 @@ $(document).ready(function() {
     });
 
     // === EDIT SERVER ===
-    $(document).on('click', '.btn-edit-server', function () {
+        $(document).on('click', '.btn-edit-server', function () {
         let id = $(this).data('id');
         currentServerId = id;
+        
         $.ajax({
             url: `/superadmin/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
+                
+                // Set basic data
                 $('#editServerId').val(s.server_id);
                 $('#editNamaServer').val(s.nama_server);
                 $('#editBrand').val(s.brand);
-                $('#editSpesifikasi').val(s.spesifikasi);
+                $('#editPowerStatus').val(s.power_status);
                 $('#editRakId').val(s.rak_id);
                 $('#editSatkerId').val(s.satker_id);
                 $('#editBidangId').val(s.bidang_id);
-                $('#editPowerStatus').val(s.power_status);
-                $('#editKeterangan').val(s.keterangan || '');
-
+                
+                // Set Summernote untuk Spesifikasi
+                $('#editServerForm').find('[name="spesifikasi"]').summernote('code', s.spesifikasi || '');
+                
+                // Set Summernote untuk Keterangan
+                $('#editServerForm').find('[name="keterangan"]').summernote('code', s.keterangan || '');
+                
+                // Check dan tampilkan bidang jika satker = Pusat Data dan Informasi
                 const selectedSatker = $('#editSatkerId option:selected').data('name');
-                if (selectedSatker === 'Pusat Data dan Informasi Kemhan') {
+                if (selectedSatker && selectedSatker.includes('Pusat Data dan Informasi')) {
                     $('#editBidangWrapper').show();
                 } else {
                     $('#editBidangWrapper').hide();
                 }
-
+                
+                // Handle Rak dan Slot
                 if(s.rak_id) {
                     $('#editRakId').trigger('change');
+                    
+                    // Tunggu slot selesai load, baru set value
                     setTimeout(() => {
                         if(s.u_slot) {
+                            // Check apakah range atau single
                             if(s.u_slot.includes('-')) {
+                                // Range slot
                                 $('input[name="edit_slot_type"][value="range"]').prop('checked', true).trigger('change');
                                 const parts = s.u_slot.split('-');
                                 $('#editSlotStart').val(parts[0]);
                                 $('#editSlotEnd').val(parts[1]);
                                 $('#editSlotRangeValue').val(s.u_slot);
                             } else {
+                                // Single slot
                                 $('input[name="edit_slot_type"][value="single"]').prop('checked', true).trigger('change');
                                 $('#editSingleSlotSelect').val(s.u_slot);
                             }
                         }
                     }, 500);
                 }
-
+                
+                // Set form action
                 $('#editServerForm').attr('action', `/superadmin/server/update/${s.server_id}`);
+                
+                // Show modal
                 $('#modalEditServer').modal('show');
+            },
+            error: function() {
+                alert('Gagal memuat data server');
             }
         });
     });
