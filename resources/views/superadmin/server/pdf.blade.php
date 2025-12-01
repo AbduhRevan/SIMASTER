@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta charset="utf-8">
     <title>Laporan Detail Server</title>
     <style>
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 11pt;
             line-height: 1.6;
-            color: #000;
+            color: #ab0000ff;
             margin: 20px;
         }
         
@@ -16,26 +17,31 @@
             text-align: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 3px solid #000;
+            border-bottom: 2px solid #800000; /* merah gelap */
+            color: #800000; /* warna teks merah gelap */
         }
-        
+
         .kop-surat h1 {
             font-size: 16pt;
             font-weight: bold;
             margin: 0 0 5px 0;
             text-transform: uppercase;
+            color: #800000; 
         }
-        
+
         .kop-surat p {
             font-size: 10pt;
             margin: 2px 0;
+            color: #000; 
         }
-        
+
         .kop-surat .tanggal {
             font-size: 9pt;
             font-style: italic;
             margin-top: 5px;
+            color: #000; /* merah gelap */
         }
+
         
         /* Server Section */
         .server-section {
@@ -46,10 +52,13 @@
             font-size: 12pt;
             font-weight: bold;
             margin-bottom: 8px;
-            padding: 5px 10px;
-            background-color: #f0f0f0;
-            border-left: 4px solid #000;
+            padding: 6px 12px;
+            background-color: #800000; /* merah gelap */
+            color: #fff; /* putih */
+            border-left: none;
+            border-radius: 3px;
         }
+
         
         .info-table {
             width: 100%;
@@ -163,7 +172,6 @@
     <!-- KOP SURAT -->
     <div class="kop-surat">
         <h1>Laporan Detail Server</h1>
-        <p><strong>SIMASTER</strong></p>
         <p>Sistem Informasi Manajemen Aset Terpadu</p>
         <p class="tanggal">Tanggal Cetak: {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('DD MMMM YYYY, HH:mm') }} WIB</p>
     </div>
