@@ -21,18 +21,68 @@ class ServerController extends Controller
     /**
      * Display a listing of servers
      */
-    public function index()
+    public function index(Request $request)
     {
-        $servers = Server::with(['rak', 'bidang', 'satker', 'websites'])->get();
-        $raks = RakServer::all();
-        $bidangs = Bidang::all();
-        $satkers = Satker::all();
+        // Query dengan eager loading
+        $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
 
-        // Hitung statistik
+        // Filter Rak
+        if($request->filled('rak')) {
+            $query->whereHas('rak', function($q) use ($request) {
+                $q->where('nomor_rak', $request->rak);
+            });
+        }
+
+        // Filter Bidang
+        if($request->filled('bidang')) {
+            $query->whereHas('bidang', function($q) use ($request) {
+                $q->where('nama_bidang', $request->bidang);
+            });
+        }
+
+        // Filter Satker
+        if($request->filled('satker')) {
+            $query->whereHas('satker', function($q) use ($request) {
+                $q->where('nama_satker', $request->satker);
+            });
+        }
+
+        // Filter Status
+        if($request->filled('status')) {
+            $query->where('power_status', $request->status);
+        }
+
+        // Search
+        if($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_server', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhereHas('rak', function($subQ) use ($search) {
+                      $subQ->where('nomor_rak', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('bidang', function($subQ) use ($search) {
+                      $subQ->where('nama_bidang', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('satker', function($subQ) use ($search) {
+                      $subQ->where('nama_satker', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Execute query dengan ordering
+        $servers = $query->orderBy('nama_server')->get();
+
+        // Hitung statistik berdasarkan hasil filter
         $total = $servers->count();
         $aktif = $servers->where('power_status', 'ON')->count();
         $maintenance = $servers->where('power_status', 'STANDBY')->count();
         $tidakAktif = $servers->where('power_status', 'OFF')->count();
+
+        // Data untuk dropdown filter (tidak terpengaruh filter)
+        $raks = RakServer::orderBy('nomor_rak')->get();
+        $bidangs = Bidang::orderBy('nama_bidang')->get();
+        $satkers = Satker::orderBy('nama_satker')->get();
 
         return view('superadmin.server', compact(
             'servers',
