@@ -10,35 +10,144 @@ use App\Models\superadmin\Server;
 use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class WebsiteController extends Controller
 {
-    public function index()
-    {
-        $websites = Website::with(['bidang', 'satker', 'server'])->get();
+    public function index(Request $request)
+{
+    $query = Website::with(['bidang', 'satker', 'server']);
 
-        // Hitung statistik
-        $total = $websites->count();
-        $aktif = $websites->where('status', 'active')->count();
-        $maintenance = $websites->where('status', 'maintenance')->count();
-        $tidakAktif = $websites->where('status', 'inactive')->count();
-
-        // Data untuk dropdown
-        $bidangs = Bidang::all();
-        $satkers = Satker::all();
-        $servers = Server::all();
-
-        return view('superadmin.website', compact(
-            'websites',
-            'total',
-            'aktif',
-            'maintenance',
-            'tidakAktif',
-            'bidangs',
-            'satkers',
-            'servers'
-        ));
+    // pencarian teks (nama atau url)
+    if ($request->filled('q')) {
+        $q = $request->q;
+        $query->where(function($sub) use ($q) {
+            $sub->where('nama_website', 'like', "%{$q}%")
+                ->orWhere('url', 'like', "%{$q}%");
+        });
     }
+
+    // filter server (server_id)
+    if($request->filled('server')) {
+        $serverId = $request->input('server'); // Gunakan input() bukan langsung $request->server
+        $query->where('server_id', $serverId);
+    }
+
+    // filter bidang (kirim nama_bidang dari blade)
+    if ($request->filled('bidang')) {
+        $query->whereHas('bidang', function($q) use ($request) {
+            $q->where('nama_bidang', $request->bidang);
+        });
+    }
+
+    // filter satker (kirim nama_satker dari blade)
+    if ($request->filled('satker')) {
+        $query->whereHas('satker', function($q) use ($request) {
+            $q->where('nama_satker', $request->satker);
+        });
+    }
+
+    // filter status (kirim values: active, maintenance, inactive)
+    if ($request->filled('status')) {
+        // jika di blade kamu mengirim ON/STANDBY/OFF, map ke nilai DB.
+        $statusMap = [
+            'ON' => 'active',
+            'STANDBY' => 'maintenance',
+            'OFF' => 'inactive',
+            'active' => 'active',
+            'maintenance' => 'maintenance',
+            'inactive' => 'inactive'
+        ];
+        $statusReq = $request->status;
+        if(isset($statusMap[$statusReq])) {
+            $query->where('status', $statusMap[$statusReq]);
+        }
+    }
+
+    $websites = $query->orderBy('nama_website')->get();
+
+    // statistik (sesuaikan key status pada DB)
+    $total = $websites->count();
+    $aktif = $websites->where('status', 'active')->count();
+    $maintenance = $websites->where('status', 'maintenance')->count();
+    $tidakAktif = $websites->where('status', 'inactive')->count();
+
+    $bidangs = Bidang::all();
+    $satkers = Satker::all();
+    $servers = Server::all();
+
+    return view('superadmin.website', compact(
+        'websites',
+        'total',
+        'aktif',
+        'maintenance',
+        'tidakAktif',
+        'bidangs',
+        'satkers',
+        'servers'
+    ));
+}
+
+    public function exportPDF(Request $request)
+{
+    // Ambil parameter filter
+    $server = $request->input('server');
+    $bidang = $request->input('bidang');
+    $satker = $request->input('satker');
+    $status = $request->input('status'); // active, inactive, maintenance
+
+    // Query dengan filter
+    $query = Website::with(['server.rak', 'bidang', 'satker']);
+
+    if ($server) {
+        $query->where('server_id', $server);
+    }
+
+    if ($bidang) {
+        $query->whereHas('bidang', function($q) use ($bidang) {
+            $q->where('nama_bidang', $bidang);
+        });
+    }
+
+    if ($satker) {
+        $query->whereHas('satker', function($q) use ($satker) {
+            $q->where('nama_satker', $satker);
+        });
+    }
+
+    if ($status) {
+        // status berasal dari database: active / inactive / maintenance
+        $query->where('status', $status);
+    }
+
+    $websites = $query->orderBy('nama_website')->get();
+
+    // Hitung statistik
+    $total = $websites->count();
+    $aktif = $websites->where('status', 'active')->count();
+    $tidakAktif = $websites->where('status', 'inactive')->count();
+    $maintenance = $websites->where('status', 'maintenance')->count();
+
+    // Load view PDF
+    $pdf = Pdf::loadView('superadmin.website.pdf', compact(
+        'websites',
+        'total',
+        'aktif',
+        'tidakAktif',
+        'maintenance',
+        'server',
+        'bidang',
+        'satker',
+        'status'
+    ));
+
+    $pdf->setPaper('A4', 'landscape');
+
+    $filename = 'Laporan_Website_' . date('Y-m-d_His') . '.pdf';
+
+    return $pdf->download($filename);
+}
+
 
     public function store(Request $request)
     {

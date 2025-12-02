@@ -113,8 +113,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/server/update/{id}', [SuperadminServer::class, 'update'])->name('server.update');
         Route::delete('/server/{id}', [SuperadminServer::class, 'destroy'])->name('server.destroy');
         Route::get('/server/export-pdf', [SuperadminServer::class, 'exportPDF'])->name('server.export.pdf');
-        Route::get('/server/export-excel', [SuperadminServer::class, 'exportExcel'])->name('server.export.excel');
-
+    
 
         // ====================================================================
         // MANAJEMEN ASET - WEBSITE
@@ -124,6 +123,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/website/{id}/detail', [SuperadminWebsite::class, 'detail'])->name('website.detail');
         Route::put('/website/update/{id}', [SuperadminWebsite::class, 'update'])->name('website.update');
         Route::delete('/website/delete/{id}', [SuperadminWebsite::class, 'destroy'])->name('website.destroy');
+        Route::get('/website/export-pdf', [SuperadminWebsite::class, 'exportPDF'])->name('website.exportPDF');
 
         // ====================================================================
         // PEMELIHARAAN

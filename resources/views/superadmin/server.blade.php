@@ -91,54 +91,71 @@
                     </div>
                 </div>
             </div>
-
-            {{-- Filter untuk Export --}}
-            <form id="filterServerForm" class="mb-3">
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <select name="rak" class="form-select form-select-sm" id="filterRak">
-                            <option value="">Filter Rak</option>
-                            @foreach($raks as $rak)
-                                <option value="{{ $rak->nomor_rak }}">{{ $rak->nomor_rak }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="bidang" class="form-select form-select-sm" id="filterBidang">
-                            <option value="">Filter Bidang</option>
-                            @foreach($bidangs as $bidang)
-                                <option value="{{ $bidang->nama_bidang }}">{{ $bidang->nama_bidang }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="satker" class="form-select form-select-sm" id="filterSatker">
-                            <option value="">Filter Satker</option>
-                            @foreach($satkers as $satker)
-                                <option value="{{ $satker->nama_satker }}">{{ $satker->nama_satker }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="status" class="form-select form-select-sm" id="filterStatus">
-                            <option value="">Filter Status</option>
-                            <option value="ON">Aktif</option>
-                            <option value="STANDBY">Maintenance</option>
-                            <option value="OFF">Tidak Aktif</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="applyFilter()">
-                            <i class="fa fa-filter me-1"></i> Terapkan Filter
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="resetFilter()">
-                            <i class="fa fa-redo me-1"></i> Reset
-                        </button>
-                    </div>
-                </div>
-            </form>
+            
+{{-- Filter untuk Export --}}
+<form id="filterServerForm" method="GET" action="{{ route('superadmin.server.index') }}" class="mb-3">
+    <div class="row g-2 align-items-end">
+        {{-- Filter Rak --}}
+        <div class="col-md-2">
+            <select name="rak" class="form-select form-select-sm" id="filterRak">
+                <option value="">Filter Rak</option>
+                @foreach($raks as $rak)
+                    <option value="{{ $rak->nomor_rak }}" {{ request('rak') == $rak->nomor_rak ? 'selected' : '' }}>
+                        {{ $rak->nomor_rak }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        
+        {{-- Filter Bidang --}}
+        <div class="col-md-2">
+            <select name="bidang" class="form-select form-select-sm" id="filterBidang">
+                <option value="">Filter Bidang</option>
+                @foreach($bidangs as $bidang)
+                    <option value="{{ $bidang->nama_bidang }}" {{ request('bidang') == $bidang->nama_bidang ? 'selected' : '' }}>
+                        {{ $bidang->nama_bidang }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        
+        {{-- Filter Satker --}}
+        <div class="col-md-2">
+            <select name="satker" class="form-select form-select-sm" id="filterSatker">
+                <option value="">Filter Satker</option>
+                @foreach($satkers as $satker)
+                    <option value="{{ $satker->nama_satker }}" {{ request('satker') == $satker->nama_satker ? 'selected' : '' }}>
+                        {{ $satker->nama_satker }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        
+        {{-- Filter Status --}}
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm" id="filterStatus">
+                <option value="">Filter Status</option>
+                <option value="ON" {{ request('status') == 'ON' ? 'selected' : '' }}>Aktif</option>
+                <option value="STANDBY" {{ request('status') == 'STANDBY' ? 'selected' : '' }}>Maintenance</option>
+                <option value="OFF" {{ request('status') == 'OFF' ? 'selected' : '' }}>Tidak Aktif</option>
+            </select>
+        </div>
+        
+        {{-- Tombol Terapkan --}}
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary btn-sm w-100">
+                <i class="fa fa-filter me-1"></i> Terapkan Filter
+            </button>
+        </div>
+        
+        {{-- Tombol Reset --}}
+        <div class="col-md-2">
+            <a href="{{ route('superadmin.server.index') }}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="fa-solid fa-rotate-right me-2"></i> Reset
+            </a>
+        </div>
+    </div>
+</form>
 
             {{-- Table --}}
             <div class="table-responsive">

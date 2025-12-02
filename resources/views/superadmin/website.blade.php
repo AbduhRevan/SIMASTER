@@ -59,22 +59,112 @@
     </div>
   </div>
 
-  {{-- ======= PENCARIAN DAN TAMBAH ======= --}}
-  <div class="card-content mb-4">
+  {{-- ======= DAFTAR WEBSITE ======= --}}
     <div class="card-header-custom d-flex justify-content-between align-items-center">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text bg-white">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </span>
-          <input type="text" id="searchInput" class="form-control" placeholder="Cari nama website atau URL...">
+    <h6 class="mb-0 fw-semibold">
+        <i class="fa fa-list me-2"></i> Daftar Website
+    </h6>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <a href="{{ route('superadmin.website.exportPDF', [
+        'server' => request('server'),
+        'bidang' => request('bidang'),
+        'satker' => request('satker'),
+        'status' => request('status'),
+        'q' => request('q')
+    ]) }}"
+    class="btn btn-maroon-gradient btn-sm w-100">
+    <i class="fa fa-file-pdf me-1"></i> Export PDF
+</a>
+
         </div>
-      </div>
-      <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
-        <i class="fa-solid fa-plus me-1"></i>Tambah Website
-      </button>
+        <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
+            <i class="fa fa-plus me-1"></i> Tambah Website
+        </button>
     </div>
-  </div>
+</div>
+
+        <div class="card-body-custom">
+            {{-- Search Bar --}}
+            <div class="filter-bar mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" name="q" id="searchInput" class="form-control" 
+                            placeholder="Cari nama website atau URL..." value="{{ request('q') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           {{-- Filter untuk Export --}}
+          <form id="filterWebsiteForm" method="GET" action="{{ route('superadmin.website.index') }}" class="mb-3">
+            <div class="row g-2 align-items-end">
+              {{-- Filter Bidang --}}
+              <div class="col-md-2">
+                <select name="bidang" class="form-select form-select-sm" id="filterBidang">
+                  <option value="">Filter Bidang</option>
+                  @foreach($bidangs as $bidang)
+                    <option value="{{ $bidang->nama_bidang }}" {{ request('bidang') == $bidang->nama_bidang ? 'selected' : '' }}>
+                      {{ $bidang->nama_bidang }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+              
+              {{-- Filter Satker --}}
+              <div class="col-md-2">
+                <select name="satker" class="form-select form-select-sm" id="filterSatker">
+                  <option value="">Filter Satker</option>
+                  @foreach($satkers as $satker)
+                    <option value="{{ $satker->nama_satker }}" {{ request('satker') == $satker->nama_satker ? 'selected' : '' }}>
+                      {{ $satker->nama_satker }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+              
+              {{-- Filter Status --}}
+              <div class="col-md-2">
+                <select name="status" class="form-select form-select-sm" id="filterStatus">
+                  <option value="">Filter Status</option>
+                  <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+                  <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                  <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                </select>
+              </div>
+              
+              {{-- Filter Server --}}
+              <div class="col-md-2">
+                <select name="server" class="form-select form-select-sm" id="filterServer">
+                  <option value="">Filter Server</option>
+                  @foreach($servers as $srv)
+                    <option value="{{ $srv->server_id }}" {{ request('server') == $srv->server_id ? 'selected' : '' }}>
+                      {{ $srv->nama_server }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+              
+              {{-- Tombol Terapkan --}}
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary btn-sm w-100">
+                  <i class="fa fa-filter me-1"></i> Terapkan Filter
+                </button>
+              </div>
+              
+              {{-- Tombol Reset --}}
+              <div class="col-md-2">
+                <a href="{{ route('superadmin.website.index') }}" class="btn btn-outline-secondary btn-sm w-100">
+                  <i class="fa-solid fa-rotate-right me-2"></i> Reset
+                </a>
+              </div>
+            </div>
+          </form>
+
 
   {{-- ======= DAFTAR WEBSITE (CARD LAYOUT) ======= --}}
   <div class="row g-4" id="websiteContainer">
@@ -270,7 +360,7 @@
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Server</label>
-            <select name="server_id" class="form-select">
+            <select name="server" class="form-select">
               <option value="">Pilih Server (Opsional)</option>
               @foreach($servers as $server)
                 <option value="{{ $server->server_id }}">
@@ -597,6 +687,88 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+
+ // === FILTER FUNCTIONS ===
+window.applyWebsiteFilter = function() {
+    const serverVal = $('#filterServer').val();
+    const serverText = $('#filterServer option:selected').text();
+    const bidang = $('#filterBidang').val();
+    const satker = $('#filterSatker').val();
+    const status = $('#filterStatus').val();
+    
+    let visibleCards = 0;
+    
+    $('.website-card').each(function() {
+        let show = true;
+        const card = $(this);
+        
+        // Filter Server
+        if (serverVal && serverVal !== '') {
+            const cardServer = card.find('.info-item:eq(1) .fw-medium').text().trim();
+            if (!cardServer.includes(serverText.trim())) {
+                show = false;
+            }
+        }
+        
+        // Filter Bidang
+        if (bidang && bidang !== '') {
+            const cardBidang = card.find('.info-item:eq(2) .fw-medium').text().trim();
+            if (!cardBidang.includes(bidang)) {
+                show = false;
+            }
+        }
+        
+        // Filter Satker
+        if (satker && satker !== '') {
+            const cardSatker = card.find('.info-item:eq(3) .fw-medium').text().trim();
+            if (!cardSatker.includes(satker)) {
+                show = false;
+            }
+        }
+        
+        // Filter Status
+        if (status && status !== '') {
+            const badge = card.find('.badge');
+            let matchStatus = false;
+            
+            if (status === 'active' && badge.hasClass('bg-success')) {
+                matchStatus = true;
+            } else if (status === 'inactive' && badge.hasClass('bg-danger')) {
+                matchStatus = true;
+            } else if (status === 'maintenance' && badge.hasClass('bg-warning')) {
+                matchStatus = true;
+            }
+            
+            if (!matchStatus) {
+                show = false;
+            }
+        }
+        
+        // Show/Hide card
+        if (show) {
+            card.show();
+            visibleCards++;
+        } else {
+            card.hide();
+        }
+    });
+    
+    // Show no results message
+    if (visibleCards === 0 && $('.website-card').length > 0) {
+        if ($('#noFilterResult').length === 0) {
+            $('#websiteContainer').append(
+                '<div class="col-12" id="noFilterResult">' +
+                    '<div class="alert alert-light text-center border-0 py-5" style="background-color: #f8f9fa;">' +
+                        '<i class="fa fa-filter fa-3x mb-3 d-block" style="color: #6c757d; opacity: 0.5;"></i>' +
+                        '<p class="mb-0 text-muted">Tidak ada data yang sesuai dengan filter</p>' +
+                    '</div>' +
+                '</div>'
+            );
+        }
+    } else {
+        $('#noFilterResult').remove();
+    }
+};
 
   // === SUMMERNOTE INITIALIZATION ===
     $('.summernote').summernote({
