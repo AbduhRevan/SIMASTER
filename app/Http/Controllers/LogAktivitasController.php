@@ -5,21 +5,31 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class LogAktivitasController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            // Hitung statistik untuk cards
-            $totalLog = LogAktivitas::count();
-            $logCreate = LogAktivitas::where('aksi', 'CREATE')->count();
-            $logUpdate = LogAktivitas::where('aksi', 'UPDATE')->count();
-            $logDelete = LogAktivitas::where('aksi', 'DELETE')->count();
+            // Base query untuk filter user
+            $baseQuery = LogAktivitas::query();
+            
+            // Filter berdasarkan role/bidang - terapkan di semua query
+            if (Auth()->user()->user_id != '1') {
+                $id_user = Auth()->user()->user_id;
+                $baseQuery->where('user_id', $id_user);
+            }
 
-            // Query dengan filter dan relasi ke pengguna
-            $query = LogAktivitas::with('pengguna');
+            // Hitung statistik untuk cards (sudah terfilter per user)
+            $totalLog = (clone $baseQuery)->count();
+            $logCreate = (clone $baseQuery)->where('aksi', 'CREATE')->count();
+            $logUpdate = (clone $baseQuery)->where('aksi', 'UPDATE')->count();
+            $logDelete = (clone $baseQuery)->where('aksi', 'DELETE')->count();
 
+            // Query untuk list dengan relasi ke pengguna
+            $query = (clone $baseQuery)->with('pengguna');
+        
             // Filter berdasarkan aksi
             if ($request->filled('aksi')) {
                 $query->where('aksi', $request->aksi);
@@ -58,9 +68,8 @@ class LogAktivitasController extends Controller
                 'logDelete'
             ));
         } catch (\Exception $e) {
-            // Jika ada error, kembalikan dengan data default
             return view('logAktivitas', [
-                'logs' => collect()->paginate(10),
+                'logs' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1),
                 'totalLog' => 0,
                 'logCreate' => 0,
                 'logUpdate' => 0,

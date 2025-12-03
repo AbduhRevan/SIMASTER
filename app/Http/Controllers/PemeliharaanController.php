@@ -12,7 +12,23 @@ class PemeliharaanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pemeliharaan::with(['server', 'website']);
+        // Base query untuk filter bidang
+        $baseQuery = Pemeliharaan::query();
+        
+        if (Auth()->user()->role != 'superadmin') {
+            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+            $baseQuery->where('bidang_id', $id_bidang);
+        }
+
+        // Hitung statistik (sudah terfilter per bidang)
+        $totalPemeliharaan = (clone $baseQuery)->count();
+        $totalServer = (clone $baseQuery)->whereNotNull('server_id')->count();
+        $totalWebsite = (clone $baseQuery)->whereNotNull('website_id')->count();
+        $dijadwalkan = (clone $baseQuery)->where('status_pemeliharaan', 'dijadwalkan')->count();
+        $berlangsung = (clone $baseQuery)->where('status_pemeliharaan', 'berlangsung')->count();
+
+        // Query untuk list dengan relasi
+        $query = (clone $baseQuery)->with(['server', 'website']);
 
         // Filter berdasarkan pencarian
         if ($request->filled('search')) {
@@ -50,31 +66,32 @@ class PemeliharaanController extends Controller
         // Ambil data dengan pagination
         $pemeliharaan = $query->orderBy('tanggal_pemeliharaan', 'desc')->paginate(10);
 
-        // Hitung statistik
-        $totalPemeliharaan = Pemeliharaan::count();
-        $totalServer = Pemeliharaan::whereNotNull('server_id')->count();
-        $totalWebsite = Pemeliharaan::whereNotNull('website_id')->count();
-        $dijadwalkan = Pemeliharaan::where('status_pemeliharaan', 'dijadwalkan')->count();
-        $berlangsung = Pemeliharaan::where('status_pemeliharaan', 'berlangsung')->count();
-
         // Ambil data server dan website untuk dropdown (yang tidak sedang maintenance dari pemeliharaan lain)
-        $servers = Server::whereIn('power_status', ['ON', 'OFF'])
+        $serversQuery = Server::whereIn('power_status', ['ON', 'OFF'])
             ->whereNotIn('server_id', function ($query) {
                 $query->select('server_id')
                     ->from('pemeliharaan')
                     ->whereNotNull('server_id')
                     ->where('status_pemeliharaan', 'berlangsung');
-            })
-            ->orderBy('nama_server')->get();
-
-        $websites = Website::whereIn('status', ['active', 'inactive'])
+            });
+            
+        $websitesQuery = Website::whereIn('status', ['active', 'inactive'])
             ->whereNotIn('website_id', function ($query) {
                 $query->select('website_id')
                     ->from('pemeliharaan')
                     ->whereNotNull('website_id')
                     ->where('status_pemeliharaan', 'berlangsung');
-            })
-            ->orderBy('nama_website')->get();
+            });
+
+        // Filter dropdown juga berdasarkan bidang jika bukan superadmin
+        if (Auth()->user()->role != 'superadmin') {
+            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+            $serversQuery->where('bidang_id', $id_bidang);
+            $websitesQuery->where('bidang_id', $id_bidang);
+        }
+
+        $servers = $serversQuery->orderBy('nama_server')->get();
+        $websites = $websitesQuery->orderBy('nama_website')->get();
 
         return view('pemeliharaan', compact(
             'pemeliharaan',
@@ -95,7 +112,7 @@ class PemeliharaanController extends Controller
             'jenis_asset' => 'required|in:server,website',
             'server_id' => 'required_if:jenis_asset,server|nullable|exists:server,server_id',
             'website_id' => 'required_if:jenis_asset,website|nullable|exists:website,website_id',
-            'keterangan' => 'required|string',
+            'keterangan' => 'required|string|max:1000',
         ], [
             'tanggal_pemeliharaan.required' => 'Tanggal pemeliharaan harus diisi',
             'jenis_asset.required' => 'Jenis asset harus dipilih',
@@ -141,18 +158,20 @@ class PemeliharaanController extends Controller
                 $bidangId = $website->bidang_id;
             }
 
+            $keterangan = strip_tags($request->keterangan);
+
             Pemeliharaan::create([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
                 'status_pemeliharaan' => 'dijadwalkan',
-                'keterangan' => $request->keterangan,
+                'keterangan' => $keterangan,
                 'bidang_id' => $bidangId, // ← TAMBAHKAN INI
             ]);
 
             DB::commit();
 
-            return redirect()->route('superadmin.pemeliharaan')
+            return redirect()->route('pemeliharaan')
                 ->with('success', 'Jadwal pemeliharaan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -326,7 +345,7 @@ class PemeliharaanController extends Controller
             'jenis_asset' => 'required|in:server,website',
             'server_id' => 'required_if:jenis_asset,server|nullable|exists:server,server_id',
             'website_id' => 'required_if:jenis_asset,website|nullable|exists:website,website_id',
-            'keterangan' => 'required|string',
+            'keterangan' => 'required|string|max:1000',
         ], [
             'tanggal_pemeliharaan.required' => 'Tanggal pemeliharaan harus diisi',
             'jenis_asset.required' => 'Jenis asset harus dipilih',
@@ -357,17 +376,19 @@ class PemeliharaanController extends Controller
                 $bidangId = $website->bidang_id;
             }
 
+            $keterangan = strip_tags($request->keterangan); 
+
             $pemeliharaan->update([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
-                'keterangan' => $request->keterangan,
+                'keterangan' => $keterangan,
                 'bidang_id' => $bidangId, // ← TAMBAHKAN INI
             ]);
 
             DB::commit();
 
-            return redirect()->route('superadmin.pemeliharaan')
+            return redirect()->route('pemeliharaan')
                 ->with('success', 'Data pemeliharaan berhasil diupdate');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -393,7 +414,7 @@ class PemeliharaanController extends Controller
 
             DB::commit();
 
-            return redirect()->route('superadmin.pemeliharaan')
+            return redirect()->route('pemeliharaan')
                 ->with('success', 'Data pemeliharaan berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();

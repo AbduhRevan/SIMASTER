@@ -668,11 +668,13 @@
                 height: 120,
                 tabsize: 2,
                 toolbar: [
-                ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['font', ['strikethrough', 'superscript', 'subscript']],
-                ['insert', ['link']],
-                ['view', ['fullscreen', 'codeview', 'help']]
-            ],
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['font', ['fontsize', 'fontname']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'table']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
                 fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman'],
                 fontSizes: ['8','9','10','11','12','14','16','18','20','24','28','32','36']
             });
