@@ -60,7 +60,6 @@
                 </div>
             </div>
 
-
             {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -112,6 +111,7 @@
                                     <form action="{{ route('superadmin.satker.update', $item->satker_id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
+                                        <input type="hidden" name="current_page" value="{{ $satker->currentPage() }}">
                                         <div class="modal-body p-4">
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
@@ -223,6 +223,7 @@
             </div>
             <form action="{{ route('superadmin.satker.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="current_page" value="{{ $satker->currentPage() }}">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
@@ -270,9 +271,10 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formHapusSatker" method="POST">
+            <form id="formHapusSatker" method="POST" action="">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="current_page" value="{{ $satker->currentPage() }}">
                 <div class="modal-body p-4 text-center">
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
                     <p class="mb-3">Apakah Anda yakin ingin menghapus satuan kerja <strong id="namaSatkerHapus"></strong>?</p>
@@ -522,7 +524,6 @@ $(document).ready(function() {
             method: 'GET',
             data: { search: keyword },
             success: function(response) {
-                $('#loadingIndicator').hide();
                 renderSearchResults(response.data);
                 
                 // Update info hasil pencarian
@@ -532,9 +533,11 @@ $(document).ready(function() {
                     );
                 }
                 $('#searchResultInfo').html(`Menampilkan ${response.data.length} hasil pencarian dari ${response.total} total data`);
+                
+                // Hide pagination saat search
+                $('#paginationWrapper').hide();
             },
             error: function() {
-                $('#loadingIndicator').hide();
                 alert('Terjadi kesalahan saat mencari data');
             }
         });
@@ -555,13 +558,15 @@ $(document).ready(function() {
             data.forEach(function(item, index) {
                 html += `
                     <tr class="satker-row" data-id="${item.satker_id}">
-                        <td>${item.satker_id}</td>
+                        <td>${index + 1}</td>
                         <td class="satker-nama">${escapeHtml(item.nama_satker)}</td>
                         <td class="satker-singkatan">${escapeHtml(item.singkatan_satker)}</td>
                         <td class="text-center">
                             <div class="d-flex gap-2 justify-content-center">
                                 <button class="btn btn-outline-warning btn-sm btn-edit-search" 
                                     data-id="${item.satker_id}"
+                                    data-nama="${escapeHtml(item.nama_satker)}"
+                                    data-singkatan="${escapeHtml(item.singkatan_satker)}"
                                     title="Edit">
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -579,17 +584,27 @@ $(document).ready(function() {
 
         $('#satkerTableBody').html(html);
         
-        // Re-bind event handler untuk tombol hapus
+        // Re-bind event handler untuk tombol hapus dan edit
         bindDeleteButtons();
+        bindEditButtons();
     }
 
+    // PERBAIKAN: Function untuk bind delete buttons
     function bindDeleteButtons() {
         $('.btn-hapus').off('click').on('click', function() {
             const id = $(this).data('id');
             const nama = $(this).data('nama');
             
+            console.log('Delete ID:', id); // Debug
+            console.log('Delete Name:', nama); // Debug
+            
             $('#namaSatkerHapus').text(nama);
-            $('#formHapusSatker').attr('action', `{{ url('superadmin/satker/delete') }}/${id}`);
+            
+            // PERBAIKAN: Gunakan route helper Laravel
+            const deleteUrl = "{{ route('superadmin.satker.delete', ':id') }}".replace(':id', id);
+            console.log('Delete URL:', deleteUrl); // Debug
+            
+            $('#formHapusSatker').attr('action', deleteUrl);
             
             const modal = new bootstrap.Modal(document.getElementById('hapusSatkerModal'));
             modal.show();
@@ -598,6 +613,7 @@ $(document).ready(function() {
 
     // Escape HTML untuk keamanan
     function escapeHtml(text) {
+        if (!text) return '';
         const map = {
             '&': '&amp;',
             '<': '&lt;',
@@ -605,17 +621,93 @@ $(document).ready(function() {
             '"': '&quot;',
             "'": '&#039;'
         };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
     // Handler untuk tombol edit dari hasil search
-    $(document).on('click', '.btn-edit-search', function() {
-        const id = $(this).data('id');
-        // Redirect ke halaman index dengan auto-open modal edit
-        window.location.href = `{{ route('superadmin.satuankerja') }}?edit=${id}`;
-    });
+    function bindEditButtons() {
+        $('.btn-edit-search').off('click').on('click', function() {
+            const id = $(this).data('id');
+            const nama = $(this).data('nama');
+            const singkatan = $(this).data('singkatan');
+            
+            console.log('Edit ID:', id); // Debug
+            
+            // Tampilkan modal edit inline untuk hasil search
+            showInlineEditModal(id, nama, singkatan);
+        });
+    }
 
-    // Initial bind untuk tombol hapus
+    // Modal edit inline untuk hasil search
+    function showInlineEditModal(id, nama, singkatan) {
+        const modalHtml = `
+            <div class="modal fade" id="editSatkerModalInline" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header modal-header-gradient text-white border-0">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa fa-edit me-2"></i> Edit Satuan Kerja
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="${"{{ route('superadmin.satker.update', ':id') }}".replace(':id', id)}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="current_page" value="1">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nama Satuan Kerja <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nama_satker" value="${escapeHtml(nama)}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="singkatan_satker" value="${escapeHtml(singkatan)}" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-times me-1"></i> Batal
+                                </button>
+                                <button type="submit" class="btn btn-warning text-white">
+                                    <i class="fa fa-save me-1"></i> Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>`;
+        
+        // Hapus modal inline lama jika ada
+        $('#editSatkerModalInline').remove();
+        
+        // Tambahkan modal baru ke body
+        $('body').append(modalHtml);
+        
+        // Tampilkan modal
+        const modal = new bootstrap.Modal(document.getElementById('editSatkerModalInline'));
+        modal.show();
+        
+        // Hapus modal setelah ditutup
+        $('#editSatkerModalInline').on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+
+    // Escape HTML untuk keamanan
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Initial bind untuk tombol edit dan hapus
+    bindEditButtons();
     bindDeleteButtons();
 
     // Clear search on ESC
@@ -631,17 +723,6 @@ $(document).ready(function() {
         var tambahModal = new bootstrap.Modal(document.getElementById('tambahSatkerModal'));
         tambahModal.show();
     @endif
-
-    // Auto open edit modal if ?edit=id in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    if (editId) {
-        const editModal = document.getElementById(`editSatkerModal${editId}`);
-        if (editModal) {
-            const modal = new bootstrap.Modal(editModal);
-            modal.show();
-        }
-    }
 
     // Smooth scroll to top on pagination click
     $('.pagination-btn').on('click', function() {

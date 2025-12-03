@@ -111,6 +111,7 @@
                                     <form action="{{ route('superadmin.bidang.update', $item->bidang_id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
+                                        <input type="hidden" name="current_page" value="{{ $bidang->currentPage() }}">
                                         <div class="modal-body p-4">
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
@@ -223,6 +224,7 @@
             </div>
             <form action="{{ route('superadmin.bidang.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="current_page" value="{{ $bidang->currentPage() }}">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
@@ -270,9 +272,10 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formHapusBidang" method="POST">
+            <form id="formHapusBidang" method="POST" action="">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="current_page" value="{{ $bidang->currentPage() }}">
                 <div class="modal-body p-4 text-center">
                     <i class="fa-solid fa-triangle-exclamation fa-3x text-warning mb-3"></i>
                     <p class="mb-3">Apakah Anda yakin ingin menghapus bidang <strong id="namaBidangHapus"></strong>?</p>
@@ -547,6 +550,9 @@ $(document).ready(function() {
         } else {
             $('#noResultRow').remove();
         }
+
+        // Re-bind edit buttons untuk row yang visible
+        bindEditButtons();
     });
 
     // Clear search on ESC
@@ -557,17 +563,123 @@ $(document).ready(function() {
         }
     });
 
-    // Modal Hapus Handler
-    $('.btn-hapus').on('click', function() {
-        const id = $(this).data('id');
-        const nama = $(this).data('nama');
+    // PERBAIKAN: Function untuk bind delete buttons
+    function bindDeleteButtons() {
+        $('.btn-hapus').off('click').on('click', function() {
+            const id = $(this).data('id');
+            const nama = $(this).data('nama');
+            
+            console.log('Delete ID:', id); // Debug
+            console.log('Delete Name:', nama); // Debug
+            
+            $('#namaBidangHapus').text(nama);
+            
+            // PERBAIKAN: Gunakan route helper Laravel
+            const deleteUrl = "{{ route('superadmin.bidang.delete', ':id') }}".replace(':id', id);
+            console.log('Delete URL:', deleteUrl); // Debug
+            
+            $('#formHapusBidang').attr('action', deleteUrl);
+            
+            const modal = new bootstrap.Modal(document.getElementById('hapusBidangModal'));
+            modal.show();
+        });
+    }
+
+    // Handler untuk tombol edit
+    function bindEditButtons() {
+        // Bind untuk tombol edit yang ada di halaman (dari server)
+        $('[data-bs-toggle="modal"][data-bs-target^="#editBidangModal"]').off('click').on('click', function() {
+            // Default behavior - modal sudah ada di DOM
+        });
+
+        // Bind untuk tombol edit dari hasil search yang di-hide/show
+        $('.bidang-row:visible .btn-outline-warning').off('click').on('click', function() {
+            const modalTarget = $(this).data('bs-target');
+            if (!modalTarget) {
+                // Jika tidak ada modal target (mungkin dari dynamic content)
+                const id = $(this).closest('tr').find('.btn-hapus').data('id');
+                const nama = $(this).closest('tr').find('.bidang-nama').text();
+                const singkatan = $(this).closest('tr').find('.bidang-singkatan').text();
+                
+                console.log('Edit ID:', id); // Debug
+                
+                // Tampilkan modal edit inline
+                showInlineEditModal(id, nama, singkatan);
+            }
+        });
+    }
+
+    // Modal edit inline untuk hasil search atau data yang di-filter
+    function showInlineEditModal(id, nama, singkatan) {
+        const modalHtml = `
+            <div class="modal fade" id="editBidangModalInline" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header modal-header-gradient text-white border-0">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa fa-edit me-2"></i> Edit Bidang
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="${"{{ route('superadmin.bidang.update', ':id') }}".replace(':id', id)}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="current_page" value="{{ $bidang->currentPage() }}">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nama Bidang <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nama_bidang" value="${escapeHtml(nama)}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Singkatan <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="singkatan_bidang" value="${escapeHtml(singkatan)}" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-times me-1"></i> Batal
+                                </button>
+                                <button type="submit" class="btn btn-warning text-white">
+                                    <i class="fa fa-save me-1"></i> Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>`;
         
-        $('#namaBidangHapus').text(nama);
-        $('#formHapusBidang').attr('action', `/superadmin/bidang/delete/${id}`);
+        // Hapus modal inline lama jika ada
+        $('#editBidangModalInline').remove();
         
-        const modal = new bootstrap.Modal(document.getElementById('hapusBidangModal'));
+        // Tambahkan modal baru ke body
+        $('body').append(modalHtml);
+        
+        // Tampilkan modal
+        const modal = new bootstrap.Modal(document.getElementById('editBidangModalInline'));
         modal.show();
-    });
+        
+        // Hapus modal setelah ditutup
+        $('#editBidangModalInline').on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+
+    // Escape HTML untuk keamanan
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Initial bind untuk tombol edit dan hapus
+    bindEditButtons();
+    bindDeleteButtons();
 
     // Auto show modal if validation errors
     @if($errors->any())

@@ -24,13 +24,13 @@ class RakController extends Controller
     }
 
     /**
-     * TAMBAHKAN METHOD INI - Search untuk live search
+     * Search untuk live search
      */
     public function search(Request $request)
     {
         try {
             $search = $request->get('search');
-            
+
             // Query untuk mencari di semua data dengan relasi servers
             $rak = RakServer::with('servers')
                 ->where('nomor_rak', 'LIKE', "%{$search}%")
@@ -38,42 +38,41 @@ class RakController extends Controller
                 ->orWhere('keterangan', 'LIKE', "%{$search}%")
                 ->orderBy('nomor_rak', 'asc')
                 ->get();
-            
+
             // Hitung U slot terpakai untuk setiap rak
-            $rakWithCalculation = $rak->map(function($item) {
+            $rakWithCalculation = $rak->map(function ($item) {
                 $terpakai = 0;
-                
-                foreach($item->servers as $server) {
-                    if($server->u_slot) {
+
+                foreach ($item->servers as $server) {
+                    if ($server->u_slot) {
                         $slots = explode('-', $server->u_slot);
-                        if(count($slots) == 2) {
+                        if (count($slots) == 2) {
                             $terpakai += (int)$slots[1] - (int)$slots[0] + 1;
                         } else {
                             $terpakai += 1;
                         }
                     }
                 }
-                
+
                 return [
                     'rak_id' => $item->rak_id,
                     'nomor_rak' => $item->nomor_rak,
                     'ruangan' => $item->ruangan,
                     'kapasitas_u_slot' => $item->kapasitas_u_slot,
                     'terpakai' => $terpakai,
-                    'keterangan' => $item->keterangan
+                    'keterangan' => strip_tags($item->keterangan), // Strip HTML tags
                 ];
             });
-            
+
             // Hitung total data keseluruhan
             $total = RakServer::count();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $rakWithCalculation,
                 'total' => $total,
                 'found' => $rakWithCalculation->count()
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -144,7 +143,7 @@ class RakController extends Controller
             'nomor_rak' => 'required|string|max:50|unique:rak_server,nomor_rak,' . $id . ',rak_id',
             'ruangan' => 'required|string|max:100',
             'kapasitas_u_slot' => 'required|integer|min:1|max:50',
-            'keterangan' => 'nullable|string|max:500',
+            'keterangan' => 'nullable|string',
         ], [
             'nomor_rak.required' => 'Nomor rak wajib diisi',
             'nomor_rak.unique' => 'Nomor rak sudah terdaftar',
@@ -154,10 +153,28 @@ class RakController extends Controller
             'kapasitas_u_slot.required' => 'Kapasitas U slot wajib diisi',
             'kapasitas_u_slot.min' => 'Kapasitas minimal 1U',
             'kapasitas_u_slot.max' => 'Kapasitas maksimal 50U',
-            'keterangan.max' => 'Keterangan maksimal 500 karakter',
         ]);
 
         try {
+            // Cek apakah kapasitas baru cukup untuk menampung server yang ada
+            $terpakaiSekarang = 0;
+            foreach ($rak->servers as $server) {
+                if ($server->u_slot) {
+                    $slots = explode('-', $server->u_slot);
+                    if (count($slots) == 2) {
+                        $terpakaiSekarang += (int)$slots[1] - (int)$slots[0] + 1;
+                    } else {
+                        $terpakaiSekarang += 1;
+                    }
+                }
+            }
+
+            if ($request->kapasitas_u_slot < $terpakaiSekarang) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "Kapasitas tidak dapat dikurangi menjadi {$request->kapasitas_u_slot}U karena sudah terpakai {$terpakaiSekarang}U!");
+            }
+
             $rak->update([
                 'nomor_rak' => $request->nomor_rak,
                 'ruangan' => $request->ruangan,
@@ -165,7 +182,7 @@ class RakController extends Controller
                 'keterangan' => $request->keterangan,
             ]);
 
-            // TAMBAHKAN LOG UPDATE
+            // Log update
             $perubahan = [];
             if ($nomorLama !== $request->nomor_rak) {
                 $perubahan[] = "nomor rak dari '{$nomorLama}' menjadi '{$request->nomor_rak}'";
@@ -203,14 +220,16 @@ class RakController extends Controller
     public function destroy($id)
     {
         try {
-            $rak = RakServer::findOrFail($id);
+            $rak = RakServer::with('servers')->findOrFail($id);
             $nomorRak = $rak->nomor_rak;
             $ruangan = $rak->ruangan;
 
             // Cek apakah rak masih digunakan oleh server
-            if ($rak->servers()->count() > 0) {
+            $jumlahServer = $rak->servers->count();
+
+            if ($jumlahServer > 0) {
                 return redirect()->back()
-                    ->with('error', 'Rak server tidak dapat dihapus karena masih digunakan oleh ' . $rak->servers()->count() . ' server!');
+                    ->with('error', "Rak server '{$nomorRak}' tidak dapat dihapus karena masih digunakan oleh {$jumlahServer} server!");
             }
 
             $rak->delete();
@@ -223,7 +242,10 @@ class RakController extends Controller
             );
 
             return redirect()->route('superadmin.rakserver')
-                ->with('success', 'Data Rak Server berhasil dihapus!');
+                ->with('success', "Rak server '{$nomorRak}' berhasil dihapus!");
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->back()
+                ->with('error', 'Data Rak Server tidak ditemukan!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());

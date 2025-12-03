@@ -13,9 +13,7 @@ class BidangController extends Controller
     // Menampilkan semua data bidang
     public function index()
     {
-        // UBAH BARIS INI:
-        $bidang = Bidang::paginate(10); // Ganti dari ::all() ke ::paginate(10)
-
+        $bidang = Bidang::paginate(10);
         return view('bidang', compact('bidang'));
     }
 
@@ -32,7 +30,6 @@ class BidangController extends Controller
             'singkatan_bidang' => $request->singkatan_bidang,
         ]);
 
-        // TAMBAHKAN LOG CREATE
         LogAktivitas::log(
             'CREATE',
             'bidang',
@@ -40,7 +37,9 @@ class BidangController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.bidang')
+        // Redirect ke halaman yang sesuai
+        $page = $request->input('current_page', 1);
+        return redirect()->route('superadmin.bidang', ['page' => $page])
             ->with('success', 'Bidang baru berhasil ditambahkan!');
     }
 
@@ -63,7 +62,7 @@ class BidangController extends Controller
             'singkatan_bidang' => $request->singkatan_bidang,
         ]);
 
-        // TAMBAHKAN LOG UPDATE
+        // Log perubahan
         $perubahan = [];
         if ($namaLama !== $request->nama_bidang) {
             $perubahan[] = "nama dari '{$namaLama}' menjadi '{$request->nama_bidang}'";
@@ -83,7 +82,9 @@ class BidangController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.bidang')
+        // Redirect ke halaman yang sesuai
+        $page = $request->input('current_page', 1);
+        return redirect()->route('superadmin.bidang', ['page' => $page])
             ->with('success', 'Data bidang berhasil diperbarui!');
     }
 
@@ -94,15 +95,17 @@ class BidangController extends Controller
             $bidang = Bidang::findOrFail($id);
             $namaBidang = $bidang->nama_bidang;
 
+            // Ambil current_page dari request
+            $page = request()->input('current_page', 1);
+
             // Cek apakah bidang masih digunakan oleh pengguna
             if ($bidang->pengguna()->count() > 0) {
-                return redirect()->back()
+                return redirect()->route('superadmin.bidang', ['page' => $page])
                     ->with('error', 'Bidang tidak dapat dihapus karena masih digunakan oleh ' . $bidang->pengguna()->count() . ' pengguna!');
             }
 
             $bidang->delete();
 
-            // TAMBAHKAN LOG DELETE
             LogAktivitas::log(
                 'DELETE',
                 'bidang',
@@ -110,10 +113,12 @@ class BidangController extends Controller
                 Auth::id()
             );
 
-            return redirect()->route('superadmin.bidang')
+            // Redirect ke halaman yang sesuai
+            return redirect()->route('superadmin.bidang', ['page' => $page])
                 ->with('success', 'Data bidang berhasil dihapus permanen!');
         } catch (\Exception $e) {
-            return redirect()->back()
+            $page = request()->input('current_page', 1);
+            return redirect()->route('superadmin.bidang', ['page' => $page])
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
     }

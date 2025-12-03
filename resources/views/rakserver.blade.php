@@ -324,6 +324,7 @@
 </div>
 
 {{-- Modal Hapus --}}
+{{-- Modal Hapus --}}
 <div class="modal fade" id="hapusRakModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -333,7 +334,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formHapusRak" method="POST">
+            <form id="formHapusRak" method="POST" action="">
                 @csrf
                 @method('DELETE')
                 <div class="modal-body p-4 text-center">
@@ -555,13 +556,14 @@
     }
 }
 </style>
-
 @push('scripts')
 <script>
 $(document).ready(function() {
     let searchTimeout;
     
-      // Init Summernote di semua modal
+    // ==========================================
+    // INIT SUMMERNOTE
+    // ==========================================
     $('.summernote').summernote({
         height: 120,
         tabsize: 2,
@@ -577,19 +579,70 @@ $(document).ready(function() {
         ]
     });
 
-     // Refresh saat modal dibuka
+    // Refresh saat modal dibuka
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('.summernote').summernote('refresh');
     });
 
-    // Live Search dengan AJAX
+    // ==========================================
+    // FUNGSI DELETE - FIXED
+    // ==========================================
+    
+    // Fungsi untuk bind event delete buttons
+    function bindDeleteButtons() {
+        // Hapus event listener lama untuk mencegah duplikasi
+        $('.btn-hapus').off('click');
+        
+        // Bind event baru
+        $('.btn-hapus').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const id = $(this).data('id');
+            const nama = $(this).data('nama');
+            
+            console.log('Delete button clicked:', { id: id, nama: nama });
+            
+            if (!id) {
+                alert('ID rak tidak ditemukan!');
+                return;
+            }
+            
+            // Set nama rak di modal
+            $('#namaRakHapus').text(nama || 'rak ini');
+            
+            // Set action URL untuk form delete - PENTING!
+            const deleteRoute = '{{ route("superadmin.rakserver.delete", ":id") }}';
+            const deleteUrl = deleteRoute.replace(':id', id);
+            $('#formHapusRak').attr('action', deleteUrl);
+            
+            console.log('Delete URL set to:', deleteUrl);
+            
+            // Tampilkan modal
+            const modalElement = document.getElementById('hapusRakModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error('Modal hapusRakModal tidak ditemukan!');
+            }
+        });
+    }
+
+    // Panggil fungsi bind saat halaman load pertama kali
+    bindDeleteButtons();
+
+    // ==========================================
+    // LIVE SEARCH DENGAN AJAX
+    // ==========================================
+    
     $('#searchInput').on('keyup', function() {
         clearTimeout(searchTimeout);
         const searchValue = $(this).val();
 
         // Jika kosong, reload halaman untuk kembali ke pagination
         if (searchValue.length === 0) {
-            window.location.href = "{{ route('superadmin.rakserver') }}";
+            window.location.href = '{{ route("superadmin.rakserver") }}';
             return;
         }
 
@@ -602,25 +655,42 @@ $(document).ready(function() {
     });
 
     function performSearch(keyword) {
+        // Tampilkan loading indicator jika ada
+        if ($('#loadingIndicator').length) {
+            $('#loadingIndicator').show();
+        }
+
         $.ajax({
-            url: "{{ route('superadmin.rakserver.search') }}",
+            url: '{{ route("superadmin.rakserver.search") }}',
             method: 'GET',
             data: { search: keyword },
             dataType: 'json',
             success: function(response) {
-                $('#loadingIndicator').hide();
+                if ($('#loadingIndicator').length) {
+                    $('#loadingIndicator').hide();
+                }
+                
                 renderSearchResults(response.data);
                 
                 // Update info hasil pencarian
                 if ($('#searchResultInfo').length === 0) {
                     $('.table-responsive').after(
-                        `<div id="searchResultInfo" class="mt-3 px-3 text-secondary small"></div>`
+                        '<div id="searchResultInfo" class="mt-3 px-3 text-secondary small"></div>'
                     );
                 }
-                $('#searchResultInfo').html(`Menampilkan ${response.found} hasil pencarian dari ${response.total} total data`);
+                $('#searchResultInfo').html(
+                    'Menampilkan ' + response.found + ' hasil pencarian dari ' + response.total + ' total data'
+                );
+                
+                // Sembunyikan pagination saat search
+                if ($('#paginationWrapper').length) {
+                    $('#paginationWrapper').hide();
+                }
             },
             error: function(xhr, status, error) {
-                $('#loadingIndicator').hide();
+                if ($('#loadingIndicator').length) {
+                    $('#loadingIndicator').hide();
+                }
                 console.error('Search error:', error);
                 alert('Terjadi kesalahan saat mencari data');
             }
@@ -631,73 +701,61 @@ $(document).ready(function() {
         let html = '';
         
         if (data.length === 0) {
-            html = `
-                <tr>
-                    <td colspan="8" class="text-center text-muted py-4">
-                        <i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
-                        Tidak ada data yang sesuai dengan pencarian
-                    </td>
-                </tr>`;
+            html = '<tr>' +
+                   '<td colspan="8" class="text-center text-muted py-4">' +
+                   '<i class="fa fa-search fa-2x mb-2 d-block" style="opacity: 0.3;"></i>' +
+                   'Tidak ada data yang sesuai dengan pencarian' +
+                   '</td>' +
+                   '</tr>';
         } else {
             data.forEach(function(item, index) {
                 const sisa = item.kapasitas_u_slot - item.terpakai;
                 const sisaBadge = sisa > 0 ? 'bg-success' : 'bg-danger';
                 
-                html += `
-                    <tr class="rak-row" data-id="${item.rak_id}">
-                        <td>${item.rak_id}</td>
-                        <td class="rak-nomor"><strong>${escapeHtml(item.nomor_rak)}</strong></td>
-                        <td class="rak-ruangan">${escapeHtml(item.ruangan)}</td>
-                        <td class="text-center">
-                            <span class="badge bg-secondary">${item.kapasitas_u_slot}U</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-primary">${item.terpakai}U</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge ${sisaBadge}">${sisa}U</span>
-                        </td>
-                        <td class="rak-keterangan">
-                            <small>${item.keterangan ? escapeHtml(item.keterangan) : '-'}</small>
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex gap-2 justify-content-center">
-                                <button class="btn btn-outline-warning btn-sm btn-edit-search" 
-                                    data-id="${item.rak_id}"
-                                    title="Edit">
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm btn-hapus"
-                                    data-id="${item.rak_id}"
-                                    data-nama="${escapeHtml(item.nomor_rak)}"
-                                    title="Hapus">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`;
+                html += '<tr class="rak-row" data-id="' + item.rak_id + '">' +
+                       '<td>' + (index + 1) + '</td>' +
+                       '<td class="rak-nomor"><strong>' + escapeHtml(item.nomor_rak) + '</strong></td>' +
+                       '<td class="rak-ruangan">' + escapeHtml(item.ruangan) + '</td>' +
+                       '<td class="text-center">' +
+                       '<span class="badge bg-secondary">' + item.kapasitas_u_slot + 'U</span>' +
+                       '</td>' +
+                       '<td class="text-center">' +
+                       '<span class="badge bg-primary">' + item.terpakai + 'U</span>' +
+                       '</td>' +
+                       '<td class="text-center">' +
+                       '<span class="badge ' + sisaBadge + '">' + sisa + 'U</span>' +
+                       '</td>' +
+                       '<td class="rak-keterangan">' +
+                       '<small>' + (item.keterangan ? escapeHtml(item.keterangan) : '-') + '</small>' +
+                       '</td>' +
+                       '<td class="text-center">' +
+                       '<div class="d-flex gap-2 justify-content-center">' +
+                       '<button class="btn btn-outline-warning btn-sm btn-edit-search" ' +
+                       'data-id="' + item.rak_id + '" title="Edit">' +
+                       '<i class="fa fa-edit"></i>' +
+                       '</button>' +
+                       '<button class="btn btn-outline-danger btn-sm btn-hapus" ' +
+                       'data-id="' + item.rak_id + '" ' +
+                       'data-nama="' + escapeHtml(item.nomor_rak) + '" ' +
+                       'title="Hapus">' +
+                       '<i class="fa fa-trash"></i>' +
+                       '</button>' +
+                       '</div>' +
+                       '</td>' +
+                       '</tr>';
             });
         }
 
         $('#rakTableBody').html(html);
         
-        // Re-bind event handler
+        // PENTING: Re-bind delete buttons setelah render hasil search
         bindDeleteButtons();
     }
 
-    function bindDeleteButtons() {
-        $('.btn-hapus').off('click').on('click', function() {
-            const id = $(this).data('id');
-            const nama = $(this).data('nama');
-            
-            $('#namaRakHapus').text(nama);
-            $('#formHapusRak').attr('action', `{{ url('superadmin/rakserver/delete') }}/${id}`);
-            
-            const modal = new bootstrap.Modal(document.getElementById('hapusRakModal'));
-            modal.show();
-        });
-    }
-
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+    
     // Escape HTML untuk keamanan
     function escapeHtml(text) {
         if (!text) return '';
@@ -711,26 +769,40 @@ $(document).ready(function() {
         return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
+    // ==========================================
+    // EVENT HANDLERS
+    // ==========================================
+    
     // Handler untuk tombol edit dari hasil search
-    $(document).on('click', '.btn-edit-search', function() {
+    $(document).on('click', '.btn-edit-search', function(e) {
+        e.preventDefault();
         const id = $(this).data('id');
-        window.location.href = `{{ route('superadmin.rakserver') }}?edit=${id}`;
+        const baseRoute = '{{ route("superadmin.rakserver") }}';
+        window.location.href = baseRoute + '?edit=' + id;
     });
 
-    // Initial bind untuk tombol hapus
-    bindDeleteButtons();
-
-    // Clear search on ESC
+    // Clear search on ESC key
     $('#searchInput').on('keydown', function(e) {
         if (e.key === 'Escape') {
             $(this).val('');
-            window.location.href = "{{ route('superadmin.rakserver') }}";
+            window.location.href = '{{ route("superadmin.rakserver") }}';
         }
     });
 
-    // Auto show modal if validation errors
+    // Konfirmasi saat submit form delete (opsional - sudah ada konfirmasi di modal)
+    $('#formHapusRak').on('submit', function(e) {
+        console.log('Form delete submitted to:', $(this).attr('action'));
+        // Biarkan form submit secara normal
+        return true;
+    });
+
+    // ==========================================
+    // AUTO SHOW MODALS
+    // ==========================================
+    
+    // Auto show modal tambah jika ada validation errors
     @if($errors->any())
-        var tambahModal = new bootstrap.Modal(document.getElementById('tambahRakModal'));
+        const tambahModal = new bootstrap.Modal(document.getElementById('tambahRakModal'));
         tambahModal.show();
     @endif
 
@@ -738,19 +810,35 @@ $(document).ready(function() {
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
     if (editId) {
-        const editModal = document.getElementById(`editRakModal${editId}`);
+        const editModal = document.getElementById('editRakModal' + editId);
         if (editModal) {
             const modal = new bootstrap.Modal(editModal);
             modal.show();
         }
     }
 
+    // ==========================================
+    // SMOOTH SCROLL
+    // ==========================================
+    
     // Smooth scroll to top on pagination click
-    $('.pagination-btn').on('click', function() {
+    $('.pagination-btn').on('click', function(e) {
+        if ($(this).hasClass('disabled') || $(this).hasClass('active')) {
+            e.preventDefault();
+            return false;
+        }
+        
         $('html, body').animate({
             scrollTop: $('.card-content').offset().top - 100
         }, 400);
     });
+
+    // ==========================================
+    // DEBUG INFO
+    // ==========================================
+    console.log('Rak Server JavaScript initialized');
+    console.log('Delete buttons found:', $('.btn-hapus').length);
+    console.log('Delete modal exists:', $('#hapusRakModal').length > 0);
 });
 </script>
 @endpush

@@ -34,7 +34,6 @@ class SatkerController extends Controller
             'singkatan_satker' => $request->singkatan_satker,
         ]);
 
-        // TAMBAHKAN LOG CREATE
         LogAktivitas::log(
             'CREATE',
             'satuan_kerja',
@@ -42,31 +41,32 @@ class SatkerController extends Controller
             Auth::id()
         );
 
+        // Redirect ke halaman yang sesuai
+        $page = $request->input('current_page', 1);
         return redirect()
-            ->route('superadmin.satuankerja')
+            ->route('superadmin.satuankerja', ['page' => $page])
             ->with('success', 'Satuan Kerja baru berhasil ditambahkan!');
     }
 
     // Fitur Search
     public function search(Request $request)
-{
-    $search = $request->get('search');
-    
-    $satker = Satker::where('nama_satker', 'LIKE', "%{$search}%")
-        ->orWhere('singkatan_satker', 'LIKE', "%{$search}%")
-        ->orderBy('nama_satker', 'asc')
-        ->get();
-    
-    $total = Satker::count();
-    
-    return response()->json([
-        'success' => true,
-        'data' => $satker,
-        'total' => $total,
-        'found' => $satker->count()
-    ]);
-}
+    {
+        $search = $request->get('search');
 
+        $satker = Satker::where('nama_satker', 'LIKE', "%{$search}%")
+            ->orWhere('singkatan_satker', 'LIKE', "%{$search}%")
+            ->orderBy('nama_satker', 'asc')
+            ->get();
+
+        $total = Satker::count();
+
+        return response()->json([
+            'success' => true,
+            'data' => $satker,
+            'total' => $total,
+            'found' => $satker->count()
+        ]);
+    }
 
     // Mengupdate data satker
     public function update(Request $request, $id)
@@ -91,7 +91,7 @@ class SatkerController extends Controller
             'singkatan_satker' => $request->singkatan_satker,
         ]);
 
-        // TAMBAHKAN LOG UPDATE
+        // Log perubahan
         $perubahan = [];
         if ($namaLama !== $request->nama_satker) {
             $perubahan[] = "nama dari '{$namaLama}' menjadi '{$request->nama_satker}'";
@@ -111,8 +111,10 @@ class SatkerController extends Controller
             Auth::id()
         );
 
+        // Redirect ke halaman yang sesuai
+        $page = $request->input('current_page', 1);
         return redirect()
-            ->route('superadmin.satuankerja')
+            ->route('superadmin.satuankerja', ['page' => $page])
             ->with('success', 'Data Satuan Kerja berhasil diperbarui!');
     }
 
@@ -123,16 +125,18 @@ class SatkerController extends Controller
             $satker = Satker::findOrFail($id);
             $namaSatker = $satker->nama_satker;
 
+            // Ambil current_page dari request
+            $page = request()->input('current_page', 1);
+
             // Cek apakah satker masih digunakan oleh pengguna atau website
             // Uncomment jika ada relasi
             // if ($satker->pengguna()->count() > 0) {
-            //     return redirect()->back()
+            //     return redirect()->route('superadmin.satuankerja', ['page' => $page])
             //         ->with('error', 'Satuan Kerja tidak dapat dihapus karena masih digunakan oleh ' . $satker->pengguna()->count() . ' pengguna!');
             // }
 
             $satker->delete();
 
-            // TAMBAHKAN LOG DELETE
             LogAktivitas::log(
                 'DELETE',
                 'satuan_kerja',
@@ -140,18 +144,15 @@ class SatkerController extends Controller
                 Auth::id()
             );
 
+            // Redirect ke halaman yang sesuai
             return redirect()
-                ->route('superadmin.satuankerja')
+                ->route('superadmin.satuankerja', ['page' => $page])
                 ->with('success', 'Data Satuan Kerja berhasil dihapus permanen!');
         } catch (\Exception $e) {
-            return redirect()->back()
+            $page = request()->input('current_page', 1);
+            return redirect()
+                ->route('superadmin.satuankerja', ['page' => $page])
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
     }
-
-    // HAPUS METHOD-METHOD INI:
-    // - softDelete()
-    // - arsip()
-    // - restore()
-    // - forceDelete()
 }
