@@ -434,70 +434,85 @@
 
         <!-- Menu Container -->
         <div class="menu-container">
-            <!-- Dashboard -->
+            <!-- Dashboard - Semua Role -->
             <a href="{{ route('dashboard') }}" class="menu-link {{ request()->is('dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
                 <span>Dashboard</span>
             </a>
 
-            @if(Auth()->user()->role=='superadmin') 
-            <!-- Data Master Section -->
-            <div class="menu-section">
-                <div class="menu-section-title">Data Master</div>
-                <a href="{{ route('superadmin.bidang') }}"
-                    class="menu-link {{ request()->is('bidang') ? 'active' : '' }}">
-                    <i class="fa-solid fa-briefcase"></i>
-                    <span>Bidang</span>
-                </a>
-                <a href="{{ route('superadmin.satuankerja') }}"
-                    class="menu-link {{ request()->is('satuankerja') ? 'active' : '' }}">
-                    <i class="fa-solid fa-building"></i>
-                    <span>Satuan Kerja</span>
-                </a>
-                <a href="{{ route('superadmin.rakserver') }}"
-                    class="menu-link {{ request()->is('rakserver') ? 'active' : '' }}">
-                    <i class="fa-solid fa-server"></i>
-                    <span>Rak Server</span>
-                </a>
-            </div>
-@endif
-            <!-- Manajemen Aset Section -->
-            <div class="menu-section">
-                <div class="menu-section-title">Manajemen Aset</div>
-                <a href="{{ route('server.index') }}"
-                    class="menu-link {{ request()->routeIs('server.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-database"></i>
-                    <span>Server</span>
-                </a>
-                <a href="{{ route('website.index') }}"
-                    class="menu-link {{ request()->routeIs('website.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-globe"></i>
-                    <span>Website</span>
-                </a>
-                <a href="{{ route('pemeliharaan') }}"
-                    class="menu-link {{ request()->routeIs('pemeliharaan') ? 'active' : '' }}">
-                    <i class="fa-solid fa-screwdriver-wrench"></i>
-                    <span>Pemeliharaan</span>
-                </a>
-            </div>
+            @php
+                $userRole = Auth::user()->role;
+                $adminBidang = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+            @endphp
 
-            <!-- Sistem Section -->
-            <div class="menu-section">
-                <div class="menu-section-title">Sistem</div>
-                <a href="{{ route('superadmin.pengguna.index') }}"
-                    class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Pengguna</span>
-                </a>
-                <a href="{{ route('logAktivitas') }}"
-                    class="menu-link {{ request()->routeIs('logAktivitas') ? 'active' : '' }}">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>Log Aktivitas</span>
-                </a>
-            </div>
+            @if ($userRole == 'superadmin')
+                <!-- Data Master Section - Hanya Superadmin -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Data Master</div>
+                    <a href="{{ route('superadmin.bidang') }}"
+                        class="menu-link {{ request()->is('bidang') ? 'active' : '' }}">
+                        <i class="fa-solid fa-briefcase"></i>
+                        <span>Bidang</span>
+                    </a>
+                    <a href="{{ route('superadmin.satuankerja') }}"
+                        class="menu-link {{ request()->is('satuankerja') ? 'active' : '' }}">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Satuan Kerja</span>
+                    </a>
+                    <a href="{{ route('superadmin.rakserver') }}"
+                        class="menu-link {{ request()->is('rakserver') ? 'active' : '' }}">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Rak Server</span>
+                    </a>
+                </div>
+            @endif
+
+            @if ($userRole == 'superadmin' || in_array($userRole, $adminBidang))
+                <!-- Manajemen Aset Section - Superadmin & Admin Bidang -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Manajemen Aset</div>
+                    <a href="{{ route('server.index') }}"
+                        class="menu-link {{ request()->routeIs('server.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Server</span>
+                    </a>
+                    <a href="{{ route('website.index') }}"
+                        class="menu-link {{ request()->routeIs('website.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>Website</span>
+                    </a>
+                    <a href="{{ route('pemeliharaan') }}"
+                        class="menu-link {{ request()->routeIs('pemeliharaan') ? 'active' : '' }}">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span>Pemeliharaan</span>
+                    </a>
+                </div>
+            @endif
+
+            @if ($userRole == 'superadmin' || in_array($userRole, $adminBidang))
+                <!-- Sistem Section - Superadmin & Admin Bidang -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Sistem</div>
+
+                    @if ($userRole == 'superadmin')
+                        <!-- Menu Pengguna - Hanya Superadmin -->
+                        <a href="{{ route('superadmin.pengguna.index') }}"
+                            class="menu-link {{ request()->routeIs('superadmin.pengguna.*') ? 'active' : '' }}">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Pengguna</span>
+                        </a>
+                    @endif
+
+                    <!-- Log Aktivitas - Superadmin & Admin Bidang -->
+                    <a href="{{ route('logAktivitas') }}"
+                        class="menu-link {{ request()->routeIs('logAktivitas') ? 'active' : '' }}">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Log Aktivitas</span>
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
-
     <!-- TOP HEADER -->
     <div class="top-navbar">
         <div class="page-title">
