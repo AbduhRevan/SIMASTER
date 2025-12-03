@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pemeliharaan;
-use App\Models\superadmin\Server;
-use App\Models\superadmin\Website;
+use App\Models\Server;
+use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -76,7 +76,7 @@ class PemeliharaanController extends Controller
             })
             ->orderBy('nama_website')->get();
 
-        return view('superadmin.pemeliharaan', compact(
+        return view('pemeliharaan', compact(
             'pemeliharaan',
             'totalPemeliharaan',
             'totalServer',

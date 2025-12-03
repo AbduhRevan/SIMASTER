@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\superadmin\Server;
-use App\Models\superadmin\Website;
+use App\Models\Server;
+use App\Models\Website;
 
 class Pemeliharaan extends Model
 {

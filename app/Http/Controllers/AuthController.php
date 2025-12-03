@@ -84,15 +84,7 @@ class AuthController extends Controller
     {
         $role = Auth::user()->role;
 
-        return match($role) {
-            'superadmin' => redirect()->route('superadmin.dashboard'),
-            'banglola' => redirect()->route('banglola.dashboard'),
-            'pamsis' => redirect()->route('pamsis.dashboard'),
-            'infratik' => redirect()->route('infratik.dashboard'),
-            'tatausaha' => redirect()->route('tatausaha.dashboard'),
-            'pimpinan' => redirect()->route('pimpinan.dashboard'),
-            default => redirect()->route('login'),
-        };
+        return redirect()->route('dashboard');
     }
 
     // Log aktivitas

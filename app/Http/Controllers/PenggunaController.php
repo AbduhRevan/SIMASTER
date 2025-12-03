@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\superadmin\Bidang;
+use App\Models\Bidang;
 use App\Models\Pengguna;
 use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
@@ -46,7 +46,7 @@ class PenggunaController extends Controller
             ]);
         }
 
-        return view('superadmin.pengguna', compact('pengguna'));
+        return view('pengguna', compact('pengguna'));
     }
 
     // Menampilkan form tambah (untuk modal)
