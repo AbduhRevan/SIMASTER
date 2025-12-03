@@ -808,7 +808,7 @@ window.applyWebsiteFilter = function() {
     const id = $(this).data('id');
     
     $.ajax({
-      url: `/superadmin/website/${id}/detail`,
+      url: `/website/${id}/detail`,
       type: 'GET',
       success: function(data) {
         $('#detailNamaWebsite').html('<i class="fa fa-info-circle me-2"></i>' + data.nama_website);
@@ -909,7 +909,7 @@ window.applyWebsiteFilter = function() {
       $('#editBidangWrapper').show();
     }
 
-    $('#editForm').attr('action', `/superadmin/website/update/${id}`);
+    $('#editForm').attr('action', `/website/update/${id}`);
     $('#editModal').modal('show');
   });
 
@@ -919,7 +919,7 @@ window.applyWebsiteFilter = function() {
     const nama = $(this).data('nama');
 
     $('#hapusNama').text(`"${nama}"`);
-    $('#hapusForm').attr('action', `/superadmin/website/delete/${id}`);
+    $('#hapusForm').attr('action', `/website/delete/${id}`);
     $('#hapusModal').modal('show');
   });
 });

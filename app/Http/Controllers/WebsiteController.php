@@ -303,7 +303,7 @@ class WebsiteController extends Controller
 
     public function detail(Request $request, $id)
     {
-        $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
+        $website = Website::with(['bidang', 'satker', 'server.rak'])->findOrFail($id);
 
         // Jika request dari AJAX, return JSON
         if ($request->ajax()) {

@@ -1085,7 +1085,7 @@ window.resetFilter = function() {
     $(document).on('click', '.btn-detail-server', function () {
         let id = $(this).data('id');
         $.ajax({
-            url: `/superadmin/server/${id}/detail`,
+            url: `/server/${id}/detail`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -1123,7 +1123,7 @@ window.resetFilter = function() {
         currentServerId = id;
         
         $.ajax({
-            url: `/superadmin/server/${id}/edit`,
+            url: `/server/${id}/edit`,
             type: "GET",
             success: function (response) {
                 let s = response.data;
@@ -1176,7 +1176,7 @@ window.resetFilter = function() {
                 }
                 
                 // Set form action
-                $('#editServerForm').attr('action', `/superadmin/server/update/${s.server_id}`);
+                $('#editServerForm').attr('action', `/server/update/${s.server_id}`);
                 
                 // Show modal
                 $('#modalEditServer').modal('show');
@@ -1238,7 +1238,7 @@ window.resetFilter = function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         $('#namaServerHapus').text(nama);
-        $('#formHapusServer').attr('action', `/superadmin/server/${id}`);
+        $('#formHapusServer').attr('action', `/server/${id}`);
         const modal = new bootstrap.Modal(document.getElementById('hapusServerModal'));
         modal.show();
     });
