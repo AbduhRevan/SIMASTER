@@ -79,7 +79,6 @@
                 <h6 class="mb-0 text-white fw-semibold">
                     <i class="fa fa-clock-rotate-left me-2"></i> Riwayat Aktivitas
                 </h6>
-                </div>
             </div>
         </div>
 
@@ -219,11 +218,61 @@
                 </div>
                 @endforelse
             </div>
-
-            {{-- Pagination --}}
+            {{-- Pagination dengan Custom Style seperti Satuan Kerja --}}
             @if($logs->hasPages())
-            <div class="d-flex justify-content-center mt-4">
-                {{ $logs->appends(request()->query())->links('pagination::bootstrap-5') }}
+            <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3" id="paginationWrapper">
+                <p class="mb-0 text-secondary small">
+                    Menampilkan {{ $logs->firstItem() }}–{{ $logs->lastItem() }} dari {{ $logs->total() }} data
+                </p>
+                <div class="custom-pagination">
+                    {{-- Previous Button --}}
+                    @if ($logs->onFirstPage())
+                        <span class="pagination-btn disabled">
+                            <i class="fa fa-chevron-left"></i>
+                        </span>
+                    @else
+                        <a href="{{ $logs->appends(request()->query())->previousPageUrl() }}" class="pagination-btn">
+                            <i class="fa fa-chevron-left"></i>
+                        </a>
+                    @endif
+
+                    {{-- Page Numbers with sliding window --}}
+                    @php
+                        $currentPage = $logs->currentPage();
+                        $lastPage = $logs->lastPage();
+                        $maxVisible = 2;
+                        
+                        if ($currentPage == 1) {
+                            $start = 1;
+                            $end = min($maxVisible, $lastPage);
+                        } elseif ($currentPage == $lastPage) {
+                            $start = max(1, $lastPage - $maxVisible + 1);
+                            $end = $lastPage;
+                        } else {
+                            $start = $currentPage;
+                            $end = min($currentPage + $maxVisible - 1, $lastPage);
+                        }
+                    @endphp
+
+                    @for($page = $start; $page <= $end; $page++)
+                        @if($page == $currentPage)
+                            <span class="pagination-btn active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $logs->appends(request()->query())->url($page) }}" class="pagination-btn">{{ $page }}</a>
+                        @endif
+                    @endfor
+
+                    {{-- Next Button --}}
+                    @if ($logs->hasMorePages())
+                        <a href="{{ $logs->appends(request()->query())->nextPageUrl() }}" class="pagination-btn">
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    @else
+                        <span class="pagination-btn disabled">
+                            <i class="fa fa-chevron-right"></i>
+                        </span>
+                    @endif
+                </div>
             </div>
             @endif
         </div>
@@ -315,35 +364,55 @@
     flex-shrink: 0;
 }
 
-/* Pagination */
-.pagination {
-    gap: 5px;
+/* Custom Pagination Styling - Sama seperti Satuan Kerja */
+.custom-pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
-.pagination .page-link {
-    padding: 0.45rem 0.85rem;
-    font-size: 0.875rem;
-    border-radius: 6px;
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
     border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: white;
     color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.pagination .page-item.active .page-link {
-    background-color: #8B0000;
-    border-color: #8B0000;
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    color: #7b0000;
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #7b0000 0%, #b91d1d 100%);
+    border-color: #7b0000;
     color: white;
+    font-weight: 600;
+    cursor: default;
 }
 
-.pagination .page-link:hover:not(.active) {
+.pagination-btn.disabled {
     background-color: #f8f9fa;
     border-color: #dee2e6;
-    color: #8B0000;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.pagination .page-item.disabled .page-link {
-    background-color: #e9ecef;
-    border-color: #dee2e6;
-    color: #6c757d;
+.pagination-btn i {
+    font-size: 12px;
 }
 
 /* Form Controls */
@@ -376,10 +445,40 @@
     .timeline-content {
         padding: 15px;
     }
+
+    #paginationWrapper {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    #paginationWrapper > div {
+        width: 100%;
+    }
+
+    .custom-pagination {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
 }
 </style>
-
+@push('scripts')
 <script>
+$(document).ready(function() {
+    // Smooth scroll to top on pagination click
+    $('.pagination-btn').on('click', function() {
+        $('html, body').animate({
+            scrollTop: $('.card.shadow-sm').offset().top - 100
+        }, 400);
+    });
+});
+
 function exportLog() {
     alert('Fitur Export Log akan segera hadir!');
 }
@@ -390,4 +489,6 @@ function confirmClearLog() {
     }
 }
 </script>
+@endpush
+
 @endsection
