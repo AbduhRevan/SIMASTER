@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\superadmin\Satker;
+use App\Models\Satker;
 
 class SatuanKerjaSeeder extends Seeder
 {

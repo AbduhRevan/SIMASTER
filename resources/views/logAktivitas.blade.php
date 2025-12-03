@@ -79,13 +79,6 @@
                 <h6 class="mb-0 text-white fw-semibold">
                     <i class="fa fa-clock-rotate-left me-2"></i> Riwayat Aktivitas
                 </h6>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary btn-sm" onclick="exportLog()">
-                        <i class="fa fa-download me-1"></i> Export Log
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="confirmClearLog()">
-                        <i class="fa fa-trash me-1"></i> Clear Log
-                    </button>
                 </div>
             </div>
         </div>

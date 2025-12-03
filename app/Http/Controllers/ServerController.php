@@ -148,7 +148,7 @@ class ServerController extends Controller
             'tidak_aktif' => $servers->where('power_status', 'OFF')->count(),
         ];
         
-        $pdf = Pdf::loadView('superadmin.server.pdf', compact('servers', 'filters', 'stats'))
+        $pdf = Pdf::loadView('server.pdf', compact('servers', 'filters', 'stats'))
                   ->setPaper('a4', 'landscape');
         
         // Log aktivitas
@@ -302,7 +302,7 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.server.index')
+        return redirect()->route('server.index')
             ->with('success', 'Server berhasil ditambahkan!');
     }
 
@@ -480,7 +480,7 @@ class ServerController extends Controller
         );
 
         // PERBAIKAN: Return redirect ke halaman index, bukan ke detail
-        return redirect()->route('superadmin.server.index')
+        return redirect()->route('server.index')
             ->with('success', 'Server berhasil diperbarui!');
     }
 
@@ -506,7 +506,7 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.server.index')
+        return redirect()->route('server.index')
             ->with('success', "Server '{$serverName}' berhasil dihapus!");
     }
 
