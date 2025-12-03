@@ -16,7 +16,12 @@ class WebsiteController extends Controller
 {
     public function index(Request $request)
 {
+    // website berdasarkan bidang/role
     $query = Website::with(['bidang', 'satker', 'server']);
+     if (Auth()->user()->role != 'superadmin') {
+            $id_bidang = Auth()->user()->bidang_id;
+            $query->where('bidang_id', $id_bidang);
+        }
 
     // pencarian teks (nama atau url)
     if ($request->filled('q')) {
@@ -129,7 +134,7 @@ class WebsiteController extends Controller
     $maintenance = $websites->where('status', 'maintenance')->count();
 
     // Load view PDF
-    $pdf = Pdf::loadView('superadmin.website.pdf', compact(
+    $pdf = Pdf::loadView('website.pdf', compact(
         'websites',
         'total',
         'aktif',
@@ -193,7 +198,7 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.website.index')
+        return redirect()->route('website.index')
             ->with('success', 'Website berhasil ditambahkan!');
     }
 
@@ -269,7 +274,7 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.website.index')
+        return redirect()->route('website.index')
             ->with('success', 'Website berhasil diperbarui!');
     }
 
@@ -292,7 +297,7 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('superadmin.website.index')
+        return redirect()->route('website.index')
             ->with('success', 'Website berhasil dihapus!');
     }
 
@@ -306,7 +311,7 @@ class WebsiteController extends Controller
         }
 
         // Jika diakses langsung via URL, redirect ke index
-        return redirect()->route('superadmin.website.index');
+        return redirect()->route('website.index');
     }
 
     /**

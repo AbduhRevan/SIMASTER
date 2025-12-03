@@ -570,11 +570,7 @@ $(document).ready(function() {
         toolbar: [
             ['style', ['bold', 'italic', 'underline', 'clear']],
             ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['color', ['color']],
-            ['fontsize', ['fontsize']],
-            ['fontname', ['fontname']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['insert', ['link', 'table']],
+            ['insert', ['link']],
             ['view', ['fullscreen', 'codeview', 'help']]
         ]
     });
