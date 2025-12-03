@@ -15,7 +15,7 @@ class PanduanManagementController extends Controller
     public function indexKategori()
     {
         $kategori = KategoriPanduan::orderBy('urutan', 'asc')->get();
-        return view('superadmin.panduan.kategori.index', compact('kategori'));
+        return view('panduan.kategori.index', compact('kategori'));
     }
 
     public function storeKategori(Request $request)
@@ -86,7 +86,7 @@ class PanduanManagementController extends Controller
             ->get();
         $kategori = KategoriPanduan::active()->ordered()->get();
 
-        return view('superadmin.panduan.item.index', compact('items', 'kategori'));
+        return view('panduan.item.index', compact('items', 'kategori'));
     }
 
     public function storeItem(Request $request)

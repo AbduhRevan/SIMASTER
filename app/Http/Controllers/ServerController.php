@@ -30,46 +30,46 @@ class ServerController extends Controller
             $query->where('bidang_id', $id_bidang);
         }
         // Filter Rak
-        if($request->filled('rak')) {
-            $query->whereHas('rak', function($q) use ($request) {
+        if ($request->filled('rak')) {
+            $query->whereHas('rak', function ($q) use ($request) {
                 $q->where('nomor_rak', $request->rak);
             });
         }
 
         // Filter Bidang
-        if($request->filled('bidang')) {
-            $query->whereHas('bidang', function($q) use ($request) {
+        if ($request->filled('bidang')) {
+            $query->whereHas('bidang', function ($q) use ($request) {
                 $q->where('nama_bidang', $request->bidang);
             });
         }
 
         // Filter Satker
-        if($request->filled('satker')) {
-            $query->whereHas('satker', function($q) use ($request) {
+        if ($request->filled('satker')) {
+            $query->whereHas('satker', function ($q) use ($request) {
                 $q->where('nama_satker', $request->satker);
             });
         }
 
         // Filter Status
-        if($request->filled('status')) {
+        if ($request->filled('status')) {
             $query->where('power_status', $request->status);
         }
 
         // Search
-        if($request->filled('q')) {
+        if ($request->filled('q')) {
             $search = $request->q;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_server', 'like', "%{$search}%")
-                  ->orWhere('brand', 'like', "%{$search}%")
-                  ->orWhereHas('rak', function($subQ) use ($search) {
-                      $subQ->where('nomor_rak', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('bidang', function($subQ) use ($search) {
-                      $subQ->where('nama_bidang', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('satker', function($subQ) use ($search) {
-                      $subQ->where('nama_satker', 'like', "%{$search}%");
-                  });
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhereHas('rak', function ($subQ) use ($search) {
+                        $subQ->where('nomor_rak', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('bidang', function ($subQ) use ($search) {
+                        $subQ->where('nama_bidang', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('satker', function ($subQ) use ($search) {
+                        $subQ->where('nama_satker', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -100,38 +100,38 @@ class ServerController extends Controller
     }
 
     // Export PDF
-      public function exportPDF(Request $request)
+    public function exportPDF(Request $request)
     {
         $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
-        
+
         // Filter berdasarkan rak (nomor_rak)
         if ($request->filled('rak')) {
-            $query->whereHas('rak', function($q) use ($request) {
+            $query->whereHas('rak', function ($q) use ($request) {
                 $q->where('nomor_rak', $request->rak);
             });
         }
-        
+
         // Filter berdasarkan bidang (nama_bidang)
         if ($request->filled('bidang')) {
-            $query->whereHas('bidang', function($q) use ($request) {
+            $query->whereHas('bidang', function ($q) use ($request) {
                 $q->where('nama_bidang', $request->bidang);
             });
         }
-        
+
         // Filter berdasarkan satker (nama_satker)
         if ($request->filled('satker')) {
-            $query->whereHas('satker', function($q) use ($request) {
+            $query->whereHas('satker', function ($q) use ($request) {
                 $q->where('nama_satker', $request->satker);
             });
         }
-        
+
         // Filter berdasarkan status (power_status)
         if ($request->filled('status')) {
             $query->where('power_status', $request->status);
         }
-        
+
         $servers = $query->get();
-        
+
         // Informasi filter untuk ditampilkan di laporan
         $filters = [
             'rak' => $request->rak ?? 'Semua',
@@ -139,7 +139,7 @@ class ServerController extends Controller
             'satker' => $request->satker ?? 'Semua',
             'status' => $this->getStatusLabel($request->status) ?? 'Semua',
         ];
-        
+
         // Statistik
         $stats = [
             'total' => $servers->count(),
@@ -147,10 +147,10 @@ class ServerController extends Controller
             'maintenance' => $servers->where('power_status', 'STANDBY')->count(),
             'tidak_aktif' => $servers->where('power_status', 'OFF')->count(),
         ];
-        
+
         $pdf = Pdf::loadView('server.pdf', compact('servers', 'filters', 'stats'))
-                  ->setPaper('a4', 'landscape');
-        
+            ->setPaper('a4', 'landscape');
+
         // Log aktivitas
         LogAktivitas::log(
             'EXPORT',
@@ -158,10 +158,10 @@ class ServerController extends Controller
             'Mengexport laporan server ke PDF dengan filter: ' . json_encode($filters),
             Auth::id()
         );
-        
+
         return $pdf->download('laporan-server-' . date('Y-m-d-His') . '.pdf');
     }
-    
+
 
     /**
      * Helper function untuk convert status code ke label
@@ -169,8 +169,8 @@ class ServerController extends Controller
     private function getStatusLabel($status)
     {
         if (!$status) return null;
-        
-        switch($status) {
+
+        switch ($status) {
             case 'ON':
                 return 'Aktif';
             case 'STANDBY':
