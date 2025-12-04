@@ -104,17 +104,16 @@ class ServerController extends Controller
     {
         $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
 
+        // FILTER BERDASARKAN BIDANG USER LOGIN (TAMBAHAN INI)
+        $user = auth()->user();
+        if ($user-> role != 'superadmin' && $user->bidang_id) {
+            $query->where('bidang_id', $user->bidang_id);
+        }
+
         // Filter berdasarkan rak (nomor_rak)
         if ($request->filled('rak')) {
             $query->whereHas('rak', function ($q) use ($request) {
                 $q->where('nomor_rak', $request->rak);
-            });
-        }
-
-        // Filter berdasarkan bidang (nama_bidang)
-        if ($request->filled('bidang')) {
-            $query->whereHas('bidang', function ($q) use ($request) {
-                $q->where('nama_bidang', $request->bidang);
             });
         }
 

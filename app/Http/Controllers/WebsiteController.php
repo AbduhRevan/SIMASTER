@@ -104,6 +104,12 @@ class WebsiteController extends Controller
     // Query dengan filter
     $query = Website::with(['server.rak', 'bidang', 'satker']);
 
+    // FILTER BERDASARKAN BIDANG USER LOGIN (TAMBAHAN INI)
+        $user = auth()->user();
+        if ($user-> role != 'superadmin' && $user->bidang_id) {
+            $query->where('bidang_id', $user->bidang_id);
+        }
+        
     if ($server) {
         $query->where('server_id', $server);
     }
