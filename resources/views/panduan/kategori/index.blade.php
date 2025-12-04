@@ -191,7 +191,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Deskripsi</label>
-                                        <textarea name="deskripsi" class="form-control" rows="3">{{ $item->deskripsi }}</textarea>
+                                        <textarea name="deskripsi" class="form-control summernote" rows="3">{!! $item->deskripsi !!}</textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Urutan</label>
@@ -234,7 +234,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control" rows="3" 
+                        <textarea name="deskripsi" class="form-control summernote" rows="3" 
                             placeholder="Deskripsi kategori (opsional)"></textarea>
                     </div>
                     <div class="mb-3">
@@ -252,5 +252,35 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Summernote CSS & JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    // Inisialisasi Summernote
+    $('.summernote').summernote({
+        height: 150,
+        tabsize: 2,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['para', ['ul', 'ol']],
+            ['insert', ['link']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+    });
+
+    // Refresh ketika modal dibuka
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('.summernote').summernote('refresh');
+    });
+
+});
+</script>
 
 @endsection

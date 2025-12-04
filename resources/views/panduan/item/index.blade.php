@@ -344,14 +344,21 @@
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label"><i class="fas fa-align-left me-1"></i> Konten <span style="color: red;">*</span></label>
-                                        <textarea name="konten" 
-                                            class="form-control konten-textarea" 
-                                            placeholder="Masukkan konten panduan di sini..."
-                                            required>{{ $item->konten }}</textarea>
+                                        <label class="form-label">
+                                            <i class="fas fa-align-left me-1"></i> Konten 
+                                            <span style="color: red;">*</span>
+                                        </label>
+
+                                        <textarea 
+                                            name="konten"
+                                            class="form-control summernote konten-textarea"
+                                            required
+                                        >{!! $item->konten !!}</textarea>
+
                                         <small class="text-muted">Tulis konten panduan dengan jelas dan detail</small>
                                         <div class="char-counter" data-counter-for="konten">0 karakter</div>
                                     </div>
+
                                     
                                     <div class="mb-3">
                                         <label class="form-label"><i class="fas fa-sort-numeric-up me-1"></i> Urutan <span style="color: red;">*</span></label>
@@ -412,7 +419,7 @@
                         <label class="form-label"><i class="fas fa-align-left me-1"></i> Konten <span style="color: red;">*</span></label>
                         <textarea name="konten" 
                             id="kontenTambah"
-                            class="form-control konten-textarea" 
+                            class="form-control summernote konten-textarea"
                             placeholder="Masukkan konten panduan di sini..."
                             required></textarea>
                         <small class="text-muted">Tulis konten panduan dengan jelas dan detail</small>
@@ -441,10 +448,33 @@
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Summernote CSS & JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
 $(document).ready(function() {
     
+    // Inisialisasi Summernote
+    $('.summernote').summernote({
+        height: 150,
+        tabsize: 2,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['para', ['ul', 'ol']],
+            ['insert', ['link']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+    });
+
+    // Refresh ketika modal dibuka
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('.summernote').summernote('refresh');
+    });
+
     // Character counter function
     function updateCharCounter(textarea) {
         var $textarea = $(textarea);

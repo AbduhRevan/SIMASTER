@@ -16,12 +16,12 @@ class WebsiteController extends Controller
 {
     public function index(Request $request)
 {
+
     // website berdasarkan bidang/role
     $query = Website::with(['bidang', 'satker', 'server']);
      if (Auth()->user()->role != 'superadmin') {
             $id_bidang = Auth()->user()->bidang_id;
-            $query->where('bidang_id', $id_bidang);
-        }
+            $query->where('bidang_id', $id_bidang);}
 
     // pencarian teks (nama atau url)
     if ($request->filled('q')) {
@@ -69,7 +69,7 @@ class WebsiteController extends Controller
         }
     }
 
-    $websites = $query->orderBy('nama_website')->get();
+    $websites = $query->latest()->get();
 
     // statistik (sesuaikan key status pada DB)
     $total = $websites->count();
@@ -103,13 +103,10 @@ class WebsiteController extends Controller
 
     // Query dengan filter
     $query = Website::with(['server.rak', 'bidang', 'satker']);
+     if (Auth()->user()->role != 'superadmin') {
+            $id_bidang = Auth()->user()->bidang_id;
+            $query->where('bidang_id', $id_bidang);}
 
-    // FILTER BERDASARKAN BIDANG USER LOGIN (TAMBAHAN INI)
-        $user = auth()->user();
-        if ($user-> role != 'superadmin' && $user->bidang_id) {
-            $query->where('bidang_id', $user->bidang_id);
-        }
-        
     if ($server) {
         $query->where('server_id', $server);
     }
@@ -164,7 +161,7 @@ class WebsiteController extends Controller
     {
         $validated = $request->validate([
             'nama_website' => 'required|string|max:150',
-            'url' => 'required|url|max:255|unique:website,url',
+            'url' => 'required|string|max:255|unique:website,url',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
             'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
@@ -309,7 +306,7 @@ class WebsiteController extends Controller
 
     public function detail(Request $request, $id)
     {
-        $website = Website::with(['bidang', 'satker', 'server.rak'])->findOrFail($id);
+        $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
 
         // Jika request dari AJAX, return JSON
         if ($request->ajax()) {

@@ -579,6 +579,59 @@
                 gap: 1rem;
             }
         }
+        /* Summernote Custom Styles */
+        .note-editor {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+        }
+
+        .note-editor.note-frame {
+            border: 1px solid #dee2e6;
+        }
+
+        .note-editor.note-frame:focus-within {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .note-toolbar {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.5rem;
+        }
+
+        .note-editable {
+            background-color: #fff;
+            padding: 1rem;
+            min-height: 150px;
+        }
+
+        .note-editable p {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .note-editor {
+            margin-bottom: 0;
+        }
+
+        .note-btn-group {
+            margin-right: 0.25rem;
+        }
+
+        .note-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Fix untuk modal overlay */
+        .modal.show .note-modal {
+            z-index: 1060 !important;
+        }
+
+        .note-modal-backdrop {
+            z-index: 1055 !important;
+        }
+
     </style>
 
     {{-- ======= MODAL TAMBAH PEMELIHARAAN ======= --}}
@@ -660,68 +713,155 @@
     </div>
 
     @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-            // === SUMMERNOTE INITIALIZATION ===
-            $('.summernote').summernote({
-                height: 120,
-                tabsize: 2,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['strikethrough', 'superscript', 'subscript']],
-                    ['para', ['ul', 'ol']],
-                    ['insert', ['link', 'table']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-                fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman'],
-                fontSizes: ['8','9','10','11','12','14','16','18','20','24','28','32','36']
-            });
+<!-- Summernote CSS & JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
-            // Refresh saat modal dibuka
-            $('.modal').on('shown.bs.modal', function () {
-                $(this).find('.summernote').summernote('refresh');
-            });
-
-            // Handle Tambah Modal
-            const jenisAsset = document.getElementById('jenisAsset');
-            const serverSelect = document.getElementById('serverSelect');
-            const websiteSelect = document.getElementById('websiteSelect');
-
-            if (jenisAsset) {
-                jenisAsset.addEventListener('change', function() {
-                    serverSelect.style.display = 'none';
-                    websiteSelect.style.display = 'none';
-
-                    if (this.value === 'server') {
-                        serverSelect.style.display = 'block';
-                    } else if (this.value === 'website') {
-                        websiteSelect.style.display = 'block';
-                    }
-                });
+<script>
+$(document).ready(function() {
+    
+    // ===========================
+    // INISIALISASI SUMMERNOTE
+    // ===========================
+    function initSummernote() {
+        $('.summernote').summernote({
+            height: 150,
+            minHeight: 150,
+            maxHeight: 300,
+            placeholder: 'Jelaskan detail pemeliharaan yang akan dilakukan...',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['table', ['table']],
+                ['insert', ['link']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman', 'Verdana'],
+            fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48'],
+            callbacks: {
+                onInit: function() {
+                    console.log('Summernote initialized');
+                },
+                onChange: function(contents, $editable) {
+                    // Update textarea value saat konten berubah
+                    $(this).val(contents);
+                }
             }
-
-            // Handle Edit Modals
-            const editSelects = document.querySelectorAll('.jenis-asset-edit');
-            editSelects.forEach(function(select) {
-                select.addEventListener('change', function() {
-                    const modalId = this.getAttribute('data-modal-id');
-                    const serverDiv = document.querySelector('.server-select-edit-' + modalId);
-                    const websiteDiv = document.querySelector('.website-select-edit-' + modalId);
-
-                    if (serverDiv && websiteDiv) {
-                        serverDiv.style.display = 'none';
-                        websiteDiv.style.display = 'none';
-
-                        if (this.value === 'server') {
-                            serverDiv.style.display = 'block';
-                        } else if (this.value === 'website') {
-                            websiteDiv.style.display = 'block';
-                        }
-                    }
-                });
-            });
         });
-    </script>
+    }
+
+    // Inisialisasi pertama kali
+    initSummernote();
+
+    // ===========================
+    // REFRESH SAAT MODAL DIBUKA
+    // ===========================
+    $('.modal').on('shown.bs.modal', function () {
+        const $modal = $(this);
+        const $summernote = $modal.find('.summernote');
+        
+        // Destroy dulu jika sudah ada
+        if ($summernote.next('.note-editor').length) {
+            $summernote.summernote('destroy');
+        }
+        
+        // Inisialisasi ulang
+        $summernote.summernote({
+            height: 150,
+            minHeight: 150,
+            maxHeight: 300,
+            placeholder: 'Jelaskan detail pemeliharaan yang akan dilakukan...',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['table', ['table']],
+                ['insert', ['link']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            fontNames: ['Poppins','Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Roboto', 'Times New Roman', 'Verdana'],
+            fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48']
+        });
+    });
+
+    // ===========================
+    // CLEANUP SAAT MODAL DITUTUP
+    // ===========================
+    $('.modal').on('hidden.bs.modal', function () {
+        const $summernote = $(this).find('.summernote');
+        if ($summernote.next('.note-editor').length) {
+            $summernote.summernote('destroy');
+        }
+    });
+
+    // ===========================
+    // HANDLE JENIS ASSET - TAMBAH MODAL
+    // ===========================
+    $('#jenisAsset').on('change', function() {
+        const value = $(this).val();
+        $('#serverSelect').hide();
+        $('#websiteSelect').hide();
+
+        if (value === 'server') {
+            $('#serverSelect').show();
+        } else if (value === 'website') {
+            $('#websiteSelect').show();
+        }
+    });
+
+    // ===========================
+    // HANDLE JENIS ASSET - EDIT MODALS
+    // ===========================
+    $('.jenis-asset-edit').on('change', function() {
+        const modalId = $(this).data('modal-id');
+        $(`.server-select-edit-${modalId}`).hide();
+        $(`.website-select-edit-${modalId}`).hide();
+
+        if ($(this).val() === 'server') {
+            $(`.server-select-edit-${modalId}`).show();
+        } else if ($(this).val() === 'website') {
+            $(`.website-select-edit-${modalId}`).show();
+        }
+    });
+
+    // ===========================
+    // VALIDASI SEBELUM SUBMIT
+    // ===========================
+    $('form').on('submit', function(e) {
+        const $form = $(this);
+        const $summernote = $form.find('.summernote');
+        
+        if ($summernote.length) {
+            // Ambil konten dari Summernote
+            const content = $summernote.summernote('code');
+            
+            // Cek apakah konten kosong (hanya tag HTML tanpa teks)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            
+            if (!textContent.trim()) {
+                e.preventDefault();
+                alert('Keterangan tidak boleh kosong!');
+                return false;
+            }
+            
+            // Set value ke textarea
+            $summernote.val(content);
+        }
+    });
+});
+</script>
 @endpush
 @endsection

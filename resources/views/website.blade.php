@@ -360,7 +360,7 @@
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Server</label>
-            <select name="server" class="form-select">
+            <select name="server_id" class="form-select">
               <option value="">Pilih Server (Opsional)</option>
               @foreach($servers as $server)
                 <option value="{{ $server->server_id }}">
@@ -776,9 +776,9 @@ window.applyWebsiteFilter = function() {
         tabsize: 2,
         toolbar: [
             ['style', ['bold', 'italic', 'underline', 'clear']],
-            ['para', ['ul', 'ol']],
             ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['insert', ['link']],
+            ['para', ['ul', 'ol']],
+            ['insert', ['link', 'table']],
             ['view', ['fullscreen', 'codeview', 'help']]
         ],
     });

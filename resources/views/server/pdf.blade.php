@@ -168,7 +168,7 @@
             padding: 3px 8px;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 8pt;
+            font-size: 7pt;
         }
         
         .status-aktif {

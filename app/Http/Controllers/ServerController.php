@@ -74,7 +74,7 @@ class ServerController extends Controller
         }
 
         // Execute query dengan ordering
-        $servers = $query->orderBy('nama_server')->get();
+        $servers = $query->latest()->get();
 
         // Hitung statistik berdasarkan hasil filter
         $total = $servers->count();
