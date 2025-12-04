@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pemeliharaan;
 use App\Models\Server;
 use App\Models\Website;
+use App\Models\LogAktivitas; // TAMBAHKAN INI
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,7 @@ class PemeliharaanController extends Controller
     {
         // Base query untuk filter bidang
         $baseQuery = Pemeliharaan::query();
-        
+
         if (Auth()->user()->role != 'superadmin') {
             $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
             $baseQuery->where('bidang_id', $id_bidang);
@@ -74,7 +75,7 @@ class PemeliharaanController extends Controller
                     ->whereNotNull('server_id')
                     ->where('status_pemeliharaan', 'berlangsung');
             });
-            
+
         $websitesQuery = Website::whereIn('status', ['active', 'inactive'])
             ->whereNotIn('website_id', function ($query) {
                 $query->select('website_id')
@@ -124,7 +125,8 @@ class PemeliharaanController extends Controller
         try {
             DB::beginTransaction();
 
-            $bidangId = null; // ← TAMBAHKAN INI
+            $bidangId = null;
+            $assetName = null; // TAMBAHKAN untuk logging
 
             // Validasi: Cek apakah aset sedang dalam pemeliharaan
             if ($request->jenis_asset == 'server') {
@@ -138,9 +140,10 @@ class PemeliharaanController extends Controller
                         ->withInput();
                 }
 
-                // ← TAMBAHKAN: Ambil bidang_id dari server
+                // Ambil bidang_id dari server
                 $server = Server::find($request->server_id);
                 $bidangId = $server->bidang_id;
+                $assetName = $server->nama_server; // TAMBAHKAN
 
             } else {
                 $existing = Pemeliharaan::where('website_id', $request->website_id)
@@ -153,21 +156,30 @@ class PemeliharaanController extends Controller
                         ->withInput();
                 }
 
-                // ← TAMBAHKAN: Ambil bidang_id dari website
+                // Ambil bidang_id dari website
                 $website = Website::find($request->website_id);
                 $bidangId = $website->bidang_id;
+                $assetName = $website->nama_website; // TAMBAHKAN
             }
 
             $keterangan = strip_tags($request->keterangan);
 
-            Pemeliharaan::create([
+            $pemeliharaan = Pemeliharaan::create([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
                 'status_pemeliharaan' => 'dijadwalkan',
                 'keterangan' => $keterangan,
-                'bidang_id' => $bidangId, // ← TAMBAHKAN INI
+                'bidang_id' => $bidangId,
             ]);
+
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'CREATE',
+                'pemeliharaan',
+                "Menambahkan jadwal pemeliharaan untuk {$request->jenis_asset} \"{$assetName}\" pada tanggal " .
+                    date('d M Y', strtotime($request->tanggal_pemeliharaan))
+            );
 
             DB::commit();
 
@@ -228,6 +240,13 @@ class PemeliharaanController extends Controller
                 'status_sebelumnya' => $pemeliharaan->status_sebelumnya
             ]);
 
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'UPDATE',
+                'pemeliharaan',
+                "Memulai pemeliharaan {$assetType} \"{$assetName}\" - Status diubah menjadi Maintenance"
+            );
+
             DB::commit();
 
             return redirect()->back()
@@ -282,6 +301,13 @@ class PemeliharaanController extends Controller
                 'tanggal_selesai_aktual' => now()
             ]);
 
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'UPDATE',
+                'pemeliharaan',
+                "Menyelesaikan pemeliharaan {$assetType} \"{$assetName}\" - Status dikembalikan ke {$statusKembali}"
+            );
+
             DB::commit();
 
             return redirect()->back()
@@ -309,6 +335,10 @@ class PemeliharaanController extends Controller
                     ->with('error', 'Pemeliharaan ini tidak dapat dibatalkan');
             }
 
+            // Ambil nama asset untuk logging
+            $assetName = $pemeliharaan->asset_name;
+            $assetType = $pemeliharaan->server_id ? 'Server' : 'Website';
+
             // Jika sedang berlangsung, kembalikan status aset dulu
             if ($pemeliharaan->status_pemeliharaan === 'berlangsung') {
                 if ($pemeliharaan->server_id) {
@@ -326,6 +356,13 @@ class PemeliharaanController extends Controller
             $pemeliharaan->update([
                 'status_pemeliharaan' => 'dibatalkan'
             ]);
+
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'UPDATE',
+                'pemeliharaan',
+                "Membatalkan pemeliharaan {$assetType} \"{$assetName}\""
+            );
 
             DB::commit();
 
@@ -365,26 +402,37 @@ class PemeliharaanController extends Controller
                     ->with('error', 'Tidak dapat mengedit pemeliharaan yang sedang berlangsung atau sudah selesai');
             }
 
-            $bidangId = null; // ← TAMBAHKAN INI
+            $bidangId = null;
+            $assetName = null; // TAMBAHKAN
 
-            // ← TAMBAHKAN: Ambil bidang_id dari asset yang dipilih
+            // Ambil bidang_id dari asset yang dipilih
             if ($request->jenis_asset == 'server') {
                 $server = Server::find($request->server_id);
                 $bidangId = $server->bidang_id;
+                $assetName = $server->nama_server; // TAMBAHKAN
             } else {
                 $website = Website::find($request->website_id);
                 $bidangId = $website->bidang_id;
+                $assetName = $website->nama_website; // TAMBAHKAN
             }
 
-            $keterangan = strip_tags($request->keterangan); 
+            $keterangan = strip_tags($request->keterangan);
 
             $pemeliharaan->update([
                 'server_id' => $request->jenis_asset == 'server' ? $request->server_id : null,
                 'website_id' => $request->jenis_asset == 'website' ? $request->website_id : null,
                 'tanggal_pemeliharaan' => $request->tanggal_pemeliharaan,
                 'keterangan' => $keterangan,
-                'bidang_id' => $bidangId, // ← TAMBAHKAN INI
+                'bidang_id' => $bidangId,
             ]);
+
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'UPDATE',
+                'pemeliharaan',
+                "Mengupdate jadwal pemeliharaan {$request->jenis_asset} \"{$assetName}\" menjadi tanggal " .
+                    date('d M Y', strtotime($request->tanggal_pemeliharaan))
+            );
 
             DB::commit();
 
@@ -410,7 +458,19 @@ class PemeliharaanController extends Controller
                     ->with('error', 'Tidak dapat menghapus pemeliharaan yang sedang berlangsung');
             }
 
+            // Ambil data untuk logging sebelum dihapus
+            $assetName = $pemeliharaan->asset_name;
+            $assetType = $pemeliharaan->server_id ? 'Server' : 'Website';
+            $tanggal = date('d M Y', strtotime($pemeliharaan->tanggal_pemeliharaan));
+
             $pemeliharaan->delete();
+
+            // TAMBAHKAN LOGGING
+            LogAktivitas::log(
+                'DELETE',
+                'pemeliharaan',
+                "Menghapus jadwal pemeliharaan {$assetType} \"{$assetName}\" tanggal {$tanggal}"
+            );
 
             DB::commit();
 

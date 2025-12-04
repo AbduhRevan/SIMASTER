@@ -247,7 +247,7 @@
                         <i class="fa fa-chevron-left"></i>
                     </span>
                 @else
-                    <a href="{{ $pengguna->previousPageUrl() }}" class="pagination-btn">
+                    <a href="{{ $pengguna->appends(request()->query())->previousPageUrl() }}" class="pagination-btn">
                         <i class="fa fa-chevron-left"></i>
                     </a>
                 @endif
@@ -274,13 +274,13 @@
                     @if($page == $currentPage)
                         <span class="pagination-btn active">{{ $page }}</span>
                     @else
-                        <a href="{{ $pengguna->url($page) }}" class="pagination-btn">{{ $page }}</a>
+                        <a href="{{ $pengguna->appends(request()->query())->url($page) }}" class="pagination-btn">{{ $page }}</a>
                     @endif
                 @endfor
 
                 {{-- Next Button --}}
                 @if ($pengguna->hasMorePages())
-                    <a href="{{ $pengguna->nextPageUrl() }}" class="pagination-btn">
+                    <a href="{{ $pengguna->appends(request()->query())->nextPageUrl() }}" class="pagination-btn">
                         <i class="fa fa-chevron-right"></i>
                     </a>
                 @else
@@ -433,7 +433,6 @@
         </div>
     </div>
 </div>
-
 <style>
 /* Card Content */
 .card-content {
@@ -547,6 +546,16 @@
     border-right: 0;
 }
 
+.form-control:focus {
+    border-color: #7b0000;
+    box-shadow: 0 0 0 0.2rem rgba(123, 0, 0, 0.25);
+}
+
+.form-select:focus {
+    border-color: #7b0000;
+    box-shadow: 0 0 0 0.2rem rgba(123, 0, 0, 0.25);
+}
+
 /* Alert with Icon */
 .alert i {
     font-size: 1rem;
@@ -603,6 +612,16 @@
     font-size: 12px;
 }
 
+/* Invalid Input */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .card-header-custom {
@@ -633,6 +652,10 @@
         min-width: 36px;
         height: 36px;
         font-size: 13px;
+    }
+
+    .d-flex.gap-2 {
+        flex-wrap: wrap;
     }
 }
 </style>
@@ -741,6 +764,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Handle empty results
         handleEmptyResults(visibleRows);
+
+        // Hide/show pagination based on filter
+        if (searchValue !== '' || roleFilter !== '' || statusFilter !== '') {
+            $('#paginationWrapper').hide();
+        } else {
+            $('#paginationWrapper').show();
+        }
     }
 
     // ====================================================================
@@ -861,8 +891,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set modal content
         $('#namaPenggunaHapus').text(nama);
         
-        // Set form action URL
-        const deleteUrl = '{{ route("superadmin.pengguna.destroy", ":id") }}'.replace(':id', id);
+        // Set form action URL - MENGGUNAKAN ROUTE DARI WEB.PHP
+        const deleteUrl = '{{ url("/pengguna") }}/' + id;
         $('#formHapusPengguna').attr('action', deleteUrl);
         
         // Show modal
@@ -898,11 +928,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set modal message
         $('#statusMessage').html(
-            Apakah Anda yakin ingin mengubah status pengguna <strong>${nama}</strong> menjadi ${statusBadge}?
+            `Apakah Anda yakin ingin mengubah status pengguna <strong>${nama}</strong> menjadi ${statusBadge}?`
         );
         
-        // Set form action URL using named route
-        const toggleUrl = '{{ route("superadmin.pengguna.toggle-status", ":id") }}'.replace(':id', id);
+        // Set form action URL - MENGGUNAKAN ROUTE DARI WEB.PHP
+        const toggleUrl = '{{ url("/pengguna") }}/' + id + '/toggle-status';
         $('#formToggleStatus').attr('action', toggleUrl);
         
         // Show modal
@@ -1007,11 +1037,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // ====================================================================
     $('form').on('submit', function() {
         const submitBtn = $(this).find('button[type="submit"]');
+        
+        // Don't disable if already disabled
+        if (submitBtn.prop('disabled')) {
+            return;
+        }
+        
         submitBtn.prop('disabled', true);
         
         // Re-enable after 3 seconds (in case of validation errors)
         setTimeout(function() {
-            submitBtn.prop('disabled', false);
+            if (!submitBtn.closest('form').hasClass('was-validated')) {
+                submitBtn.prop('disabled', false);
+            }
         }, 3000);
     });
 

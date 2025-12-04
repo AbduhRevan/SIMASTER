@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Auth;
 
 class PenggunaController extends Controller
 {
-    // Menampilkan daftar pengguna dengan filter dan search
+    /**
+     * Menampilkan daftar pengguna dengan filter dan search
+     */
     public function index(Request $request)
     {
         $query = Pengguna::with('bidang'); // Load relasi bidang
@@ -36,29 +38,48 @@ class PenggunaController extends Controller
             });
         }
 
+        // Order by created_at descending (data terbaru di atas)
+        $query->orderBy('created_at', 'desc');
+
+        // Pagination dengan 10 data per halaman
         $pengguna = $query->paginate(10);
 
-        // Jika request AJAX (untuk filter/search tanpa reload)
+        // Append query string untuk pagination agar filter tetap ada
+        $pengguna->appends($request->query());
+
+        // Jika request AJAX (untuk filter/search tanpa reload halaman penuh)
         if ($request->ajax()) {
             return response()->json([
+                'success' => true,
                 'data' => $pengguna->items(),
                 'pagination' => $pengguna->links()->toHtml(),
+                'total' => $pengguna->total(),
+                'current_page' => $pengguna->currentPage(),
+                'last_page' => $pengguna->lastPage(),
             ]);
         }
 
         return view('pengguna', compact('pengguna'));
     }
 
-    // Menampilkan form tambah (untuk modal)
+    /**
+     * Menampilkan form tambah (untuk modal) - Optional jika diperlukan AJAX
+     */
     public function create()
     {
-        $bidang = Bidang::all();
-        return response()->json(['bidang' => $bidang]);
+        $bidang = Bidang::orderBy('nama_bidang', 'asc')->get();
+        return response()->json([
+            'success' => true,
+            'bidang' => $bidang
+        ]);
     }
 
-    // Simpan pengguna baru
+    /**
+     * Simpan pengguna baru
+     */
     public function store(Request $request)
     {
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email',
@@ -68,21 +89,26 @@ class PenggunaController extends Controller
             'status' => 'required|in:active,inactive',
         ], [
             'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 100 karakter',
             'username_email.required' => 'Username/Email wajib diisi',
             'username_email.unique' => 'Username/Email sudah terdaftar',
+            'username_email.max' => 'Username/Email maksimal 100 karakter',
             'password.required' => 'Password wajib diisi',
             'password.min' => 'Password minimal 6 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
             'role.required' => 'Role wajib dipilih',
+            'role.in' => 'Role tidak valid',
             'bidang_id.required' => 'Bidang wajib dipilih',
             'bidang_id.exists' => 'Bidang tidak valid',
-            'status.required' => 'Status wajib dipilih'
+            'status.required' => 'Status wajib dipilih',
+            'status.in' => 'Status tidak valid'
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Validasi gagal! Periksa kembali input Anda.');
         }
 
         try {
@@ -96,10 +122,11 @@ class PenggunaController extends Controller
                 'status' => $request->status,
             ]);
 
-            // TAMBAHKAN LOG CREATE
+            // Get bidang name untuk log
             $bidangNama = Bidang::find($request->bidang_id)->nama_bidang ?? 'Unknown';
             $roleLabel = $this->getRoleLabel($request->role);
 
+            // TAMBAHKAN LOG CREATE
             LogAktivitas::log(
                 'CREATE',
                 'pengguna',
@@ -110,24 +137,48 @@ class PenggunaController extends Controller
             return redirect()->route('superadmin.pengguna.index')
                 ->with('success', 'Pengguna berhasil ditambahkan!');
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Error create pengguna: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->with('error', 'Terjadi kesalahan saat menambahkan pengguna: ' . $e->getMessage())
                 ->withInput();
         }
     }
 
-    // Menampilkan data untuk edit (untuk modal)
+    /**
+     * Menampilkan data untuk edit (untuk modal) - Optional jika diperlukan AJAX
+     */
     public function edit($id)
     {
-        $pengguna = Pengguna::findOrFail($id);
-        $bidang = Bidang::all();
-        return response()->json(['pengguna' => $pengguna, 'bidang' => $bidang]);
+        try {
+            $pengguna = Pengguna::findOrFail($id);
+            $bidang = Bidang::orderBy('nama_bidang', 'asc')->get();
+
+            return response()->json([
+                'success' => true,
+                'pengguna' => $pengguna,
+                'bidang' => $bidang
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengguna tidak ditemukan'
+            ], 404);
+        }
     }
 
-    // Update pengguna
+    /**
+     * Update pengguna
+     */
     public function update(Request $request, $id)
     {
-        $pengguna = Pengguna::findOrFail($id);
+        try {
+            $pengguna = Pengguna::findOrFail($id);
+        } catch (\Exception $e) {
+            return redirect()->route('superadmin.pengguna.index')
+                ->with('error', 'Pengguna tidak ditemukan!');
+        }
 
         // Simpan data lama untuk log
         $namaLama = $pengguna->nama_lengkap;
@@ -136,6 +187,7 @@ class PenggunaController extends Controller
         $bidangLama = $pengguna->bidang_id;
         $statusLama = $pengguna->status;
 
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email,' . $id . ',user_id',
@@ -145,19 +197,24 @@ class PenggunaController extends Controller
             'status' => 'required|in:active,inactive',
         ], [
             'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 100 karakter',
             'username_email.required' => 'Username/Email wajib diisi',
-            'username_email.unique' => 'Username/Email sudah digunakan',
+            'username_email.unique' => 'Username/Email sudah digunakan pengguna lain',
+            'username_email.max' => 'Username/Email maksimal 100 karakter',
             'password.min' => 'Password minimal 6 karakter',
             'role.required' => 'Role wajib dipilih',
+            'role.in' => 'Role tidak valid',
             'bidang_id.required' => 'Bidang wajib dipilih',
             'bidang_id.exists' => 'Bidang tidak valid',
-            'status.required' => 'Status wajib dipilih'
+            'status.required' => 'Status wajib dipilih',
+            'status.in' => 'Status tidak valid'
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Validasi gagal! Periksa kembali input Anda.');
         }
 
         try {
@@ -177,9 +234,10 @@ class PenggunaController extends Controller
                 $passwordDiubah = true;
             }
 
+            // Update data pengguna
             $pengguna->update($data);
 
-            // TAMBAHKAN LOG UPDATE
+            // TAMBAHKAN LOG UPDATE - Track perubahan
             $perubahan = [];
 
             if ($namaLama !== $request->nama_lengkap) {
@@ -221,17 +279,28 @@ class PenggunaController extends Controller
             return redirect()->route('superadmin.pengguna.index')
                 ->with('success', 'Data pengguna berhasil diperbarui!');
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Error update pengguna: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->with('error', 'Terjadi kesalahan saat mengupdate pengguna: ' . $e->getMessage())
                 ->withInput();
         }
     }
 
-    // Toggle status (aktif/nonaktif)
+    /**
+     * Toggle status (aktif/nonaktif)
+     */
     public function toggleStatus($id)
     {
         try {
             $pengguna = Pengguna::findOrFail($id);
+
+            // Cek apakah user sedang login adalah dirinya sendiri
+            if ($pengguna->user_id === Auth::id()) {
+                return redirect()->back()
+                    ->with('error', 'Anda tidak dapat mengubah status akun Anda sendiri!');
+            }
 
             // Simpan status lama
             $statusLama = $pengguna->status;
@@ -246,19 +315,26 @@ class PenggunaController extends Controller
             LogAktivitas::log(
                 'UPDATE',
                 'pengguna',
-                "Mengubah status pengguna {$pengguna->nama_lengkap} menjadi {$statusText}",
+                "Mengubah status pengguna {$pengguna->nama_lengkap} dari " .
+                    ($statusLama == 'active' ? 'aktif' : 'nonaktif') .
+                    " menjadi {$statusText}",
                 Auth::id()
             );
 
             return redirect()->route('superadmin.pengguna.index')
                 ->with('success', "Status pengguna berhasil diubah menjadi {$statusText}!");
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Error toggle status pengguna: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat mengubah status: ' . $e->getMessage());
         }
     }
 
-    // Hapus pengguna
+    /**
+     * Hapus pengguna (Hard Delete)
+     */
     public function destroy($id)
     {
         try {
@@ -266,12 +342,13 @@ class PenggunaController extends Controller
             $namaPengguna = $pengguna->nama_lengkap;
             $usernamePengguna = $pengguna->username_email;
 
-            // Cek apakah user adalah dirinya sendiri (opsional, sesuaikan dengan kebutuhan)
-            // if ($pengguna->user_id === auth()->id()) {
-            //     return redirect()->back()
-            //                    ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
-            // }
+            // Cek apakah user sedang login adalah dirinya sendiri
+            if ($pengguna->user_id === Auth::id()) {
+                return redirect()->back()
+                    ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
+            }
 
+            // Hapus pengguna (Hard Delete)
             $pengguna->delete();
 
             // TAMBAHKAN LOG DELETE
@@ -285,19 +362,36 @@ class PenggunaController extends Controller
             return redirect()->route('superadmin.pengguna.index')
                 ->with('success', 'Pengguna berhasil dihapus secara permanen!');
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Error delete pengguna: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menghapus pengguna: ' . $e->getMessage());
         }
     }
 
-    // Method helper untuk get bidang (jika diperlukan)
+    /**
+     * Method helper untuk get bidang (untuk AJAX request jika diperlukan)
+     */
     public function getBidang()
     {
-        $bidang = Bidang::all();
-        return response()->json(['bidang' => $bidang]);
+        try {
+            $bidang = Bidang::orderBy('nama_bidang', 'asc')->get();
+            return response()->json([
+                'success' => true,
+                'bidang' => $bidang
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data bidang'
+            ], 500);
+        }
     }
 
-    // Helper method untuk format role label
+    /**
+     * Helper method untuk format role label
+     */
     private function getRoleLabel($role)
     {
         return match ($role) {
