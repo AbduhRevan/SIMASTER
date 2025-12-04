@@ -7,10 +7,10 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            font-size: 11pt;
-            line-height: 1.6;
+            font-size: 9pt;
+            line-height: 1.4;
             color: #000;
-            margin: 20px;
+            margin: 15px;
         }
         
         .kop-surat {
@@ -41,68 +41,112 @@
             color: #000;
         }
         
-        /* Website Section */
-        .website-section {
-            margin-bottom: 20px;
-        }
-        
-        .website-number {
-            font-size: 12pt;
-            font-weight: bold;
-            margin-bottom: 8px;
-            padding: 6px 12px;
-            background-color: #800000;
-            color: #fff;
-            border-radius: 3px;
-        }
-        
-        .info-table {
+        /* Data Table */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 8pt;
         }
         
-        .info-table tr {
+        .data-table thead tr {
+            background-color: #800000;
+            color: #fff;
+        }
+        
+        .data-table th {
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #666;
+            font-size: 9pt;
+        }
+        
+        .data-table tbody tr {
             border-bottom: 1px solid #ddd;
         }
         
-        .info-table td {
-            padding: 6px 10px;
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .data-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
             vertical-align: top;
+            word-wrap: break-word;
         }
         
-        .info-table td.label {
-            width: 180px;
-            font-weight: bold;
-            color: #333;
+        .data-table td.no {
+            width: 3%;
+            text-align: center;
         }
         
-        .info-table td.value {
-            color: #000;
+        .data-table td.nama {
+            width: 12%;
+        }
+        
+        .data-table td.url {
+            width: 15%;
+            font-size: 7pt;
+        }
+        
+        .data-table td.status {
+            width: 8%;
+            text-align: center;
+        }
+        
+        .data-table td.tahun {
+            width: 8%;
+            text-align: center;
+        }
+        
+        .data-table td.server {
+            width: 12%;
+        }
+        
+        .data-table td.satker-bidang {
+            width: 15%;
+        }
+        
+        .data-table td.keterangan {
+            width: 27%;
+            font-size: 7pt;
         }
         
         /* Keterangan Styling */
         .keterangan-content {
-            padding: 5px 0;
+            padding: 2px 0;
         }
         
         .keterangan-content p {
-            margin: 5px 0;
+            margin: 3px 0;
+            font-size: 7pt !important;
         }
         
         .keterangan-content ul, 
         .keterangan-content ol {
-            margin: 5px 0;
-            padding-left: 25px;
+            margin: 3px 0;
+            padding-left: 15px;
+            font-size: 7pt !important;
+        }
+        
+        .keterangan-content ul li,
+        .keterangan-content ol li {
+            margin-bottom: 2px;
+        }
+        
+        .keterangan-content * {
+            font-size: 7pt !important;
         }
         
         /* Status Badge */
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 3px 8px;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 10pt;
+            font-size: 7pt;
         }
         
         .status-aktif {
@@ -132,12 +176,6 @@
             padding-top: 15px;
             border-top: 1px solid #ccc;
         }
-        
-        /* Separator Line */
-        .separator {
-            border-top: 2px solid #ccc;
-            margin: 20px 0;
-        }
     </style>
 </head>
 <body>
@@ -149,22 +187,26 @@
     </div>
     
     <!-- CONTENT -->
-    @forelse($websites as $index => $website)
-    <div class="website-section">
-        <div class="website-number">{{ $index + 1 }}. {{ strtoupper($website->nama_website) }}</div>
-        
-        <table class="info-table">
+    <table class="data-table">
+        <thead>
             <tr>
-                <td class="label">Nama Website</td>
-                <td class="value">{{ $website->nama_website }}</td>
+                <th class="no">No</th>
+                <th class="nama">Nama Website</th>
+                <th class="url">URL</th>
+                <th class="status">Status</th>
+                <th class="tahun">Tahun Pengadaan</th>
+                <th class="server">Server</th>
+                <th class="satker-bidang">Satuan Kerja & Bidang</th>
+                <th class="keterangan">Keterangan</th>
             </tr>
+        </thead>
+        <tbody>
+            @forelse($websites as $index => $website)
             <tr>
-                <td class="label">URL</td>
-                <td class="value">{{ $website->url }}</td>
-            </tr>
-            <tr>
-                <td class="label">Status</td>
-                <td class="value">
+                <td class="no">{{ $index + 1 }}</td>
+                <td class="nama">{{ $website->nama_website }}</td>
+                <td class="url">{{ $website->url }}</td>
+                <td class="status">
                     @if($website->status === 'active')
                         <span class="status-badge status-aktif">AKTIF</span>
                     @elseif($website->status === 'maintenance')
@@ -173,42 +215,29 @@
                         <span class="status-badge status-tidak-aktif">TIDAK AKTIF</span>
                     @endif
                 </td>
-            </tr>
-            <tr>
-                <td class="label">Tahun Pengadaan</td>
-                <td class="value">{{ $website->tahun_pengadaan ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Server</td>
-                <td class="value">{{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Satuan Kerja</td>
-                <td class="value">{{ $website->satker ? $website->satker->nama_satker : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Bidang</td>
-                <td class="value">{{ $website->bidang ? $website->bidang->nama_bidang : '-' }}</td>
-            </tr>
-            @if($website->keterangan)
-            <tr>
-                <td class="label">Keterangan</td>
-                <td class="value">
-                    <div class="keterangan-content">{!! $website->keterangan !!}</div>
+                <td class="tahun">{{ $website->tahun_pengadaan ?? '-' }}</td>
+                <td class="server">{{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}</td>
+                <td class="satker-bidang">
+                    <strong>Satker:</strong><br/>{{ $website->satker ? $website->satker->nama_satker : '-' }}<br/><br/>
+                    <strong>Bidang:</strong><br/>{{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
+                </td>
+                <td class="keterangan">
+                    @if($website->keterangan)
+                        <div class="keterangan-content">{!! $website->keterangan !!}</div>
+                    @else
+                        -
+                    @endif
                 </td>
             </tr>
-            @endif
-        </table>
-    </div>
-    
-    @if(!$loop->last)
-        <div class="separator"></div>
-    @endif
-    @empty
-    <div style="text-align: center; padding: 50px 0;">
-        <p><em>Tidak ada data website yang sesuai dengan filter</em></p>
-    </div>
-    @endforelse
+            @empty
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 30px 0;">
+                    <em>Tidak ada data website yang sesuai dengan filter</em>
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
     
     <!-- FOOTER -->
     <div class="footer">

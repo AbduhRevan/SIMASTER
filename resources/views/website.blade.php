@@ -73,7 +73,7 @@
         'status' => request('status'),
         'q' => request('q')
     ]) }}"
-    class="btn btn-maroon-gradient btn-sm w-100">
+    class="btn btn-danger btn-sm">
     <i class="fa fa-file-pdf me-1"></i> Export PDF
 </a>
 
@@ -776,6 +776,7 @@ window.applyWebsiteFilter = function() {
         tabsize: 2,
         toolbar: [
             ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol']],
             ['font', ['strikethrough', 'superscript', 'subscript']],
             ['insert', ['link']],
             ['view', ['fullscreen', 'codeview', 'help']]

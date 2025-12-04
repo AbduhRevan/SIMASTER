@@ -7,10 +7,10 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            font-size: 11pt;
-            line-height: 1.6;
-            color: #ab0000ff;
-            margin: 20px;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #000;
+            margin: 15px;
         }
         
         .kop-surat {
@@ -42,85 +42,133 @@
             color: #000; /* merah gelap */
         }
 
-        
-        /* Server Section */
-        .server-section {
-            margin-bottom: 20px;
-        }
-        
-        .server-number {
-            font-size: 12pt;
-            font-weight: bold;
-            margin-bottom: 8px;
-            padding: 6px 12px;
-            background-color: #800000; /* merah gelap */
-            color: #fff; /* putih */
-            border-left: none;
-            border-radius: 3px;
-        }
-
-        
-        .info-table {
+        /* Data Table */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 8pt;
         }
-        
-        .info-table tr {
+
+        .data-table thead tr {
+            background-color: #800000;
+            color: #fff;
+        }
+
+        .data-table th {
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #666;
+            font-size: 9pt;
+        }
+
+        .data-table tbody tr {
             border-bottom: 1px solid #ddd;
         }
-        
-        .info-table td {
-            padding: 6px 10px;
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .data-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
             vertical-align: top;
+            word-wrap: break-word;
         }
-        
-        .info-table td.label {
-            width: 180px;
-            font-weight: bold;
-            color: #333;
+
+        .data-table td.no {
+            width: 3%;
+            text-align: center;
         }
-        
-        .info-table td.value {
-            color: #000;
+
+        .data-table td.nama {
+            width: 10%;
         }
+
+        .data-table td.brand {
+            width: 8%;
+        }
+
+        .data-table td.spek {
+            width: 25%;
+            font-size: 7pt;
+        }
+
+        .data-table td.lokasi {
+            width: 10%;
+        }
+
+        .data-table td.bidang-satker {
+            width: 12%;
+        }
+
+        .data-table td.website {
+            width: 12%;
+            font-size: 7pt;
+        }
+
+        .data-table td.status {
+            width: 8%;
+            text-align: center;
+        }
+
+        .data-table td.keterangan {
+            width: 12%;
+            font-size: 7pt;
+        }  
         
         /* Spesifikasi Styling */
         .spec-content table {
             width: 100%;
             border-collapse: collapse;
-            margin: 8px 0;
-            border: 1px solid #666;
+            margin: 4px 0;
+            border: 1px solid #999;
+            table-layout: fixed; 
         }
-        
+
         .spec-content table td {
-            padding: 6px 10px;
-            border: 1px solid #666;
-            font-size: 10pt;
+            padding: 3px 5px;
+            border: 1px solid #999;
+            font-size: 7pt !important;
+            word-wrap: break-word; 
+            overflow-wrap: break-word; 
         }
-        
+
         .spec-content table td:first-child {
             background-color: #e8e8e8;
             font-weight: bold;
             width: 40%;
         }
-        
+
         .spec-content p {
-            margin: 5px 0;
+            margin: 3px 0;
+            font-size: 7pt !important;
         }
-        
+
         .spec-content ul, .spec-content ol {
-            margin: 5px 0;
-            padding-left: 25px;
+            margin: 3px 0;
+            padding-left: 15px;
+            font-size: 7pt !important;
+        }
+
+        .spec-content ul li, .spec-content ol li {
+            margin-bottom: 2px;
+        }
+
+        /* Tambahan untuk semua elemen di dalam spec-content */
+        .spec-content * {
+            font-size: 7pt !important;
         }
         
         /* Status Badge */
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 3px 8px;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 10pt;
+            font-size: 8pt;
         }
         
         .status-aktif {
@@ -144,13 +192,14 @@
         /* Website List */
         .website-list {
             margin: 0;
-            padding-left: 25px;
+            padding-left: 15px;
+            font-size: 7pt;
         }
-        
+
         .website-list li {
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
-        
+
         /* Footer */
         .footer {
             margin-top: 40px;
@@ -159,12 +208,6 @@
             color: #666;
             padding-top: 15px;
             border-top: 1px solid #ccc;
-        }
-        
-        /* Separator Line */
-        .separator {
-            border-top: 2px solid #ccc;
-            margin: 20px 0;
         }
     </style>
 </head>
@@ -177,60 +220,53 @@
     </div>
     
     <!-- CONTENT -->
-    @forelse($servers as $index => $server)
-    <div class="server-section">
-        <div class="server-number">{{ $index + 1 }}. {{ strtoupper($server->nama_server) }}</div>
-        
-        <table class="info-table">
+    <table class="data-table">
+        <thead>
             <tr>
-                <td class="label">Nama Server</td>
-                <td class="value">{{ $server->nama_server }}</td>
+                <th class="no">No</th>
+                <th class="nama">Nama Server</th>
+                <th class="brand">Brand</th>
+                <th class="spek">Spesifikasi</th>
+                <th class="lokasi">Lokasi<br/>(Rak/Slot)</th>
+                <th class="bidang-satker">Bidang & Satker</th>
+                <th class="website">Website Terhubung</th>
+                <th class="status">Status</th>
+                <th class="keterangan">Keterangan</th>
             </tr>
+        </thead>
+        <tbody>
+            @forelse($servers as $index => $server)
             <tr>
-                <td class="label">Brand</td>
-                <td class="value">{{ $server->brand ?? '-' }}</td>
-            </tr>
-            @if($server->spesifikasi)
-            <tr>
-                <td class="label">Spesifikasi</td>
-                <td class="value">
-                    <div class="spec-content">{!! $server->spesifikasi !!}</div>
+                <td class="no">{{ $index + 1 }}</td>
+                <td class="nama">{{ $server->nama_server }}</td>
+                <td class="brand">{{ $server->brand ?? '-' }}</td>
+                <td class="spek">
+                    @if($server->spesifikasi)
+                        <div class="spec-content">{!! $server->spesifikasi !!}</div>
+                    @else
+                        -
+                    @endif
                 </td>
-            </tr>
-            @endif
-            <tr>
-                <td class="label">Rak</td>
-                <td class="value">{{ $server->rak ? $server->rak->nomor_rak : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Slot</td>
-                <td class="value">{{ $server->u_slot ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Bidang</td>
-                <td class="value">{{ $server->bidang ? $server->bidang->nama_bidang : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Satuan Kerja</td>
-                <td class="value">{{ $server->satker ? $server->satker->nama_satker : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Website Terhubung</td>
-                <td class="value">
+                <td class="lokasi">
+                    <strong>Rak:</strong> {{ $server->rak ? $server->rak->nomor_rak : '-' }}<br/>
+                    <strong>Slot:</strong> {{ $server->u_slot ?? '-' }}
+                </td>
+                <td class="bidang-satker">
+                    <strong>Bidang:</strong><br/>{{ $server->bidang ? $server->bidang->nama_bidang : '-' }}<br/><br/>
+                    <strong>Satker:</strong><br/>{{ $server->satker ? $server->satker->nama_satker : '-' }}
+                </td>
+                <td class="website">
                     @if($server->websites && $server->websites->count() > 0)
                         <ul class="website-list">
                             @foreach($server->websites as $website)
-                                <li>{{ $website->nama_website }} ({{ $website->url }})</li>
+                                <li>{{ $website->nama_website }}<br/>({{ $website->url }})</li>
                             @endforeach
                         </ul>
                     @else
                         -
                     @endif
                 </td>
-            </tr>
-            <tr>
-                <td class="label">Status</td>
-                <td class="value">
+                <td class="status">
                     @if($server->power_status === 'ON')
                         <span class="status-badge status-aktif">AKTIF</span>
                     @elseif($server->power_status === 'STANDBY')
@@ -239,26 +275,24 @@
                         <span class="status-badge status-tidak-aktif">TIDAK AKTIF</span>
                     @endif
                 </td>
-            </tr>
-            @if($server->keterangan)
-            <tr>
-                <td class="label">Keterangan</td>
-                <td class="value">
-                    <div class="spec-content">{!! $server->keterangan !!}</div>
+                <td class="keterangan">
+                    @if($server->keterangan)
+                        <div class="spec-content">{!! $server->keterangan !!}</div>
+                    @else
+                        -
+                    @endif
                 </td>
             </tr>
-            @endif
-        </table>
-    </div>
+            @empty
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 30px 0;">
+                    <em>Tidak ada data server yang sesuai dengan filter</em>
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
     
-    @if(!$loop->last)
-        <div class="separator"></div>
-    @endif
-    @empty
-    <div style="text-align: center; padding: 50px 0;">
-        <p><em>Tidak ada data server yang sesuai dengan filter</em></p>
-    </div>
-    @endforelse
     
     <!-- FOOTER -->
     <div class="footer">

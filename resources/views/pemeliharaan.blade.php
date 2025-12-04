@@ -670,8 +670,7 @@
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     ['font', ['strikethrough', 'superscript', 'subscript']],
-                    ['font', ['fontsize', 'fontname']],
-                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['para', ['ul', 'ol']],
                     ['insert', ['link', 'table']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
