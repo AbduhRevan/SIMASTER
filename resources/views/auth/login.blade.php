@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - Sistem Manajemen IT</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png">
     <style>
         * {
             margin: 0;
@@ -24,7 +25,7 @@
 
         .login-container {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);z
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
