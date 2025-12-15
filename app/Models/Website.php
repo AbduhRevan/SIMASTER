@@ -18,7 +18,7 @@ class Website extends Model
         'url',
         'bidang_id',
         'satker_id',
-        'server_id', // TAMBAHKAN INI
+        'server_id', 
         'status',
         'tahun_pengadaan',
         'keterangan',
@@ -36,9 +36,7 @@ class Website extends Model
         return $this->belongsTo(Satker::class, 'satker_id', 'satker_id');
     }
 
-    /**
-     * RELASI DIUBAH: Website belongs to Server
-     */
+    // Relasi ke Server
     public function server()
     {
         return $this->belongsTo(Server::class, 'server_id', 'server_id');

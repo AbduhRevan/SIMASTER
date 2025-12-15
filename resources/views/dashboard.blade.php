@@ -6,82 +6,94 @@
 <div class="container-fluid py-3">
 
     {{-- ======= RINGKASAN WEBSITE DAN SERVER ======= --}}
-    <div class="row mb-4 g-3">
-        {{-- Ringkasan Website --}}
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 p-3 rounded-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                    <h6 class="fw-semibold mb-0">
-                        <i class="fa fa-globe me-2 text-primary"></i> Ringkasan Website
-                    </h6>
-                    <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2">
-                        Total: {{ $totalWebsite }}
-                    </span>
-                </div>
-                <div class="d-flex justify-content-around text-center">
-                    <div>
-                        <div class="fw-semibold text-secondary small">Aktif</div>
-                        <h4 class="text-success mb-0">{{ $aktifWebsite }}</h4>
-                    </div>
-                    <div>
-                        <div class="fw-semibold text-secondary small">Maintenance</div>
-                        <h4 class="text-warning mb-0">{{ $maintenanceWebsite }}</h4>
-                    </div>
-                    <div>
-                        <div class="fw-semibold text-secondary small">Tidak Aktif</div>
-                        <h4 class="text-danger mb-0">{{ $tidakAktifWebsite }}</h4>
-                    </div>
-                </div>
+<div class="row mb-4 g-3">
+    {{-- Ringkasan Website --}}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 p-3 rounded-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                <h6 class="fw-semibold mb-0">
+                    <i class="fa fa-globe me-2 text-primary"></i> Ringkasan Website
+                </h6>
+                <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2">
+                    Total: {{ $totalWebsite }}
+                </span>
             </div>
-        </div>
-
-        {{-- Ringkasan Server --}}
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 p-3 rounded-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                    <h6 class="fw-semibold mb-0">
-                        <i class="fa fa-server me-2 text-info"></i> Ringkasan Server
-                    </h6>
-                    <span class="badge bg-info-subtle text-info fw-semibold px-3 py-2">
-                        Total: {{ $totalServer }}
-                    </span>
+            <div class="d-flex justify-content-around text-center">
+                <div>
+                    <div class="fw-semibold text-secondary small">Aktif</div>
+                    <a href="{{ route('website.index', ['status' => 'active']) }}" class="text-decoration-none">
+                        <h4 class="text-success mb-0">{{ $aktifWebsite }}</h4>
+                    </a>
                 </div>
-                <div class="d-flex justify-content-around text-center">
-                    <div>
-                        <div class="fw-semibold text-secondary small">Aktif</div>
-                        <h4 class="text-success mb-0">{{ $aktifServer }}</h4>
-                    </div>
-                    <div>
-                        <div class="fw-semibold text-secondary small">Maintenance</div>
-                        <h4 class="text-warning mb-0">{{ $maintenanceServer }}</h4>
-                    </div>
-                    <div>
-                        <div class="fw-semibold text-secondary small">Tidak Aktif</div>
-                        <h4 class="text-danger mb-0">{{ $tidakAktifServer }}</h4>
-                    </div>
+                <div>
+                    <div class="fw-semibold text-secondary small">Maintenance</div>
+                    <a href="{{ route('website.index', ['status' => 'maintenance']) }}" class="text-decoration-none">
+                        <h4 class="text-warning mb-0">{{ $maintenanceWebsite }}</h4>
+                    </a>
+                </div>
+                <div>
+                    <div class="fw-semibold text-secondary small">Tidak Aktif</div>
+                    <a href="{{ route('website.index', ['status' => 'inactive']) }}" class="text-decoration-none">
+                        <h4 class="text-danger mb-0">{{ $tidakAktifWebsite }}</h4>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ======= DATA WEBSITE & SERVER ======= --}}
+    {{-- Ringkasan Server --}}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 p-3 rounded-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                <h6 class="fw-semibold mb-0">
+                    <i class="fa fa-server me-2 text-info"></i> Ringkasan Server
+                </h6>
+                <span class="badge bg-info-subtle text-info fw-semibold px-3 py-2">
+                    Total: {{ $totalServer }}
+                </span>
+            </div>
+            <div class="d-flex justify-content-around text-center">
+                <div>
+                    <div class="fw-semibold text-secondary small">Aktif</div>
+                    <a href="{{ route('server.index', ['status' => 'ON']) }}" class="text-decoration-none">
+                        <h4 class="text-success mb-0">{{ $aktifServer }}</h4>
+                    </a>
+                </div>
+                <div>
+                    <div class="fw-semibold text-secondary small">Maintenance</div>
+                    <a href="{{ route('server.index', ['status' => 'STANDBY']) }}" class="text-decoration-none">
+                        <h4 class="text-warning mb-0">{{ $maintenanceServer }}</h4>
+                    </a>
+                </div>
+                <div>
+                    <div class="fw-semibold text-secondary small">Tidak Aktif</div>
+                    <a href="{{ route('server.index', ['status' => 'OFF']) }}" class="text-decoration-none">
+                        <h4 class="text-danger mb-0">{{ $tidakAktifServer }}</h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ======= DATA WEBSITE & SERVER (10 TERBARU) ======= --}}
 <div class="card shadow-sm border-0 rounded-4 mb-4">
     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center p-3">
-        <h6 class="fw-semibold mb-0">
-            <i class="fa fa-table me-2 text-secondary"></i> Data Website & Server
-        </h6>
+        <div>
+            <h6 class="fw-semibold mb-0">
+                <i class="fa fa-table me-2 text-secondary"></i> Data Website & Server Terbaru
+            </h6>
+            <small class="text-muted">Menampilkan 10 data terbaru</small>
+        </div>
 
-        <form method="GET" class="d-flex gap-2">
-            <select name="status" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
-                <option value="semua" {{ $status == 'semua' ? 'selected' : '' }}>Semua Status</option>
-                <option value="active" {{ $status == 'active' ? 'selected' : '' }}>Aktif</option>
-                <option value="maintenance" {{ $status == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                <option value="inactive" {{ $status == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
-            </select>
-
-            <input type="text" name="search" class="form-control form-control-sm" 
-                placeholder="Cari nama/URL/PIC" style="width: 220px;" value="{{ request('search') }}">
-        </form>
+        <div class="d-flex gap-2">
+            <a href="{{ route('website.index') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-globe me-1"></i> Lihat Semua Website
+            </a>
+            <a href="{{ route('server.index') }}" class="btn btn-sm btn-outline-info">
+                <i class="fa fa-server me-1"></i> Lihat Semua Server
+            </a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -97,13 +109,19 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($gabunganData as $item)
+                @forelse($gabunganData->take(10) as $item)
                 <tr>
-                    <td>{{ $item['tipe'] }}</td>
+                    <td>
+                        <span class="badge {{ $item['tipe'] == 'Website' ? 'bg-primary-subtle text-primary' : 'bg-info-subtle text-info' }}">
+                            {{ $item['tipe'] }}
+                        </span>
+                    </td>
                     <td><strong>{{ $item['nama'] }}</strong></td>
                     <td>
                         @if($item['url'] && $item['url'] != '-')
-                            <a href="{{ $item['url'] }}" target="_blank">{{ $item['url'] }}</a>
+                            <a href="{{ $item['url'] }}" target="_blank" class="text-decoration-none">
+                                {{ Str::limit($item['url'], 40) }}
+                            </a>
                         @else
                             <span class="text-muted">-</span>
                         @endif
@@ -118,16 +136,29 @@
                         @endif
                     </td>
                     <td>{{ $item['pic'] }}</td>
-                    <td>{{ $item['updated_at'] ? $item['updated_at']->format('Y-m-d') : '-' }}</td>
+                    <td>
+                        <small>{{ $item['updated_at'] ? $item['updated_at']->format('d M Y, H:i') : '-' }}</small>
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-3">Tidak ada data</td>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
+                        Belum ada data
+                    </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+
+    @if($gabunganData->count() > 10)
+    <div class="card-footer bg-light text-center py-2">
+        <small class="text-muted">
+            Menampilkan 10 dari {{ $gabunganData->count() }} total data.
+        </small>
+    </div>
+    @endif
 </div>
 
 

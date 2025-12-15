@@ -10,152 +10,117 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     public function index(Request $request)
-{
-    $status = $request->get('status', 'semua');
-    $search = $request->get('search');
+    {
+        $status = $request->get('status', 'semua');
+        $tipe = $request->get('tipe', 'semua');
+        $search = $request->get('search');
 
-    // Ambil bidang user jika bukan superadmin
-    $id_bidang = null;
-    if (auth()->user()->role != 'superadmin') {
-        $id_bidang = auth()->user()->bidang_id ?? auth()->user()->bidang;
-    }
+        // Ambil bidang user jika bukan superadmin
+        $id_bidang = null;
+        if (auth()->user()->role != 'superadmin') {
+            $id_bidang = auth()->user()->bidang_id ?? auth()->user()->bidang;
+        }
 
-    /* ==========================
-     *       QUERY WEBSITE
-     * ========================== */
-    $queryWebsite = Website::with('satker');
+        /* ==========================
+         *       QUERY WEBSITE
+         * ========================== */
+        $queryWebsite = Website::with('satker');
 
-    // Filter bidang untuk website
-    if ($id_bidang) {
-        $queryWebsite->whereHas('satker', function ($q) use ($id_bidang) {
-            $q->where('bidang_id', $id_bidang);
-        });
-    }
+        // Filter bidang untuk website
+        if ($id_bidang) {
+            $queryWebsite->whereHas('satker', function ($q) use ($id_bidang) {
+                $q->where('bidang_id', $id_bidang);
+            });
+        }
 
-    // Filter status
-    if ($status !== 'semua') {
-        $queryWebsite->where('status', $status);
-    }
-
-    // Search
-    if ($search) {
-        $queryWebsite->where(function ($q) use ($search) {
-            $q->where('nama_website', 'LIKE', "%{$search}%")
-                ->orWhere('url', 'LIKE', "%{$search}%")
-                ->orWhereHas('satker', function ($sq) use ($search) {
-                    $sq->where('nama_satker', 'LIKE', "%{$search}%");
-                });
-        });
-    }
-
-    $dataWebsite = $queryWebsite->get();
+        $dataWebsite = $queryWebsite->get();
 
 
-    /* ==========================
-     *         QUERY SERVER
-     * ========================== */
-    $queryServer = Server::with('satker');
+        /* ==========================
+         *         QUERY SERVER
+         * ========================== */
+        $queryServer = Server::with('satker');
 
-    // Filter bidang untuk server
-    if ($id_bidang) {
-        $queryServer->whereHas('satker', function ($q) use ($id_bidang) {
-            $q->where('bidang_id', $id_bidang);
-        });
-    }
+        // Filter bidang untuk server
+        if ($id_bidang) {
+            $queryServer->whereHas('satker', function ($q) use ($id_bidang) {
+                $q->where('bidang_id', $id_bidang);
+            });
+        }
 
-    // Filter status (mapping)
-    if ($status !== 'semua') {
-        $mapping = [
-            'active' => 'ON',
-            'maintenance' => 'STANDBY',
-            'inactive' => 'OFF'
-        ];
-        $queryServer->where('power_status', $mapping[$status] ?? null);
-    }
-
-    // Search
-    if ($search) {
-        $queryServer->where(function ($q) use ($search) {
-            $q->where('nama_server', 'LIKE', "%{$search}%")
-                ->orWhere('spesifikasi', 'LIKE', "%{$search}%")
-                ->orWhereHas('satker', function ($sq) use ($search) {
-                    $sq->where('nama_satker', 'LIKE', "%{$search}%");
-                });
-        });
-    }
-
-    $dataServer = $queryServer->get();
+        $dataServer = $queryServer->get();
 
 
-    /* ==========================
-     *        HITUNG TOTAL
-     * ========================== */
-    if ($id_bidang) {
-        // Hitung hanya milik bidang user
-        $totalWebsite = Website::whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $aktifWebsite = Website::where('status', 'active')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $maintenanceWebsite = Website::where('status', 'maintenance')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $tidakAktifWebsite = Website::where('status', 'inactive')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+        /* ==========================
+         *        HITUNG TOTAL
+         * ========================== */
+        if ($id_bidang) {
+            // Hitung hanya milik bidang user
+            $totalWebsite = Website::whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $aktifWebsite = Website::where('status', 'active')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $maintenanceWebsite = Website::where('status', 'maintenance')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $tidakAktifWebsite = Website::where('status', 'inactive')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
 
-        $totalServer = Server::whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $aktifServer = Server::where('power_status', 'ON')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $maintenanceServer = Server::where('power_status', 'STANDBY')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
-        $tidakAktifServer = Server::where('power_status', 'OFF')
-            ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $totalServer = Server::whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $aktifServer = Server::where('power_status', 'ON')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $maintenanceServer = Server::where('power_status', 'STANDBY')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
+            $tidakAktifServer = Server::where('power_status', 'OFF')
+                ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
 
-    } else {
-        // Superadmin → semua
-        $totalWebsite = Website::count();
-        $aktifWebsite = Website::where('status', 'active')->count();
-        $maintenanceWebsite = Website::where('status', 'maintenance')->count();
-        $tidakAktifWebsite = Website::where('status', 'inactive')->count();
+        } else {
+            // Superadmin → semua
+            $totalWebsite = Website::count();
+            $aktifWebsite = Website::where('status', 'active')->count();
+            $maintenanceWebsite = Website::where('status', 'maintenance')->count();
+            $tidakAktifWebsite = Website::where('status', 'inactive')->count();
 
-        $totalServer = Server::count();
-        $aktifServer = Server::where('power_status', 'ON')->count();
-        $maintenanceServer = Server::where('power_status', 'STANDBY')->count();
-        $tidakAktifServer = Server::where('power_status', 'OFF')->count();
-    }
+            $totalServer = Server::count();
+            $aktifServer = Server::where('power_status', 'ON')->count();
+            $maintenanceServer = Server::where('power_status', 'STANDBY')->count();
+            $tidakAktifServer = Server::where('power_status', 'OFF')->count();
+        }
 
 
-    /* ==========================
-     *      GABUNG DATA
-     * ========================== */
-    $gabunganData = collect();
+        /* ==========================
+         *      GABUNG DATA
+         * ========================== */
+        $gabunganData = collect();
 
-    foreach ($dataWebsite as $w) {
-        $gabunganData->push([
-            'tipe' => 'Website',
-            'nama' => $w->nama_website,
-            'url' => $w->url,
-            'status' => $w->status,
-            'pic' => $w->satker->nama_satker ?? '-',
-            'updated_at' => $w->updated_at,
-        ]);
-    }
+        foreach ($dataWebsite as $w) {
+            $gabunganData->push([
+                'tipe' => 'Website',
+                'nama' => $w->nama_website,
+                'url' => $w->url,
+                'status' => $w->status,
+                'pic' => $w->satker->nama_satker ?? '-',
+                'updated_at' => $w->updated_at,
+            ]);
+        }
 
-    foreach ($dataServer as $s) {
-        $statusMapping = [
-            'ON' => 'active',
-            'STANDBY' => 'maintenance',
-            'OFF' => 'inactive'
-        ];
+        foreach ($dataServer as $s) {
+            $statusMapping = [
+                'ON' => 'active',
+                'STANDBY' => 'maintenance',
+                'OFF' => 'inactive'
+            ];
 
-        $gabunganData->push([
-            'tipe' => 'Server',
-            'nama' => $s->nama_server,
-            'url' => $s->alamat_ip ?? '-',
-            'status' => $statusMapping[$s->power_status] ?? 'inactive',
-            'pic' => $s->satker->nama_satker ?? '-',
-            'updated_at' => $s->updated_at,
-        ]);
-    }
+            $gabunganData->push([
+                'tipe' => 'Server',
+                'nama' => $s->nama_server,
+                'url' => $s->alamat_ip ?? '-',
+                'status' => $statusMapping[$s->power_status] ?? 'inactive',
+                'pic' => $s->satker->nama_satker ?? '-',
+                'updated_at' => $s->updated_at,
+            ]);
+        }
 
-    $gabunganData = $gabunganData->sortByDesc('updated_at')->values();
+         // Sort by updated_at - ambil 10 terbaru
+    $gabunganData = $gabunganData->sortByDesc('updated_at');
 
     return view('dashboard', compact(
         'gabunganData',
@@ -166,9 +131,7 @@ class DashboardController extends Controller
         'totalServer',
         'aktifServer',
         'maintenanceServer',
-        'tidakAktifServer',
-        'status'
+        'tidakAktifServer'
     ));
-
 }
 }
