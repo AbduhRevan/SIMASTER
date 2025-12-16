@@ -285,7 +285,7 @@ $websites = $query->latest()->paginate(9)->appends($request->except('page'));
             ->with('success', 'Website berhasil diperbarui!');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $website = Website::findOrFail($id);
 
