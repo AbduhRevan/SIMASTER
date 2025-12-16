@@ -137,7 +137,7 @@
                     </td>
                     <td>{{ $item['pic'] }}</td>
                     <td>
-                        <small>{{ $item['updated_at'] ? $item['updated_at']->format('d M Y, H:i') : '-' }}</small>
+                        <small>{{ $item['updated_at'] ? $item['updated_at']->format('d M Y') : '-' }}</small>
                     </td>
                 </tr>
                 @empty

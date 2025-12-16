@@ -499,7 +499,7 @@ class ServerController extends Controller
     /**
      * Remove the specified server
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         if (auth()->user()->role == 'pimpinan') {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus data');
