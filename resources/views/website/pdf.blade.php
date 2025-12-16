@@ -14,13 +14,28 @@
         }
         
         .kop-surat {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #800000;
+            position: relative;
         }
         
-        .kop-surat h1 {
+        .kop-surat .logo {
+            position: absolute;
+            left: 0;
+            height: 60px;
+            width: auto;
+        }
+        
+        .kop-surat .header-text {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .kop-surat .header-text h1 {
             font-size: 16pt;
             font-weight: bold;
             margin: 0 0 5px 0;
@@ -28,13 +43,13 @@
             color: #800000;
         }
         
-        .kop-surat p {
+        .kop-surat .header-text p {
             font-size: 10pt;
             margin: 2px 0;
             color: #000;
         }
         
-        .kop-surat .tanggal {
+        .kop-surat .header-text .tanggal {
             font-size: 9pt;
             font-style: italic;
             margin-top: 5px;
@@ -140,33 +155,6 @@
             font-size: 7pt !important;
         }
         
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 7pt;
-        }
-        
-        .status-aktif {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #155724;
-        }
-        
-        .status-maintenance {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #856404;
-        }
-        
-        .status-tidak-aktif {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #721c24;
-        }
-        
         /* Footer */
         .footer {
             margin-top: 40px;
@@ -181,9 +169,10 @@
 <body>
     <!-- KOP SURAT -->
     <div class="kop-surat">
-        <h1>Laporan Detail Website</h1>
-        <p>Sistem Informasi Manajemen Aset Terpadu</p>
-        <p class="tanggal">Tanggal Cetak: {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('DD MMMM YYYY, HH:mm') }} WIB</p>
+         <div class="header-text">
+            <h1>Laporan Detail Website</h1>
+            <p class="tanggal">Tanggal Cetak: {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('DD MMMM YYYY, HH:mm') }} WIB</p>
+        </div>
     </div>
     
     <!-- CONTENT -->
@@ -241,7 +230,7 @@
     
     <!-- FOOTER -->
     <div class="footer">
-        <p>Dokumen ini dicetak secara otomatis dari SIMASTER - Sistem Informasi Manajemen Aset Terpadu</p>
+        <p>Dokumen ini dicetak secara otomatis dari SIMASTER</p>
         <p>© {{ date('Y') }} Kementerian Pertahanan Republik Indonesia</p>
     </div>
 </body>

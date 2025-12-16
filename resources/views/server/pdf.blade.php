@@ -162,32 +162,6 @@
             font-size: 7pt !important;
         }
         
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 7pt;
-        }
-        
-        .status-aktif {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #155724;
-        }
-        
-        .status-maintenance {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #856404;
-        }
-        
-        .status-tidak-aktif {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #721c24;
-        }
         
         /* Website List */
         .website-list {
@@ -215,7 +189,6 @@
     <!-- KOP SURAT -->
     <div class="kop-surat">
         <h1>Laporan Detail Server</h1>
-        <p>Sistem Informasi Manajemen Aset Terpadu</p>
         <p class="tanggal">Tanggal Cetak: {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('DD MMMM YYYY, HH:mm') }} WIB</p>
     </div>
     
@@ -296,7 +269,7 @@
     
     <!-- FOOTER -->
     <div class="footer">
-        <p>Dokumen ini dicetak secara otomatis dari SIMASTER - Sistem Informasi Manajemen Aset Terpadu</p>
+        <p>Dokumen ini dicetak secara otomatis dari SIMASTER</p>
         <p>© {{ date('Y') }} Kementerian Pertahanan Republik Indonesia</p>
     </div>
 </body>
