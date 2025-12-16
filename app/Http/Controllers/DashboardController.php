@@ -15,9 +15,9 @@ class DashboardController extends Controller
         $tipe = $request->get('tipe', 'semua');
         $search = $request->get('search');
 
-        // Ambil bidang user jika bukan superadmin
+        // Ambil bidang user jika bukan superadmin atau pimpinan
         $id_bidang = null;
-        if (auth()->user()->role != 'superadmin') {
+        if (!in_array(auth()->user()->role, ['superadmin', 'pimpinan'])) {
             $id_bidang = auth()->user()->bidang_id ?? auth()->user()->bidang;
         }
 
@@ -26,7 +26,7 @@ class DashboardController extends Controller
          * ========================== */
         $queryWebsite = Website::with('satker');
 
-        // Filter bidang untuk website
+        // Filter bidang untuk website (hanya jika bukan superadmin/pimpinan)
         if ($id_bidang) {
             $queryWebsite->whereHas('satker', function ($q) use ($id_bidang) {
                 $q->where('bidang_id', $id_bidang);
@@ -41,7 +41,7 @@ class DashboardController extends Controller
          * ========================== */
         $queryServer = Server::with('satker');
 
-        // Filter bidang untuk server
+        // Filter bidang untuk server (hanya jika bukan superadmin/pimpinan)
         if ($id_bidang) {
             $queryServer->whereHas('satker', function ($q) use ($id_bidang) {
                 $q->where('bidang_id', $id_bidang);
@@ -73,7 +73,7 @@ class DashboardController extends Controller
                 ->whereHas('satker', fn($q) => $q->where('bidang_id', $id_bidang))->count();
 
         } else {
-            // Superadmin → semua
+            // Superadmin & Pimpinan → semua
             $totalWebsite = Website::count();
             $aktifWebsite = Website::where('status', 'active')->count();
             $maintenanceWebsite = Website::where('status', 'maintenance')->count();
@@ -119,19 +119,19 @@ class DashboardController extends Controller
             ]);
         }
 
-         // Sort by updated_at - ambil 10 terbaru
-    $gabunganData = $gabunganData->sortByDesc('updated_at');
+        // Sort by updated_at - ambil 10 terbaru
+        $gabunganData = $gabunganData->sortByDesc('updated_at');
 
-    return view('dashboard', compact(
-        'gabunganData',
-        'totalWebsite',
-        'aktifWebsite',
-        'maintenanceWebsite',
-        'tidakAktifWebsite',
-        'totalServer',
-        'aktifServer',
-        'maintenanceServer',
-        'tidakAktifServer'
-    ));
-}
+        return view('dashboard', compact(
+            'gabunganData',
+            'totalWebsite',
+            'aktifWebsite',
+            'maintenanceWebsite',
+            'tidakAktifWebsite',
+            'totalServer',
+            'aktifServer',
+            'maintenanceServer',
+            'tidakAktifServer'
+        ));
+    }
 }

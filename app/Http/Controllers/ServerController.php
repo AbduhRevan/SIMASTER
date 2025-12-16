@@ -25,10 +25,13 @@ class ServerController extends Controller
     {
         // Query dengan eager loading
         $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
-        if (Auth()->user()->role != 'superadmin') {
-            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang; // sesuaikan nama kolomnya
+        
+        // Filter berdasarkan role: hanya user biasa yang dibatasi per bidang
+        if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
+            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
             $query->where('bidang_id', $id_bidang);
         }
+        
         // Filter Rak
         if ($request->filled('rak')) {
             $query->whereHas('rak', function ($q) use ($request) {
@@ -104,9 +107,9 @@ class ServerController extends Controller
     {
         $query = Server::with(['rak', 'bidang', 'satker', 'websites']);
 
-        // FILTER BERDASARKAN BIDANG USER LOGIN (TAMBAHAN INI)
+        // Filter berdasarkan role: hanya user biasa yang dibatasi per bidang
         $user = auth()->user();
-        if ($user-> role != 'superadmin' && $user->bidang_id) {
+        if (!in_array($user->role, ['superadmin', 'pimpinan']) && $user->bidang_id) {
             $query->where('bidang_id', $user->bidang_id);
         }
 
@@ -323,6 +326,10 @@ class ServerController extends Controller
      */
     public function edit($id)
     {
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengedit data');
+        }
+    
         $server = Server::with(['rak', 'bidang', 'satker', 'websites'])->findOrFail($id);
 
         return response()->json([
@@ -336,6 +343,11 @@ class ServerController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Cek jika pimpinan, tolak akses
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengubah data');
+        }
+
         $server = Server::findOrFail($id);
 
         // Simpan data lama untuk log
@@ -478,7 +490,6 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        // PERBAIKAN: Return redirect ke halaman index, bukan ke detail
         return redirect()->route('server.index')
             ->with('success', 'Server berhasil diperbarui!');
     }
@@ -488,6 +499,10 @@ class ServerController extends Controller
      */
     public function destroy($id)
     {
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus data');
+        }
+
         $server = Server::findOrFail($id);
         $serverName = $server->nama_server;
 

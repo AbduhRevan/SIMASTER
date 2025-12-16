@@ -19,10 +19,10 @@ class WebsiteController extends Controller
 
     // website berdasarkan bidang/role
     $query = Website::with(['bidang', 'satker', 'server']);
-     if (Auth()->user()->role != 'superadmin') {
-            $id_bidang = Auth()->user()->bidang_id;
-            $query->where('bidang_id', $id_bidang);}
-
+    if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
+    $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+    $query->where('bidang_id', $id_bidang);
+}
     // pencarian teks (nama atau url)
     if ($request->filled('q')) {
         $q = $request->q;
@@ -103,10 +103,10 @@ class WebsiteController extends Controller
 
     // Query dengan filter
     $query = Website::with(['server.rak', 'bidang', 'satker']);
-     if (Auth()->user()->role != 'superadmin') {
-            $id_bidang = Auth()->user()->bidang_id;
-            $query->where('bidang_id', $id_bidang);}
-
+    if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
+    $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+    $query->where('bidang_id', $id_bidang);
+}
     if ($server) {
         $query->where('server_id', $server);
     }

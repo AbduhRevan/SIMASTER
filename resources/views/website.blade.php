@@ -60,6 +60,7 @@
   </div>
 
   {{-- ======= DAFTAR WEBSITE ======= --}}
+  @if(auth()->user()->role != 'pimpinan')
     <div class="card-header-custom d-flex justify-content-between align-items-center">
     <h6 class="mb-0 fw-semibold">
         <i class="fa fa-list me-2"></i> Daftar Website
@@ -76,12 +77,15 @@
     class="btn btn-danger btn-sm">
     <i class="fa fa-file-pdf me-1"></i> Export PDF
 </a>
+@endif
 
+@if(auth()->user()->role != 'pimpinan')
         </div>
         <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
             <i class="fa fa-plus me-1"></i> Tambah Website
         </button>
     </div>
+@endif
 </div>
 
         <div class="card-body-custom">
@@ -210,11 +214,11 @@
             <strong>Satker:</strong> {{ $website->satker ? $website->satker->nama_satker : '-' }}
           </p>
         </div>
-
         <div class="d-flex justify-content-end gap-2 mt-auto">
           <button class="btn btn-outline-info btn-sm btn-detail" data-id="{{ $website->website_id }}" title="Detail">
             <i class="fa-solid fa-eye"></i>
           </button>
+          @if(auth()->user()->role != 'pimpinan')
           <button class="btn btn-outline-warning btn-sm btn-edit" 
             data-id="{{ $website->website_id }}"
             data-nama="{{ $website->nama_website }}"
@@ -234,6 +238,7 @@
             title="Hapus">
             <i class="fa-solid fa-trash"></i>
           </button>
+          @endif
         </div>
       </div>
     </div>
@@ -804,8 +809,8 @@ window.applyWebsiteFilter = function() {
     }
   });
 
-  // Detail button handler dengan AJAX
-  $('.btn-detail').click(function() {
+  // Detail button handler dengan AJAX - gunakan event delegation
+  $(document).on('click', '.btn-detail', function() {
     const id = $(this).data('id');
     
     $.ajax({
@@ -884,8 +889,8 @@ window.applyWebsiteFilter = function() {
     }
   });
 
-   // Edit button handler
-  $('.btn-edit').click(function() {
+  // ✅ Edit button handler - gunakan event delegation
+  $(document).on('click', '.btn-edit', function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
     const url = $(this).data('url');
@@ -896,6 +901,9 @@ window.applyWebsiteFilter = function() {
     const tahun = $(this).data('tahun');
     const keterangan = $(this).data('keterangan');
 
+    console.log('Edit clicked for ID:', id); // Debug
+
+    // Set values untuk input biasa
     $('#editNama').val(nama);
     $('#editUrl').val(url);
     $('#editSatker').val(satker || '');
@@ -903,19 +911,29 @@ window.applyWebsiteFilter = function() {
     $('#editServer').val(server || '');
     $('#editStatus').val(status);
     $('#editTahun').val(tahun || '');
-    $('#editKeterangan').val(keterangan || '');
 
+    // Set Summernote content
+    $('#editModal').find('.summernote').summernote('code', keterangan || '');
+
+    // Show/hide bidang wrapper
     const selectedName = $('#editSatker option:selected').data('name')?.toLowerCase() || '';
     if(selectedName.includes('pusat data dan informasi')) {
       $('#editBidangWrapper').show();
+    } else {
+      $('#editBidangWrapper').hide();
     }
 
-    $('#editForm').attr('action', `/website/update/${id}`);
+    // Set form action - PERBAIKAN DI SINI
+    const formAction = `/website/update/${id}`;
+    console.log('Form action set to:', formAction); // Debug
+    $('#editForm').attr('action', formAction);
+    
+    // Show modal
     $('#editModal').modal('show');
   });
 
-  // Delete button handler
-  $('.btn-hapus').click(function() {
+  // ✅ Delete button handler - gunakan event delegation
+  $(document).on('click', '.btn-hapus', function() {
     const id = $(this).data('id');
     const nama = $(this).data('nama');
 

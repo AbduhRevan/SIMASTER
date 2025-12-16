@@ -65,6 +65,7 @@
         <i class="fa fa-list me-2"></i> Daftar Server
     </h6>
     <div class="d-flex gap-2">
+        @if(auth()->user()->role != 'pimpinan')
         <div class="btn-group">
             <button type="button" class="btn btn-danger btn-sm" onclick="exportServerPDF()">
                 <i class="fa fa-file-pdf me-1"></i> Export PDF
@@ -73,6 +74,7 @@
         <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
             <i class="fa fa-plus me-1"></i> Tambah Server
         </button>
+        @endif
     </div>
 </div>
 
@@ -164,7 +166,7 @@
                         <tr>
                             <th width="5%">No</th>
                             <th width="15%">Nama Server</th>
-                            <th width="12%">Rak / Slot</th>
+                            <th width="12%">Rak / U Slot</th>
                             <th width="15%">Bidang</th>
                             <th width="15%">Satker</th>
                             <th width="10%" class="text-center">Website</th>
@@ -210,19 +212,23 @@
                                     </button>
                                     
                                     {{-- Edit --}}
+                                    @if(auth()->user()->role != 'pimpinan')
                                     <button class="btn btn-outline-warning btn-sm btn-edit-server" 
                                         data-id="{{ $server->server_id }}" 
                                         title="Edit">
                                         <i class="fa fa-edit"></i>
                                     </button>
+                                    @endif
                                     
                                     {{-- Delete --}}
+                                    @if(auth()->user()->role != 'pimpinan')
                                     <button class="btn btn-outline-danger btn-sm btn-hapus" 
                                         data-id="{{ $server->server_id }}" 
                                         data-nama="{{ $server->nama_server }}"
                                         title="Hapus">
                                         <i class="fa fa-trash"></i>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
