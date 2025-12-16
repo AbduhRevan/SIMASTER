@@ -59,116 +59,111 @@
     </div>
   </div>
 
-  {{-- ======= DAFTAR WEBSITE ======= --}}
-  @if(auth()->user()->role != 'pimpinan')
-    <div class="card-header-custom d-flex justify-content-between align-items-center">
-    <h6 class="mb-0 fw-semibold">
-        <i class="fa fa-list me-2"></i> Daftar Website
-    </h6>
-    <div class="d-flex gap-2">
-        <div class="btn-group">
-            <a href="{{ route('website.exportPDF', [
-        'server' => request('server'),
-        'bidang' => request('bidang'),
-        'satker' => request('satker'),
-        'status' => request('status'),
-        'q' => request('q')
-    ]) }}"
-    class="btn btn-danger btn-sm">
-    <i class="fa fa-file-pdf me-1"></i> Export PDF
-</a>
-@endif
-
-@if(auth()->user()->role != 'pimpinan')
-        </div>
-        <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
-            <i class="fa fa-plus me-1"></i> Tambah Website
-        </button>
-    </div>
-@endif
+{{-- ======= DAFTAR WEBSITE ======= --}}
+<div class="card-header-custom d-flex justify-content-between align-items-center">
+  <h6 class="mb-0 fw-semibold">
+      <i class="fa fa-list me-2"></i> Daftar Website
+  </h6>
+  <div class="d-flex gap-2">
+      @if(auth()->user()->role != 'pimpinan')
+      <div class="btn-group">
+          <a href="{{ route('website.exportPDF', [
+              'server' => request('server'),
+              'bidang' => request('bidang'),
+              'satker' => request('satker'),
+              'status' => request('status'),
+              'q' => request('q')
+          ]) }}" class="btn btn-danger btn-sm">
+              <i class="fa fa-file-pdf me-1"></i> Export PDF
+          </a>
+      </div>
+      <button class="btn btn-maroon-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
+          <i class="fa fa-plus me-1"></i> Tambah Website
+      </button>
+      @endif
+  </div>
 </div>
 
-        <div class="card-body-custom">
-            {{-- Search Bar --}}
-            <div class="filter-bar mb-3">
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </span>
-                            <input type="text" name="q" id="searchInput" class="form-control" 
-                            placeholder="Cari nama website atau URL..." value="{{ request('q') }}">
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="card-body-custom">
+  {{-- Search Bar --}}
+  <div class="filter-bar mb-3">
+      <div class="row g-2">
+          <div class="col-md-6">
+              <div class="input-group">
+                  <span class="input-group-text bg-white">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input type="text" name="q" id="searchInput" class="form-control" 
+                  placeholder="Cari nama website atau URL..." value="{{ request('q') }}">
+              </div>
+          </div>
+      </div>
+  </div>
 
-           {{-- Filter untuk Export --}}
-          <form id="filterWebsiteForm" method="GET" action="{{ route('website.index') }}" class="mb-3">
-            <div class="row g-2 align-items-end">
-              {{-- Filter Bidang --}}
-              <div class="col-md-2">
-                <select name="bidang" class="form-select form-select-sm" id="filterBidang">
-                  <option value="">Filter Bidang</option>
-                  @foreach($bidangs as $bidang)
-                    <option value="{{ $bidang->nama_bidang }}" {{ request('bidang') == $bidang->nama_bidang ? 'selected' : '' }}>
-                      {{ $bidang->nama_bidang }}
-                    </option>
-                  @endforeach
-                </select>
-              </div>
-              
-              {{-- Filter Satker --}}
-              <div class="col-md-2">
-                <select name="satker" class="form-select form-select-sm" id="filterSatker">
-                  <option value="">Filter Satker</option>
-                  @foreach($satkers as $satker)
-                    <option value="{{ $satker->nama_satker }}" {{ request('satker') == $satker->nama_satker ? 'selected' : '' }}>
-                      {{ $satker->nama_satker }}
-                    </option>
-                  @endforeach
-                </select>
-              </div>
-              
-              {{-- Filter Status --}}
-              <div class="col-md-2">
-                <select name="status" class="form-select form-select-sm" id="filterStatus">
-                  <option value="">Filter Status</option>
-                  <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                  <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                  <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
-                </select>
-              </div>
-              
-              {{-- Filter Server --}}
-              <div class="col-md-2">
-                <select name="server" class="form-select form-select-sm" id="filterServer">
-                  <option value="">Filter Server</option>
-                  @foreach($servers as $srv)
-                    <option value="{{ $srv->server_id }}" {{ request('server') == $srv->server_id ? 'selected' : '' }}>
-                      {{ $srv->nama_server }}
-                    </option>
-                  @endforeach
-                </select>
-              </div>
-              
-              {{-- Tombol Terapkan --}}
-              <div class="col-md-2">
-                <button type="submit" class="btn btn-secondary btn-sm w-100">
-                  <i class="fa fa-filter me-1"></i> Terapkan Filter
-                </button>
-              </div>
-              
-              {{-- Tombol Reset --}}
-              <div class="col-md-2">
-                <a href="{{ route('website.index') }}" class="btn btn-outline-secondary btn-sm w-100">
-                  <i class="fa-solid fa-rotate-right me-2"></i> Reset
-                </a>
-              </div>
-            </div>
-          </form>
-
+  {{-- Filter untuk Export --}}
+  <form id="filterWebsiteForm" method="GET" action="{{ route('website.index') }}" class="mb-3">
+    <div class="row g-2 align-items-end">
+      {{-- Filter Bidang --}}
+      <div class="col-md-2">
+        <select name="bidang" class="form-select form-select-sm" id="filterBidang">
+          <option value="">Filter Bidang</option>
+          @foreach($bidangs as $bidang)
+            <option value="{{ $bidang->nama_bidang }}" {{ request('bidang') == $bidang->nama_bidang ? 'selected' : '' }}>
+              {{ $bidang->nama_bidang }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+      
+      {{-- Filter Satker --}}
+      <div class="col-md-2">
+        <select name="satker" class="form-select form-select-sm" id="filterSatker">
+          <option value="">Filter Satker</option>
+          @foreach($satkers as $satker)
+            <option value="{{ $satker->nama_satker }}" {{ request('satker') == $satker->nama_satker ? 'selected' : '' }}>
+              {{ $satker->nama_satker }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+      
+      {{-- Filter Status --}}
+      <div class="col-md-2">
+        <select name="status" class="form-select form-select-sm" id="filterStatus">
+          <option value="">Filter Status</option>
+          <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+          <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+          <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+        </select>
+      </div>
+      
+      {{-- Filter Server --}}
+      <div class="col-md-2">
+        <select name="server" class="form-select form-select-sm" id="filterServer">
+          <option value="">Filter Server</option>
+          @foreach($servers as $srv)
+            <option value="{{ $srv->server_id }}" {{ request('server') == $srv->server_id ? 'selected' : '' }}>
+              {{ $srv->nama_server }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+      
+      {{-- Tombol Terapkan --}}
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          <i class="fa fa-filter me-1"></i> Terapkan Filter
+        </button>
+      </div>
+      
+      {{-- Tombol Reset --}}
+      <div class="col-md-2">
+        <a href="{{ route('website.index') }}" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="fa-solid fa-rotate-right me-2"></i> Reset
+        </a>
+      </div>
+    </div>
+  </form>
 
   {{-- ======= DAFTAR WEBSITE (CARD LAYOUT) ======= --}}
   <div class="row g-4" id="websiteContainer">
@@ -199,21 +194,22 @@
         </p>
 
         <div class="website-info mb-3">
-          <p class="mb-1 text-muted small">
+          <p class="mb-1 text-muted small info-item">
             <i class="fa-solid fa-server me-1"></i> 
-            <strong>Server:</strong> {{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}
+            <strong>Server:</strong> <span class="fw-medium">{{ $website->server ? $website->server->nama_server : 'Belum terhubung' }}</span>
           </p>
 
-          <p class="mb-1 text-muted small">
+          <p class="mb-1 text-muted small info-item">
             <i class="fa-solid fa-briefcase me-1"></i> 
-            <strong>Bidang:</strong> {{ $website->bidang ? $website->bidang->nama_bidang : '-' }}
+            <strong>Bidang:</strong> <span class="fw-medium">{{ $website->bidang ? $website->bidang->nama_bidang : '-' }}</span>
           </p>
           
-          <p class="mb-0 text-muted small">
+          <p class="mb-0 text-muted small info-item">
             <i class="fa-solid fa-building me-1"></i> 
-            <strong>Satker:</strong> {{ $website->satker ? $website->satker->nama_satker : '-' }}
+            <strong>Satker:</strong> <span class="fw-medium">{{ $website->satker ? $website->satker->nama_satker : '-' }}</span>
           </p>
         </div>
+        
         <div class="d-flex justify-content-end gap-2 mt-auto">
           <button class="btn btn-outline-info btn-sm btn-detail" data-id="{{ $website->website_id }}" title="Detail">
             <i class="fa-solid fa-eye"></i>
@@ -243,14 +239,29 @@
       </div>
     </div>
     @empty
-<div class="col-12">
-  <div class="alert alert-light text-center border-0" style="background-color: #f8f9fa;">
-    <i class="fa-solid fa-inbox fa-3x mb-3 d-block" style="color: #6c757d; opacity: 0.6;"></i>
-    <p class="mb-0" style="color: #6c757d;">Belum ada data website</p>
+    <div class="col-12">
+      <div class="alert alert-light text-center border-0" style="background-color: #f8f9fa;">
+        <i class="fa-solid fa-inbox fa-3x mb-3 d-block" style="color: #6c757d; opacity: 0.6;"></i>
+        <p class="mb-0" style="color: #6c757d;">Belum ada data website</p>
+      </div>
+    </div>
+    @endforelse
   </div>
+
+  {{-- ======= PAGINATION ======= --}}
+  @if($websites->hasPages())
+  <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+    <div class="text-muted small mb-2">
+      Menampilkan {{ $websites->firstItem() }} - {{ $websites->lastItem() }} dari {{ $websites->total() }} website
+    </div>
+    
+    <nav aria-label="Website pagination">
+      {{ $websites->appends(request()->query())->links('pagination::bootstrap-4') }}
+    </nav>
+  </div>
+  @endif
+
 </div>
-@endforelse
-  </div>
 </div>
 
 {{-- Modal Detail Website --}}
@@ -352,6 +363,7 @@
 
       <form action="{{ route('website.store') }}" method="POST">
         @csrf
+        <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
         <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label fw-semibold">Nama Website <span class="text-danger">*</span></label>
@@ -455,6 +467,7 @@
       <form id="editForm" method="POST">
         @csrf
         @method('PUT')
+        <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
         <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label fw-semibold">Nama Website <span class="text-danger">*</span></label>
@@ -568,6 +581,7 @@
       <form id="hapusForm" method="POST">
         @csrf
         @method('DELETE')
+         <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
         <div class="modal-footer border-0 bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fa fa-times me-1"></i>Batal
@@ -582,6 +596,36 @@
 </div>
 
 <style>
+
+/* Pagination Custom Style */
+.pagination {
+    margin: 0;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #7b0000;
+    border-color: #7b0000;
+    color: white;
+}
+
+.pagination .page-link {
+    color: #7b0000;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa;
+    color: #5e0000;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
 /* Card Statistics */
 .card-stat {
     background: white;

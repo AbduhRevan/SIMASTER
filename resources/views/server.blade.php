@@ -177,7 +177,7 @@
                     <tbody>
                         @forelse($servers as $index => $server)
                         <tr class="server-row">
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($servers->currentPage() - 1) * $servers->perPage() + $index + 1 }}</td>
                             <td class="server-nama"><strong>{{ $server->nama_server }}</strong></td>
                             <td class="server-rak">{{ $server->rak ? $server->rak->nomor_rak : '-' }} / {{ $server->u_slot ?? '-' }}</td>
                             <td class="server-bidang">
@@ -244,6 +244,19 @@
                 </table>
             </div>
         </div>
+         {{-- ======= PAGINATION ======= --}}
+  @if($servers->hasPages())
+  <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+    <div class="text-muted small mb-2">
+      Menampilkan {{ $servers->firstItem() }} - {{ $servers->lastItem() }} dari {{ $servers->total() }} server
+    </div>
+    
+    <nav aria-label="Server pagination">
+      {{ $servers->appends(request()->query())->links('pagination::bootstrap-4') }}
+    </nav>
+  </div>
+  @endif
+
     </div>
 </div>
 
@@ -322,6 +335,7 @@
             </div>
             <form id="serverForm" action="{{ route('server.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nama Server <span class="text-danger">*</span></label>
@@ -478,6 +492,7 @@
             <form id="editServerForm" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
                 <div class="modal-body p-4">
                     <input type="hidden" id="editServerId" name="server_id">
                     
@@ -631,6 +646,7 @@
             <form id="formHapusServer" method="POST">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="current_page" value="{{ request()->get('page', 1) }}">
                 <div class="modal-body p-4 text-center">
                     <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <p class="mb-3">Apakah Anda yakin ingin menghapus server <strong id="namaServerHapus"></strong>?</p>
@@ -653,6 +669,35 @@
 </div>
 
 <style>
+/* Pagination Custom Style */
+.pagination {
+    margin: 0;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #7b0000;
+    border-color: #7b0000;
+    color: white;
+}
+
+.pagination .page-link {
+    color: #7b0000;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa;
+    color: #5e0000;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
 /* Card Statistics */
 .card-stat {
     background: white;

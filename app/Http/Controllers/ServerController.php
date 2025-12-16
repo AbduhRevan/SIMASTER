@@ -76,14 +76,14 @@ class ServerController extends Controller
             });
         }
 
-        // Execute query dengan ordering
-        $servers = $query->latest()->get();
+       // Hitung statistik SEBELUM pagination
+        $total = (clone $query)->count();
+        $aktif = (clone $query)->where('power_status', 'ON')->count();
+        $maintenance = (clone $query)->where('power_status', 'STANDBY')->count();
+        $tidakAktif = (clone $query)->where('power_status', 'OFF')->count();
 
-        // Hitung statistik berdasarkan hasil filter
-        $total = $servers->count();
-        $aktif = $servers->where('power_status', 'ON')->count();
-        $maintenance = $servers->where('power_status', 'STANDBY')->count();
-        $tidakAktif = $servers->where('power_status', 'OFF')->count();
+        // Pagination SETELAH statistik
+        $servers = $query->latest()->paginate(10)->appends($request->except('page'));
 
         // Data untuk dropdown filter (tidak terpengaruh filter)
         $raks = RakServer::orderBy('nomor_rak')->get();
@@ -304,7 +304,8 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('server.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('server.index', ['page' => $page])
             ->with('success', 'Server berhasil ditambahkan!');
     }
 
@@ -490,7 +491,8 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('server.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('server.index', ['page' => $page])
             ->with('success', 'Server berhasil diperbarui!');
     }
 
@@ -520,7 +522,8 @@ class ServerController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('server.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('server.index', ['page' => $page])
             ->with('success', "Server '{$serverName}' berhasil dihapus!");
     }
 

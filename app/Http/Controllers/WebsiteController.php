@@ -69,13 +69,15 @@ class WebsiteController extends Controller
         }
     }
 
-    $websites = $query->latest()->get();
+    // Hitung statistik dari query sebelum pagination
+$total = (clone $query)->count();
+$aktif = (clone $query)->where('status', 'active')->count();
+$maintenance = (clone $query)->where('status', 'maintenance')->count();
+$tidakAktif = (clone $query)->where('status', 'inactive')->count();
 
-    // statistik (sesuaikan key status pada DB)
-    $total = $websites->count();
-    $aktif = $websites->where('status', 'active')->count();
-    $maintenance = $websites->where('status', 'maintenance')->count();
-    $tidakAktif = $websites->where('status', 'inactive')->count();
+// Pagination
+$websites = $query->latest()->paginate(9)->appends($request->except('page'));
+
 
     $bidangs = Bidang::all();
     $satkers = Satker::all();
@@ -201,7 +203,8 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('website.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('website.index', ['page' => $page])
             ->with('success', 'Website berhasil ditambahkan!');
     }
 
@@ -277,7 +280,8 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('website.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('website.index', ['page' => $page])
             ->with('success', 'Website berhasil diperbarui!');
     }
 
@@ -300,7 +304,8 @@ class WebsiteController extends Controller
             Auth::id()
         );
 
-        return redirect()->route('website.index')
+        $page = $request->input('current_page', 1);
+        return redirect()->route('website.index', ['page' => $page])
             ->with('success', 'Website berhasil dihapus!');
     }
 
