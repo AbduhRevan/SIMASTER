@@ -120,6 +120,13 @@ class ServerController extends Controller
             });
         }
 
+        // Filter berdasarkan bidang (nama_bidang)
+        if ($request->filled('bidang')) {
+            $query->whereHas('bidang', function ($q) use ($request) {
+                $q->where('nama_bidang', $request->bidang);
+            });
+        }
+        
         // Filter berdasarkan satker (nama_satker)
         if ($request->filled('satker')) {
             $query->whereHas('satker', function ($q) use ($request) {
