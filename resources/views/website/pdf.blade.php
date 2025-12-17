@@ -5,12 +5,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Laporan Detail Website</title>
     <style>
+         @page {
+            size: A4 landscape;
+            margin: 15mm;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             font-size: 9pt;
             line-height: 1.4;
             color: #000;
             margin: 15px;
+        }
+
+         .page-number {
+            position: fixed;
+            bottom: 10mm;
+            right: 10mm;
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .page-number:after {
+            content: counter(page);
         }
         
         .kop-surat {
@@ -233,5 +250,10 @@
         <p>Dokumen ini dicetak secara otomatis dari SIMASTER</p>
         <p>© {{ date('Y') }} Kementerian Pertahanan Republik Indonesia</p>
     </div>
+
+    
+    <!-- PAGE NUMBER -->
+<div class="page-number"></div>
+
 </body>
 </html>

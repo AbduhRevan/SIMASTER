@@ -5,6 +5,10 @@
     <meta charset="utf-8">
     <title>Laporan Detail Server</title>
     <style>
+        @page {
+            size: A4 landscape;
+            margin: 15mm;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             font-size: 9pt;
@@ -13,6 +17,18 @@
             margin: 15px;
         }
         
+         .page-number {
+            position: fixed;
+            bottom: 10mm;
+            right: 10mm;
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .page-number:after {
+            content: counter(page);
+        }
+
         .kop-surat {
             text-align: center;
             margin-bottom: 15px;
@@ -272,5 +288,9 @@
         <p>Dokumen ini dicetak secara otomatis dari SIMASTER</p>
         <p>© {{ date('Y') }} Kementerian Pertahanan Republik Indonesia</p>
     </div>
+
+    <!-- PAGE NUMBER -->
+<div class="page-number"></div>
+
 </body>
 </html>
