@@ -15,158 +15,169 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class WebsiteController extends Controller
 {
     public function index(Request $request)
-{
-
-    // website berdasarkan bidang/role
-    $query = Website::with(['bidang', 'satker', 'server']);
-    if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
-    $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
-    $query->where('bidang_id', $id_bidang);
-}
-    // pencarian teks (nama atau url)
-    if ($request->filled('q')) {
-        $q = $request->q;
-        $query->where(function($sub) use ($q) {
-            $sub->where('nama_website', 'like', "%{$q}%")
-                ->orWhere('url', 'like', "%{$q}%");
-        });
-    }
-
-    // filter server (server_id)
-    if($request->filled('server')) {
-        $serverId = $request->input('server'); // Gunakan input() bukan langsung $request->server
-        $query->where('server_id', $serverId);
-    }
-
-    // filter bidang (kirim nama_bidang dari blade)
-    if ($request->filled('bidang')) {
-        $query->whereHas('bidang', function($q) use ($request) {
-            $q->where('nama_bidang', $request->bidang);
-        });
-    }
-
-    // filter satker (kirim nama_satker dari blade)
-    if ($request->filled('satker')) {
-        $query->whereHas('satker', function($q) use ($request) {
-            $q->where('nama_satker', $request->satker);
-        });
-    }
-
-    // filter status (kirim values: active, maintenance, inactive)
-    if ($request->filled('status')) {
-        // jika di blade kamu mengirim ON/STANDBY/OFF, map ke nilai DB.
-        $statusMap = [
-            'ON' => 'active',
-            'STANDBY' => 'maintenance',
-            'OFF' => 'inactive',
-            'active' => 'active',
-            'maintenance' => 'maintenance',
-            'inactive' => 'inactive'
-        ];
-        $statusReq = $request->status;
-        if(isset($statusMap[$statusReq])) {
-            $query->where('status', $statusMap[$statusReq]);
+    {
+        // website berdasarkan bidang/role
+        $query = Website::with(['bidang', 'satker', 'server']);
+        if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
+            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+            $query->where('bidang_id', $id_bidang);
         }
+        
+        // pencarian teks (nama atau url)
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('nama_website', 'like', "%{$q}%")
+                    ->orWhere('url', 'like', "%{$q}%");
+            });
+        }
+
+        // filter server (server_id)
+        if($request->filled('server')) {
+            $serverId = $request->input('server');
+            $query->where('server_id', $serverId);
+        }
+
+        // filter bidang (kirim nama_bidang dari blade)
+        if ($request->filled('bidang')) {
+            $query->whereHas('bidang', function($q) use ($request) {
+                $q->where('nama_bidang', $request->bidang);
+            });
+        }
+
+        // filter satker (kirim nama_satker dari blade)
+        if ($request->filled('satker')) {
+            $query->whereHas('satker', function($q) use ($request) {
+                $q->where('nama_satker', $request->satker);
+            });
+        }
+
+        // filter status (kirim values: active, maintenance, inactive)
+        if ($request->filled('status')) {
+            $statusMap = [
+                'ON' => 'active',
+                'STANDBY' => 'maintenance',
+                'OFF' => 'inactive',
+                'active' => 'active',
+                'maintenance' => 'maintenance',
+                'inactive' => 'inactive'
+            ];
+            $statusReq = $request->status;
+            if(isset($statusMap[$statusReq])) {
+                $query->where('status', $statusMap[$statusReq]);
+            }
+        }
+
+        // Hitung statistik dari query sebelum pagination
+        $total = (clone $query)->count();
+        $aktif = (clone $query)->where('status', 'active')->count();
+        $maintenance = (clone $query)->where('status', 'maintenance')->count();
+        $tidakAktif = (clone $query)->where('status', 'inactive')->count();
+
+        // Pagination
+        $websites = $query->latest()->paginate(9)->appends($request->except('page'));
+
+        $bidangs = Bidang::all();
+        $satkers = Satker::all();
+        $servers = Server::all();
+
+        // Cek apakah user adalah admin bidang
+        $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+        $isBidangAdmin = in_array(auth()->user()->role, $bidangAdminRoles);
+
+        return view('website', compact(
+            'websites',
+            'total',
+            'aktif',
+            'maintenance',
+            'tidakAktif',
+            'bidangs',
+            'satkers',
+            'servers',
+            'isBidangAdmin'
+        ));
     }
-
-    // Hitung statistik dari query sebelum pagination
-$total = (clone $query)->count();
-$aktif = (clone $query)->where('status', 'active')->count();
-$maintenance = (clone $query)->where('status', 'maintenance')->count();
-$tidakAktif = (clone $query)->where('status', 'inactive')->count();
-
-// Pagination
-$websites = $query->latest()->paginate(9)->appends($request->except('page'));
-
-
-    $bidangs = Bidang::all();
-    $satkers = Satker::all();
-    $servers = Server::all();
-
-    return view('website', compact(
-        'websites',
-        'total',
-        'aktif',
-        'maintenance',
-        'tidakAktif',
-        'bidangs',
-        'satkers',
-        'servers'
-    ));
-}
 
     public function exportPDF(Request $request)
-{
-    // Ambil parameter filter
-    $server = $request->input('server');
-    $bidang = $request->input('bidang');
-    $satker = $request->input('satker');
-    $status = $request->input('status'); // active, inactive, maintenance
+    {
+        // Ambil parameter filter
+        $server = $request->input('server');
+        $bidang = $request->input('bidang');
+        $satker = $request->input('satker');
+        $status = $request->input('status');
 
-    // Query dengan filter
-    $query = Website::with(['server.rak', 'bidang', 'satker']);
-    if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
-    $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
-    $query->where('bidang_id', $id_bidang);
-}
-    if ($server) {
-        $query->where('server_id', $server);
+        // Query dengan filter
+        $query = Website::with(['server.rak', 'bidang', 'satker']);
+        if (!in_array(Auth()->user()->role, ['superadmin', 'pimpinan'])) {
+            $id_bidang = Auth()->user()->bidang_id ?? Auth()->user()->bidang;
+            $query->where('bidang_id', $id_bidang);
+        }
+        
+        if ($server) {
+            $query->where('server_id', $server);
+        }
+
+        if ($bidang) {
+            $query->whereHas('bidang', function($q) use ($bidang) {
+                $q->where('nama_bidang', $bidang);
+            });
+        }
+
+        if ($satker) {
+            $query->whereHas('satker', function($q) use ($satker) {
+                $q->where('nama_satker', $satker);
+            });
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $websites = $query->orderBy('nama_website')->get();
+
+        // Hitung statistik
+        $total = $websites->count();
+        $aktif = $websites->where('status', 'active')->count();
+        $tidakAktif = $websites->where('status', 'inactive')->count();
+        $maintenance = $websites->where('status', 'maintenance')->count();
+
+        // Load view PDF
+        $pdf = Pdf::loadView('website.pdf', compact(
+            'websites',
+            'total',
+            'aktif',
+            'tidakAktif',
+            'maintenance',
+            'server',
+            'bidang',
+            'satker',
+            'status'
+        ));
+
+        $pdf->setPaper('A4', 'landscape');
+
+        $filename = 'Laporan_Website_' . date('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
     }
-
-    if ($bidang) {
-        $query->whereHas('bidang', function($q) use ($bidang) {
-            $q->where('nama_bidang', $bidang);
-        });
-    }
-
-    if ($satker) {
-        $query->whereHas('satker', function($q) use ($satker) {
-            $q->where('nama_satker', $satker);
-        });
-    }
-
-    if ($status) {
-        // status berasal dari database: active / inactive / maintenance
-        $query->where('status', $status);
-    }
-
-    $websites = $query->orderBy('nama_website')->get();
-
-    // Hitung statistik
-    $total = $websites->count();
-    $aktif = $websites->where('status', 'active')->count();
-    $tidakAktif = $websites->where('status', 'inactive')->count();
-    $maintenance = $websites->where('status', 'maintenance')->count();
-
-    // Load view PDF
-    $pdf = Pdf::loadView('website.pdf', compact(
-        'websites',
-        'total',
-        'aktif',
-        'tidakAktif',
-        'maintenance',
-        'server',
-        'bidang',
-        'satker',
-        'status'
-    ));
-
-    $pdf->setPaper('A4', 'landscape');
-
-    $filename = 'Laporan_Website_' . date('Y-m-d_His') . '.pdf';
-
-    return $pdf->download($filename);
-}
-
 
     public function store(Request $request)
     {
+        $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+    
+        // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+        if (in_array(auth()->user()->role, $bidangAdminRoles)) {
+            if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
+                return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
+            }
+        }
+
         $validated = $request->validate([
             'nama_website' => 'required|string|max:150',
             'url' => 'required|string|max:255|unique:website,url',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
-            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
+            'server_id' => 'nullable|exists:server,server_id',
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
@@ -210,6 +221,20 @@ $websites = $query->latest()->paginate(9)->appends($request->except('page'));
 
     public function update(Request $request, $id)
     {
+        $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+    
+        // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+        if (in_array(auth()->user()->role, $bidangAdminRoles)) {
+            if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
+                return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
+            }
+        }
+
+        // Cek jika pimpinan, tolak akses
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengubah data');
+        }
+
         $website = Website::findOrFail($id);
 
         // Simpan data lama untuk log
@@ -226,7 +251,7 @@ $websites = $query->latest()->paginate(9)->appends($request->except('page'));
             'url' => 'required|url|max:255|unique:website,url,' . $id . ',website_id',
             'bidang_id' => 'nullable|exists:bidang,bidang_id',
             'satker_id' => 'nullable|exists:satuan_kerja,satker_id',
-            'server_id' => 'nullable|exists:server,server_id', // TAMBAHKAN
+            'server_id' => 'nullable|exists:server,server_id',
             'status' => 'required|in:active,inactive,maintenance',
             'tahun_pengadaan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'keterangan' => 'nullable|string',
@@ -287,6 +312,11 @@ $websites = $query->latest()->paginate(9)->appends($request->except('page'));
 
     public function destroy(Request $request, $id)
     {
+        // Cek jika pimpinan, tolak akses
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus data');
+        }
+
         $website = Website::findOrFail($id);
 
         // Simpan data untuk log
@@ -320,6 +350,20 @@ $websites = $query->latest()->paginate(9)->appends($request->except('page'));
 
         // Jika diakses langsung via URL, redirect ke index
         return redirect()->route('website.index');
+    }
+
+    public function edit($id)
+    {
+        if (auth()->user()->role == 'pimpinan') {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengedit data');
+        }
+    
+        $website = Website::with(['bidang', 'satker', 'server'])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $website
+        ]);
     }
 
     /**

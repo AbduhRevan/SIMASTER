@@ -126,7 +126,7 @@ class ServerController extends Controller
                 $q->where('nama_bidang', $request->bidang);
             });
         }
-        
+
         // Filter berdasarkan satker (nama_satker)
         if ($request->filled('satker')) {
             $query->whereHas('satker', function ($q) use ($request) {
@@ -215,6 +215,15 @@ class ServerController extends Controller
      */
     public function store(Request $request)
     {
+      $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+    
+    // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+    if (in_array(auth()->user()->role, $bidangAdminRoles)) {
+        if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
+            return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
+        }
+    }
+
         $validated = $request->validate([
             'nama_server' => 'required|string|max:150|unique:server,nama_server',
             'brand' => 'nullable|string|max:100',
@@ -351,6 +360,15 @@ class ServerController extends Controller
      */
     public function update(Request $request, $id)
     {
+         $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+    
+    // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+    if (in_array(auth()->user()->role, $bidangAdminRoles)) {
+        if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
+            return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
+        }
+    }
+    
         // Cek jika pimpinan, tolak akses
         if (auth()->user()->role == 'pimpinan') {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengubah data');

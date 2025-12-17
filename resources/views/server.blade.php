@@ -1,3 +1,7 @@
+@php
+    $isBidangAdmin = in_array(auth()->user()->role, ['banglola', 'pamsis', 'infratik', 'tatausaha']);
+@endphp
+
 @extends('layouts.app')
 
 @section('title', 'Kelola Server')
@@ -432,8 +436,8 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row">
+                        {{-- Satuan Kerja --}}
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Satuan Kerja</label>
                             <select class="form-select" id="satkerSelect" name="satker_id">
@@ -446,13 +450,24 @@
                             </select>
                         </div>
 
+                        {{-- Bidang --}}
                         <div class="col-md-6 mb-3" id="bidangWrapper" style="display: none;">
                             <label class="form-label fw-semibold">Bidang</label>
                             <select class="form-select" id="bidangSelect" name="bidang_id">
                                 <option value="">Pilih Bidang</option>
-                                @foreach($bidangs as $bidang)
-                                    <option value="{{ $bidang->bidang_id }}">{{ $bidang->nama_bidang }}</option>
-                                @endforeach
+                                @if(auth()->user()->role == 'superadmin')
+                                    {{-- Superadmin bisa lihat semua bidang --}}
+                                    @foreach($bidangs as $bidang)
+                                        <option value="{{ $bidang->bidang_id }}" data-satker="{{ $bidang->satker_id }}">
+                                            {{ $bidang->nama_bidang }}
+                                        </option>
+                                    @endforeach
+                                @elseif($isBidangAdmin)
+                                    {{-- Admin bidang cuma bisa lihat bidangnya sendiri --}}
+                                    <option value="{{ auth()->user()->bidang_id }}" data-satker="{{ auth()->user()->bidang->satker_id }}">
+                                        {{ auth()->user()->bidang->nama_bidang }}
+                                    </option>
+                                @endif
                             </select>
                         </div>
                     </div>

@@ -7,14 +7,15 @@
     <style>
         @page {
             size: A4 landscape;
-            margin: 15mm;
+            margin: 10mm;
         }
         body {
             font-family: 'Poppins', sans-serif;
             font-size: 9pt;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #000;
-            margin: 15px;
+            margin: 0;
+            padding: 10px;
         }
         
          .page-number {
@@ -31,56 +32,66 @@
 
         .kop-surat {
             text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #800000; /* merah gelap */
-            color: #800000; /* warna teks merah gelap */
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #800000;
+            color: #800000;
+            page-break-after: avoid;
         }
 
         .kop-surat h1 {
-            font-size: 16pt;
+            font-size: 14pt;
             font-weight: bold;
-            margin: 0 0 5px 0;
+            margin: 0 0 4px 0;
             text-transform: uppercase;
             color: #800000; 
         }
 
         .kop-surat p {
-            font-size: 10pt;
+            font-size: 9pt;
             margin: 2px 0;
             color: #000; 
         }
 
         .kop-surat .tanggal {
-            font-size: 9pt;
+            font-size: 8pt;
             font-style: italic;
-            margin-top: 5px;
-            color: #000; /* merah gelap */
+            margin-top: 4px;
+            color: #000;
         }
 
         /* Data Table */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
-            font-size: 8pt;
+            margin-bottom: 10px;
+            font-size: 7pt;
+            page-break-inside: auto;
+        }
+
+        .data-table thead {
+            display: table-header-group;
         }
 
         .data-table thead tr {
             background-color: #800000;
             color: #fff;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
 
         .data-table th {
-            padding: 8px 6px;
+            padding: 5px 3px;
             text-align: left;
             font-weight: bold;
             border: 1px solid #666;
-            font-size: 9pt;
+            font-size: 7.5pt;
+            line-height: 1.2;
         }
 
         .data-table tbody tr {
             border-bottom: 1px solid #ddd;
+            page-break-inside: avoid;
         }
 
         .data-table tbody tr:nth-child(even) {
@@ -88,106 +99,120 @@
         }
 
         .data-table td {
-            padding: 6px;
+            padding: 4px 3px;
             border: 1px solid #ddd;
             vertical-align: top;
             word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .data-table td.no {
             width: 3%;
             text-align: center;
+            font-size: 8pt;
         }
 
         .data-table td.nama {
             width: 10%;
-        }
-
-        .data-table td.brand {
-            width: 8%;
-        }
-
-        .data-table td.spek {
-            width: 25%;
             font-size: 7pt;
         }
 
+        .data-table td.brand {
+            width: 6%;
+            font-size: 7pt;
+        }
+
+        .data-table td.spek {
+            width: 28%;
+            font-size: 6pt;
+            line-height: 1.2;
+        }
+
         .data-table td.lokasi {
-            width: 10%;
+            width: 8%;
+            font-size: 7pt;
         }
 
         .data-table td.bidang-satker {
             width: 12%;
+            font-size: 6.5pt;
         }
 
         .data-table td.website {
             width: 12%;
-            font-size: 7pt;
+            font-size: 6pt;
         }
 
         .data-table td.status {
             width: 8%;
             text-align: center;
+            font-size: 7pt;
         }
 
         .data-table td.keterangan {
-            width: 12%;
-            font-size: 7pt;
+            width: 13%;
+            font-size: 6pt;
         }  
         
         /* Spesifikasi Styling */
         .spec-content table {
             width: 100%;
             border-collapse: collapse;
-            margin: 4px 0;
-            border: 1px solid #999;
+            margin: 2px 0;
+            border: 1px solid #aaa;
             table-layout: fixed; 
         }
 
         .spec-content table td {
-            padding: 3px 5px;
-            border: 1px solid #999;
-            font-size: 7pt !important;
+            padding: 2px 4px;
+            border: 1px solid #aaa;
+            font-size: 6pt !important;
             word-wrap: break-word; 
-            overflow-wrap: break-word; 
+            overflow-wrap: break-word;
+            line-height: 1.2;
         }
 
         .spec-content table td:first-child {
             background-color: #e8e8e8;
             font-weight: bold;
-            width: 40%;
+            width: 35%;
         }
 
         .spec-content p {
-            margin: 3px 0;
-            font-size: 7pt !important;
+            margin: 2px 0;
+            font-size: 6pt !important;
+            line-height: 1.2;
         }
 
         .spec-content ul, .spec-content ol {
-            margin: 3px 0;
-            padding-left: 15px;
-            font-size: 7pt !important;
+            margin: 2px 0;
+            padding-left: 12px;
+            font-size: 6pt !important;
+            line-height: 1.2;
         }
 
         .spec-content ul li, .spec-content ol li {
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         /* Tambahan untuk semua elemen di dalam spec-content */
         .spec-content * {
-            font-size: 7pt !important;
+            font-size: 6pt !important;
+            line-height: 1.2;
         }
         
         
         /* Website List */
         .website-list {
             margin: 0;
-            padding-left: 15px;
-            font-size: 7pt;
+            padding-left: 12px;
+            font-size: 6pt;
+            line-height: 1.2;
         }
 
         .website-list li {
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         /* Footer */
@@ -290,7 +315,7 @@
     </div>
 
     <!-- PAGE NUMBER -->
-<div class="page-number"></div>
+    <div class="page-number"></div>
 
 </body>
 </html>
