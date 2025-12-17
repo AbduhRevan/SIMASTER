@@ -249,7 +249,11 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($servers as $index => $server)
+            @php
+                $reversedServers = $servers->reverse()->values();
+                $totalServers = $reversedServers->count();
+            @endphp
+            @forelse($reversedServers as $index => $server)
             <tr>
                 <td class="no">{{ $index + 1 }}</td>
                 <td class="nama">{{ $server->nama_server }}</td>
