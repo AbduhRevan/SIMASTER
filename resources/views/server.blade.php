@@ -1,5 +1,5 @@
 @php
-    $isBidangAdmin = in_array(auth()->user()->role, ['banglola', 'pamsis', 'infratik', 'tatausaha']);
+    $isBidangOperator = in_array(auth()->user()->role, ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha']);
 @endphp
 
 @extends('layouts.app')
@@ -462,8 +462,8 @@
                                             {{ $bidang->nama_bidang }}
                                         </option>
                                     @endforeach
-                                @elseif($isBidangAdmin)
-                                    {{-- Admin bidang cuma bisa lihat bidangnya sendiri --}}
+                                @elseif($isBidangOperator)
+                                    {{-- Operator bidang cuma bisa lihat bidangnya sendiri --}}
                                     <option value="{{ auth()->user()->bidang_id }}" data-satker="{{ auth()->user()->bidang->satker_id }}">
                                         {{ auth()->user()->bidang->nama_bidang }}
                                     </option>

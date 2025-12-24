@@ -81,9 +81,9 @@ class WebsiteController extends Controller
         $satkers = Satker::all();
         $servers = Server::all();
 
-        // Cek apakah user adalah admin bidang
+        // Cek apakah user adalah operator bidang
         $bidangOperatorRoles = ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha'];
-        $isBidangAdmin = in_array(auth()->user()->role, $bidangOperatorRoles);
+        $isBidangOperator = in_array(auth()->user()->role, $bidangOperatorRoles);
 
         return view('website', compact(
             'websites',
@@ -94,7 +94,7 @@ class WebsiteController extends Controller
             'bidangs',
             'satkers',
             'servers',
-            'isBidangAdmin'
+            'isBidangOperator'
         ));
     }
 
@@ -165,7 +165,7 @@ class WebsiteController extends Controller
     {
         $bidangOperatorRoles = ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha'];
     
-        // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+        // Kalau operator bidang submit, pastikan bidang_id sesuai dengan bidangnya
         if (in_array(auth()->user()->role, $bidangOperatorRoles)) {
             if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
                 return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
@@ -223,7 +223,7 @@ class WebsiteController extends Controller
     {
         $bidangOperatorRoles = ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha'];
     
-        // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
+        // Kalau operator bidang submit, pastikan bidang_id sesuai dengan bidangnya
         if (in_array(auth()->user()->role, $bidangOperatorRoles)) {
             if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
                 return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);

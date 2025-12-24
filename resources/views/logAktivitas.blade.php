@@ -173,16 +173,16 @@
                                             @php
                                                 $roleClass = match($log->pengguna->role) {
                                                     'superadmin' => 'bg-danger text-white',
-                                                    'banglola' => 'bg-warning text-dark',
-                                                    'pamsis' => 'bg-info text-white',
-                                                    'infratik' => 'bg-primary text-white',
+                                                    'operator banglola' => 'bg-warning text-dark',
+                                                    'operator pamsis' => 'bg-info text-white',
+                                                    'operator infratik' => 'bg-primary text-white',
                                                     default => 'bg-secondary text-white'
                                                 };
                                                 $roleLabel = match($log->pengguna->role) {
                                                     'superadmin' => 'Super Admin',
-                                                    'banglola' => 'Banglola',
-                                                    'pamsis' => 'Pamsis',
-                                                    'infratik' => 'Infratik',
+                                                    'operator banglola' => 'Banglola',
+                                                    'operator pamsis' => 'Pamsis',
+                                                    'operator infratik' => 'Infratik',
                                                     default => ucfirst($log->pengguna->role)
                                                 };
                                             @endphp
