@@ -84,7 +84,7 @@ class PenggunaController extends Controller
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
+            'role' => 'required|in:superadmin,operator banglola,operator pamsis,operator infratik,operator tatausaha,pimpinan',
             'bidang_id' => 'required|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
         ], [
@@ -192,7 +192,7 @@ class PenggunaController extends Controller
             'nama_lengkap' => 'required|string|max:100',
             'username_email' => 'required|string|max:100|unique:pengguna,username_email,' . $id . ',user_id',
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:superadmin,banglola,pamsis,infratik,tatausaha,pimpinan',
+            'role' => 'required|in:superadmin,operator banglola,operator pamsis,operator infratik,operator tatausaha,pimpinan',
             'bidang_id' => 'required|exists:bidang,bidang_id',
             'status' => 'required|in:active,inactive',
         ], [
@@ -396,10 +396,10 @@ class PenggunaController extends Controller
     {
         return match ($role) {
             'superadmin' => 'Super Admin',
-            'banglola' => 'Banglola',
-            'pamsis' => 'Pamsis',
-            'infratik' => 'Infratik',
-            'tatausaha' => 'Tata Usaha',
+            'operator banglola' => 'Banglola',
+            'operator pamsis' => 'Pamsis',
+            'operator infratik' => 'Infratik',
+            'operator tatausaha' => 'Tata Usaha',
             'pimpinan' => 'Pimpinan',
             default => ucfirst($role)
         };

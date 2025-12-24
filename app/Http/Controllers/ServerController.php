@@ -215,10 +215,10 @@ class ServerController extends Controller
      */
     public function store(Request $request)
     {
-      $bidangAdminRoles = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+      $bidangOperatorRoles = ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha'];
     
     // Kalau admin bidang submit, pastikan bidang_id sesuai dengan bidangnya
-    if (in_array(auth()->user()->role, $bidangAdminRoles)) {
+    if (in_array(auth()->user()->role, $bidangOperatorRoles)) {
         if ($request->bidang_id && $request->bidang_id != auth()->user()->bidang_id) {
             return back()->withErrors(['bidang_id' => 'Anda hanya bisa memilih bidang Anda sendiri']);
         }

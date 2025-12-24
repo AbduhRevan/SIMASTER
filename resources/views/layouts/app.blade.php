@@ -446,7 +446,7 @@
 
             @php
                 $userRole = Auth::user()->role;
-                $adminBidang = ['banglola', 'pamsis', 'infratik', 'tatausaha'];
+                $OperatorBidang = ['operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha'];
             @endphp
 
             @if ($userRole == 'superadmin')
@@ -471,7 +471,7 @@
                 </div>
             @endif
 
-            @if ($userRole == 'superadmin' || in_array($userRole, $adminBidang))
+            @if ($userRole == 'superadmin' || in_array($userRole, $OperatorBidang))
                 <!-- Manajemen Aset Section - Superadmin & Admin Bidang -->
                 <div class="menu-section">
                     <div class="menu-section-title">Manajemen Aset</div>
@@ -493,7 +493,7 @@
                 </div>
             @endif
 
-            @if ($userRole == 'superadmin' || in_array($userRole, $adminBidang))
+            @if ($userRole == 'superadmin' || in_array($userRole, $OperatorBidang))
                 <!-- Sistem Section - Superadmin & Admin Bidang -->
                 <div class="menu-section">
                     <div class="menu-section-title">Sistem</div>
