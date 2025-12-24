@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('nama_lengkap', 100);
             $table->string('username_email', 100)->unique();
             $table->string('password', 255);
-            $table->enum('role', ['superadmin', 'banglola', 'pamsis', 'infratik', 'tatausaha', 'pimpinan'])->default('pimpinan');
+            $table->enum('role', ['superadmin', 'operator banglola', 'operator pamsis', 'operator infratik', 'operator tatausaha', 'pimpinan'])->default('pimpinan');
             $table->unsignedBigInteger('bidang_id')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

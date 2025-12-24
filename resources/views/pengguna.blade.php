@@ -30,10 +30,10 @@
                         <select name="role" id="filterRole" class="form-select">
                             <option value="">Semua</option>
                             <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                            <option value="banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Admin Banglola</option>
-                            <option value="pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Admin Pamsis</option>
-                            <option value="infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Admin Infratik</option>
-                            <option value="tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Admin Tatausaha</option>
+                            <option value="banglola" {{ request('role') == 'banglola' ? 'selected' : '' }}>Operator Banglola</option>
+                            <option value="pamsis" {{ request('role') == 'pamsis' ? 'selected' : '' }}>Operator Pamsis</option>
+                            <option value="infratik" {{ request('role') == 'infratik' ? 'selected' : '' }}>Operator Infratik</option>
+                            <option value="tatausaha" {{ request('role') == 'tatausaha' ? 'selected' : '' }}>Operator Tatausaha</option>
                             <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                         </select>
                     </div>
@@ -180,10 +180,10 @@
                                                         <select name="role" class="form-select" required>
                                                             <option value="">Pilih Role</option>
                                                             <option value="superadmin" {{ $user->role == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                                                            <option value="banglola" {{ $user->role == 'banglola' ? 'selected' : '' }}>Banglola</option>
-                                                            <option value="pamsis" {{ $user->role == 'pamsis' ? 'selected' : '' }}>Pamsis</option>
-                                                            <option value="infratik" {{ $user->role == 'infratik' ? 'selected' : '' }}>Infratik</option>
-                                                            <option value="tatausaha" {{ $user->role == 'tatausaha' ? 'selected' : '' }}>Tatausaha</option>
+                                                            <option value="banglola" {{ $user->role == 'banglola' ? 'selected' : '' }}>Operator Banglola</option>
+                                                            <option value="pamsis" {{ $user->role == 'pamsis' ? 'selected' : '' }}>Operator Pamsis</option>
+                                                            <option value="infratik" {{ $user->role == 'infratik' ? 'selected' : '' }}>Operator Infratik</option>
+                                                            <option value="tatausaha" {{ $user->role == 'tatausaha' ? 'selected' : '' }}>Operator Tatausaha</option>
                                                             <option value="pimpinan" {{ $user->role == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                                                         </select>
                                                     </div>
@@ -330,10 +330,10 @@
                             <select name="role" class="form-select" required>
                                 <option value="">Pilih Role</option>
                                 <option value="superadmin">Superadmin</option>
-                                <option value="banglola">Admin Banglola</option>
-                                <option value="pamsis">Admin Pamsis</option>
-                                <option value="infratik">Admin Infratik</option>
-                                <option value="tatausaha">Admin Tatausaha</option>
+                                <option value="banglola">Operator Banglola</option>
+                                <option value="pamsis">Operator Pamsis</option>
+                                <option value="infratik">Operator Infratik</option>
+                                <option value="tatausaha">Operator Tatausaha</option>
                                 <option value="pimpinan">Pimpinan</option>
                             </select>
                         </div>
